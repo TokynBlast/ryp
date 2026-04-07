@@ -45,4 +45,6 @@ pub enum Action {
     Save,
     RefreshGit,
     OpenDiff(usize),
+    ToggleTerminal,
+    TerminalInput(crossterm::event::KeyEvent),
 }

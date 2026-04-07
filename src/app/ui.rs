@@ -32,13 +32,21 @@ pub fn draw(f: &mut Frame, app: &App) {
     } else {
         // If sidebar is hidden, editor column takes full width
         Layout::default()
-             .direction(Direction::Horizontal)
-             .constraints([Constraint::Min(0)])
-             .split(content_area)
+            .direction(Direction::Horizontal)
+            .constraints([Constraint::Min(0)])
+            .split(content_area)
     };
 
-    let sidebar_area = if sidebar_visible { Some(main_layout[0]) } else { None };
-    let editor_column_area = if sidebar_visible { main_layout[1] } else { main_layout[0] };
+    let sidebar_area = if sidebar_visible {
+        Some(main_layout[0])
+    } else {
+        None
+    };
+    let editor_column_area = if sidebar_visible {
+        main_layout[1]
+    } else {
+        main_layout[0]
+    };
 
     if let Some(area) = sidebar_area {
         crate::components::layout::sidebar::draw_sidebar(f, app, area);
@@ -62,4 +70,58 @@ pub fn draw(f: &mut Frame, app: &App) {
     if app.modal.is_some() {
         crate::components::modals::view::draw_modal(f, app, size);
     }
+
+    if app.terminal_visible {
+        draw_terminal(f, app, size);
+    }
+}
+
+fn draw_terminal(f: &mut ratatui::Frame, app: &App, area: ratatui::layout::Rect) {
+    use ratatui::layout::{Constraint, Direction, Layout};
+    use ratatui::style::{Color, Style};
+    use ratatui::widgets::{Block, Borders, Clear, Paragraph};
+
+    let vertical_margin = area.height.saturating_sub(20) / 2;
+    let horizontal_margin = area.width.saturating_sub(80) / 2;
+
+    let popup_layout = Layout::default()
+        .direction(Direction::Vertical)
+        .constraints([
+            Constraint::Length(vertical_margin),
+            Constraint::Min(0),
+            Constraint::Length(vertical_margin),
+        ])
+        .split(area);
+
+    let area = Layout::default()
+        .direction(Direction::Horizontal)
+        .constraints([
+            Constraint::Length(horizontal_margin),
+            Constraint::Min(0),
+            Constraint::Length(horizontal_margin),
+        ])
+        .split(popup_layout[1])[1];
+
+    let block = Block::default()
+        .title(" Terminal (CTRL+T / F5 / ESC to Hide) ")
+        .borders(Borders::ALL)
+        .border_style(Style::default().fg(Color::Cyan));
+
+    let mut lines = app.terminal.output_lines.clone();
+    // We don't add current_line here because update() already pushes to output_lines on \n
+    // but the part of the line that hasn't finished yet is in current_line.
+    let mut current_line = app.terminal.current_line.clone();
+    current_line.push('_'); // Cursor simulation
+    lines.push(current_line);
+
+    let content: Vec<ratatui::text::Line> = lines
+        .iter()
+        .rev()
+        .take(area.height.saturating_sub(2) as usize)
+        .rev()
+        .map(|l| ratatui::text::Line::from(l.as_str()))
+        .collect();
+
+    f.render_widget(Clear, area);
+    f.render_widget(Paragraph::new(content).block(block), area);
 }

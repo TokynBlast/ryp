@@ -36,6 +36,8 @@ pub struct App {
     pub git_changes: Vec<crate::core::git::GitFileChange>,
     pub git_scroll: usize,
     pub git_selected: usize,
+    pub terminal: crate::core::terminal::Terminal,
+    pub terminal_visible: bool,
 }
 
 impl App {
@@ -60,6 +62,8 @@ impl App {
             git_changes: vec![],
             git_scroll: 0,
             git_selected: 0,
+            terminal: crate::core::terminal::Terminal::new(std::path::PathBuf::from(".")),
+            terminal_visible: false,
         }
     }
 
@@ -69,6 +73,10 @@ impl App {
         )));
         self.git_manager.set_root(path.to_string());
         self.refresh_git();
+        let _ = self
+            .terminal
+            .tx
+            .send(format!("cd {}\n", path).as_bytes().to_vec());
     }
 
     pub fn open_diff(&mut self, change_idx: usize) {
@@ -100,7 +108,10 @@ impl App {
             let mut editor = Editor::new();
             if editor.load_file(path) {
                 let current_is_dirty = self.current_editor().map_or(false, |e| e.dirty);
-                if force_new_tab || (self.editors.is_empty()) || (self.editors.len() == 1 && current_is_dirty) {
+                if force_new_tab
+                    || (self.editors.is_empty())
+                    || (self.editors.len() == 1 && current_is_dirty)
+                {
                     self.editors.push(editor);
                     self.active_tab = self.editors.len() - 1;
                 } else if self.editors.len() == 1
@@ -134,9 +145,10 @@ impl App {
 
     pub fn run(&mut self, terminal: &mut ratatui::DefaultTerminal) -> std::io::Result<()> {
         while !self.should_quit {
+            self.terminal.update();
             terminal.draw(|f| ui::draw(f, self))?;
 
-            if crossterm::event::poll(Duration::from_millis(100))? {
+            if crossterm::event::poll(Duration::from_millis(10))? {
                 if let Event::Key(key) = event::read()? {
                     self.handle_key(key);
                 }
@@ -146,7 +158,25 @@ impl App {
     }
 
     fn handle_key(&mut self, key: event::KeyEvent) {
+        use crate::input::action::Action;
         use crate::input::keymap;
+        use crossterm::event::{KeyCode, KeyModifiers};
+
+        if self.terminal_visible {
+            // Check for toggle keys or ESC
+            let is_ctrl_t =
+                key.code == KeyCode::Char('t') && key.modifiers.contains(KeyModifiers::CONTROL);
+            let is_f5 = key.code == KeyCode::F(5);
+            let is_esc = key.code == KeyCode::Esc;
+
+            if is_ctrl_t || is_f5 || is_esc {
+                self.dispatch(Action::ToggleTerminal);
+                return;
+            }
+
+            self.dispatch(Action::TerminalInput(key));
+            return;
+        }
 
         let in_modal = self.modal.is_some();
         let is_tree_focused = self.workspace.as_ref().map_or(false, |w| w.focused);
@@ -341,6 +371,14 @@ impl App {
                 self.modal = Some(Modal::new(ModalType::NewFile));
                 return;
             }
+            Action::ToggleTerminal => {
+                self.terminal_visible = !self.terminal_visible;
+                return;
+            }
+            Action::TerminalInput(key) => {
+                self.terminal.handle_key(key);
+                return;
+            }
             _ => {}
         }
 
@@ -367,46 +405,41 @@ impl App {
                             self.perform_search();
                         }
                     }
-                    Action::MoveUp(_) => {
-                        match self.sidebar_category {
-                            SidebarCategory::FileTree => {
-                                if ws.selected > 0 {
-                                    ws.selected -= 1;
-                                }
-                            }
-                            SidebarCategory::Search => {
-                                if self.search_selected > 0 {
-                                    self.search_selected -= 1;
-                                }
-                            }
-                            SidebarCategory::Git => {
-                                if self.git_selected > 0 {
-                                    self.git_selected -= 1;
-                                }
+                    Action::MoveUp(_) => match self.sidebar_category {
+                        SidebarCategory::FileTree => {
+                            if ws.selected > 0 {
+                                ws.selected -= 1;
                             }
                         }
-                    }
-                    Action::MoveDown(_) => {
-                        match self.sidebar_category {
-                            SidebarCategory::FileTree => {
-                                let max = ws.flatten().len().saturating_sub(1);
-                                if ws.selected < max {
-                                    ws.selected += 1;
-                                }
-                            }
-                            SidebarCategory::Search => {
-                                if self.search_selected < self.search_results.len().saturating_sub(1)
-                                {
-                                    self.search_selected += 1;
-                                }
-                            }
-                            SidebarCategory::Git => {
-                                if self.git_selected < self.git_changes.len().saturating_sub(1) {
-                                    self.git_selected += 1;
-                                }
+                        SidebarCategory::Search => {
+                            if self.search_selected > 0 {
+                                self.search_selected -= 1;
                             }
                         }
-                    }
+                        SidebarCategory::Git => {
+                            if self.git_selected > 0 {
+                                self.git_selected -= 1;
+                            }
+                        }
+                    },
+                    Action::MoveDown(_) => match self.sidebar_category {
+                        SidebarCategory::FileTree => {
+                            let max = ws.flatten().len().saturating_sub(1);
+                            if ws.selected < max {
+                                ws.selected += 1;
+                            }
+                        }
+                        SidebarCategory::Search => {
+                            if self.search_selected < self.search_results.len().saturating_sub(1) {
+                                self.search_selected += 1;
+                            }
+                        }
+                        SidebarCategory::Git => {
+                            if self.git_selected < self.git_changes.len().saturating_sub(1) {
+                                self.git_selected += 1;
+                            }
+                        }
+                    },
                     Action::InsertNewline | Action::ModalConfirmForceNewTab => {
                         match self.sidebar_category {
                             SidebarCategory::FileTree => {
@@ -421,7 +454,8 @@ impl App {
                                     } else {
                                         file_to_open =
                                             ws.nodes[node_idx].path.to_str().map(|s| s.to_string());
-                                        let current_is_dirty = self.current_editor().map_or(false, |e| e.dirty);
+                                        let current_is_dirty =
+                                            self.current_editor().map_or(false, |e| e.dirty);
                                         open_in_new_tab = force_new || current_is_dirty;
                                         close_focused = true;
                                     }
@@ -524,7 +558,8 @@ impl App {
 
                 if any_dirty {
                     if self.editors.len() > 1 {
-                        self.modal = Some(crate::windows::modal::Modal::new(ModalType::ConfirmExit));
+                        self.modal =
+                            Some(crate::windows::modal::Modal::new(ModalType::ConfirmExit));
                     } else {
                         self.modal = Some(crate::windows::modal::Modal::new(ModalType::QuitPrompt));
                     }
@@ -655,7 +690,9 @@ impl App {
         if let Some(editor) = self.current_editor_mut() {
             let line = editor.lines[editor.cursor_y].clone();
             if editor.cursor_x + search_term.len() <= line.len() {
-                if &line[editor.cursor_x..editor.cursor_x + search_term.len()] == search_term.as_str() {
+                if &line[editor.cursor_x..editor.cursor_x + search_term.len()]
+                    == search_term.as_str()
+                {
                     let mut new_line = line[..editor.cursor_x].to_string();
                     new_line.push_str(&replace_term);
                     new_line.push_str(&line[editor.cursor_x + search_term.len()..]);

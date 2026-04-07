@@ -45,10 +45,9 @@ pub fn map_key(key: KeyEvent, in_modal: bool, is_sidebar_focused: bool) -> Optio
         KeyCode::F(2) => Some(Action::OpenSearch),
         KeyCode::F(3) => Some(Action::OpenReplace),
         KeyCode::F(4) => Some(Action::ToggleSidebar),
-        KeyCode::F(5) => Some(Action::RefreshGit),
+        KeyCode::F(5) => Some(Action::ToggleTerminal),
         KeyCode::F(6) => Some(Action::PrevTab),
         KeyCode::F(7) => Some(Action::NextTab),
-        KeyCode::F(12) => Some(Action::Quit),
 
         // Navigation binds
         KeyCode::Up => Some(Action::MoveUp(shift)),
@@ -69,13 +68,17 @@ pub fn map_key(key: KeyEvent, in_modal: bool, is_sidebar_focused: bool) -> Optio
                     'a' | 'A' => Some(Action::PrevTab),
                     'd' | 'D' => Some(Action::NextTab),
                     'w' | 'W' => Some(Action::CloseTab),
-                    'q' | 'Q' => Some(Action::Quit),
+                    'c' | 'C' => Some(Action::Quit),
                     'n' | 'N' => Some(Action::OpenNewFileModal),
                     's' | 'S' => Some(Action::Save),
+                    't' | 'T' => Some(Action::ToggleTerminal),
                     _ => None,
                 }
             } else {
-                Some(Action::InsertChar(c))
+                match key.code {
+                    KeyCode::F(5) => Some(Action::ToggleTerminal),
+                    _ => Some(Action::InsertChar(c)),
+                }
             }
         }
         KeyCode::Enter => {
