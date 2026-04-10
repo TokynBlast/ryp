@@ -399,6 +399,7 @@ impl App {
             }
             Action::ToggleTerminal => {
                 self.terminal_visible = !self.terminal_visible;
+                self.dirty = true;
                 return;
             }
             Action::TerminalInput(key) => {
