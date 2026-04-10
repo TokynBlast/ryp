@@ -34,6 +34,25 @@ impl Editor {
         }
     }
 
+    pub fn rebuild_highlight_cache(&mut self, syntax_set: &syntect::parsing::SyntaxSet, theme: &syntect::highlighting::Theme) {
+      let ext = self.filepath.as_ref()
+          .and_then(|p| p.extension())
+          .and_then(|e| e.to_str())
+          .unwrap_or("txt");
+      let syntax = syntax_set.find_syntax_by_extension(ext)
+          .unwrap_or_else(|| syntax_set.find_syntax_plain_text());
+      let mut h = syntect::easy::HighlightLines::new(syntax, theme);
+
+      self.highlight_cache = self.lines.iter().map(|line| {
+          let line_with_nl = format!("{}\n", line);
+          h.highlight_line(&line_with_nl, syntax_set)
+              .unwrap_or_default()
+              .into_iter()
+              .map(|(s, t)| (s, t.trim_end_matches('\n').to_string()))
+              .collect()
+      }).collect();
+    }
+
     pub fn load_file(&mut self, path: &Path) -> bool {
         if let Ok(content) = fs::read_to_string(path) {
             self.lines = content.lines().map(|s| s.to_string()).collect();
