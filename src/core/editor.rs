@@ -140,12 +140,12 @@ impl Editor {
             } else {
                 let bs = Self::char_to_byte_idx(&self.lines[sy], sx);
                 let mut new_start = self.lines[sy][..bs].to_string();
-                
+
                 let be = Self::char_to_byte_idx(&self.lines[ey], ex);
                 let new_end = self.lines[ey][be..].to_string();
-                
+
                 new_start.push_str(&new_end);
-                
+
                 self.lines.drain(sy..=ey);
                 self.lines.insert(sy, new_start);
             }
