@@ -23,6 +23,10 @@ impl Terminal {
             })
             .expect("Failed to open PTY");
 
+        #[cfg(windows)]
+        let shell = std::env::var("COMSPEC").unwrap_or_else(|_| "cmd.exe".to_string());
+
+        #[cfg(not(windows))]
         let shell = std::env::var("SHELL").unwrap_or_else(|_| "sh".to_string());
         let mut cmd = CommandBuilder::new(shell);
         cmd.cwd(cwd);
