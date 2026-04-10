@@ -165,7 +165,10 @@ impl App {
           let timeout = if self.dirty {
             Duration::from_millis(0)  // render immediately, don't wait
           } else {
+              #[cfg(not(windows))]
               Duration::from_millis(100) // idle, check 10x/sec is plenty
+              #[cfg(windows)]
+              Duration::from_millis(200)
           };
 
           if self.dirty {
