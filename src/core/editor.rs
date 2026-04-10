@@ -14,6 +14,7 @@ pub struct Editor {
     pub filepath: Option<PathBuf>,
     pub dirty: bool,
     pub is_diff: bool,
+    pub highlight_cache: Vec<Vec<(syntect::highlighting::Style, String)>>,
 }
 
 impl Editor {
@@ -29,6 +30,7 @@ impl Editor {
             filepath: None,
             dirty: false,
             is_diff: false,
+            highlight_cache: vec![],
         }
     }
 
