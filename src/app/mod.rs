@@ -40,6 +40,7 @@ pub struct App {
     pub git_selected: usize,
     pub terminal: crate::core::terminal::Terminal,
     pub terminal_visible: bool,
+    pub dirty: bool,
 }
 
 impl App {
@@ -66,6 +67,7 @@ impl App {
             git_selected: 0,
             terminal: crate::core::terminal::Terminal::new(PathBuf::from(".")),
             terminal_visible: false,
+            dirty: true,
         }
     }
 
@@ -155,7 +157,10 @@ impl App {
     pub fn run(&mut self, terminal: &mut ratatui::DefaultTerminal) -> std::io::Result<()> {
         while !self.should_quit {
             self.terminal.update();
-            terminal.draw(|f| ui::draw(f, self))?;
+            if self.dirty {
+              terminal.draw(|f| ui::draw(f, self))?;
+              self.dirty = false;
+            }
 
             if crossterm::event::poll(Duration::from_millis(10))? {
                 if let Event::Key(key) = event::read()? {
@@ -192,6 +197,7 @@ impl App {
         if let Some(action) = keymap::map_key(key, in_modal, is_tree_focused) {
             self.dispatch(action);
         }
+        self.dirty = true;
     }
 
     pub fn dispatch(&mut self, action: crate::input::action::Action) {
