@@ -184,7 +184,7 @@ fn draw_search_view(f: &mut Frame, app: &App, area: Rect) {
             .file_name()
             .unwrap_or_default()
             .to_string_lossy();
-        
+
         lines.push(Line::from(Span::styled(
             format!(" {}:{} ", filename, result.line_number),
             style.clone().fg(Color::Cyan)
