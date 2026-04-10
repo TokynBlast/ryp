@@ -67,7 +67,7 @@ impl Terminal {
         }
     }
 
-    pub fn update(&mut self) {
+    pub fn update(&mut self) -> bool {
         let mut any_new_data = false;
         while let Ok(data) = self.rx.try_recv() {
             any_new_data = true;
@@ -81,20 +81,19 @@ impl Terminal {
                 self.current_line.clear();
             }
 
+            // Handle \r before stripping (strip_ansi removes it)
+            //let data = s.replace('\r', "\x00CARRIAGE\x00");
+
             let stripped = strip_ansi_escapes::strip(&data);
             let s_clean = String::from_utf8_lossy(&stripped);
 
             for c in s_clean.chars() {
-                if c == '\n' {
-                    self.output_lines.push(self.current_line.clone());
-                    self.current_line.clear();
-                } else if c == '\r' {
-                    // ignore
-                } else if c == '\x08' || c == '\x7f' || c == '\u{7f}' {
-                    // Backspace - Remove char from current line
-                    self.current_line.pop();
-                } else {
-                    self.current_line.push(c);
+                match c {
+                    '\n' => { self.output_lines.push(self.current_line.clone()); self.current_line.clear(); }
+                    '\r' => { self.current_line.clear(); }
+                    '\x08' | '\x7f' => { self.current_line.pop(); }
+                    '\x1b' | '\x00' => {} // ignore leftover escape chars
+                    c => { self.current_line.push(c); }
                 }
             }
         }
@@ -102,6 +101,8 @@ impl Terminal {
         if any_new_data && self.output_lines.len() > 1000 {
             self.output_lines.drain(0..self.output_lines.len() - 1000);
         }
+
+        return any_new_data;
     }
 
     pub fn handle_key(&mut self, key: KeyEvent) {
