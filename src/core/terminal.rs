@@ -95,9 +95,6 @@ impl Terminal {
                 self.current_line.clear();
             }
 
-            // Handle \r before stripping (strip_ansi removes it)
-            //let data = s.replace('\r', "\x00CARRIAGE\x00");
-
             let stripped = strip_ansi_escapes::strip(&data);
             let s_clean = String::from_utf8_lossy(&stripped);
 
