@@ -163,45 +163,45 @@ impl App {
 
     pub fn run(&mut self, terminal: &mut ratatui::DefaultTerminal) -> std::io::Result<()> {
         while !self.should_quit {
+            let had_update = self.terminal.update();
+            if had_update {
+                self.dirty = true;
+            }
 
-          let had_update = self.terminal.update();
-          if had_update {
-              self.dirty = true;
-          }
+            if self.dirty {
+                // do the cache spawn first, completely separately
+                {
+                    let cache = Arc::clone(&self.whitespace_cache);
+                    let lines: Vec<String> = self.current_editor()
+                        .map(|e| e.lines.clone())
+                        .unwrap_or_default();
+                    thread::spawn(move || {
+                        let result: Vec<usize> = lines.iter()
+                            .enumerate()
+                            .filter(|(_, line)| line.chars().any(|c| c == ' ' || c == '\t'))
+                            .map(|(i, _)| i)
+                            .collect();
+                        if let Ok(mut cache) = cache.lock() {
+                            *cache = result;
+                        }
+                    });
+                } // borrow of self ends here
 
-          let timeout = if self.dirty {
-            Duration::from_millis(0) // render immediately, don't wait
-          } else {
-            Duration::from_millis(100)
-          };
+                terminal.draw(|f| ui::draw(f, self))?;
+                self.dirty = false;
+            }
 
-          if self.dirty {
-              let cache = Arc::clone(&self.whitespace_cache);
-              let lines: Vec<String> = self.current_editor()
-                  .map(|e| e.lines.clone())
-                  .unwrap_or_default();
+            let timeout = if self.dirty {
+                Duration::from_millis(0)
+            } else {
+                Duration::from_millis(100)
+            };
 
-              thread::spawn(move || {
-                  let result: Vec<usize> = lines.iter()
-                      .enumerate()
-                      .filter(|(_, line)| line.chars().any(|c| c == ' ' || c == '\t'))
-                      .map(|(i, _)| i)
-                      .collect();
-
-                  if let Ok(mut cache) = cache.lock() {
-                      *cache = result;
-                  }
-              });
-
-              terminal.draw(|f| ui::draw(f, self))?;
-              self.dirty = false;
-          }
-
-          if crossterm::event::poll(timeout)? {
-              if let Event::Key(key) = event::read()? {
-                  self.handle_key(key);
-              }
-          }
+            if crossterm::event::poll(timeout)? {
+                if let Event::Key(key) = event::read()? {
+                    self.handle_key(key);
+                }
+            }
         }
         Ok(())
     }
