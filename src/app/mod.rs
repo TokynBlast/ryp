@@ -164,8 +164,6 @@ impl App {
 
           let timeout = if self.dirty {
             Duration::from_millis(0) // render immediately, don't wait
-          } else if cfg!(windows) {
-            Duration::from_millis(200)
           } else {
             Duration::from_millis(100)
           };
