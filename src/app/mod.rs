@@ -156,17 +156,28 @@ impl App {
 
     pub fn run(&mut self, terminal: &mut ratatui::DefaultTerminal) -> std::io::Result<()> {
         while !self.should_quit {
-            self.terminal.update();
-            if self.dirty {
-              terminal.draw(|f| ui::draw(f, self))?;
-              self.dirty = false;
-            }
 
-            if crossterm::event::poll(Duration::from_millis(10))? {
-                if let Event::Key(key) = event::read()? {
-                    self.handle_key(key);
-                }
-            }
+          let had_update = self.terminal.update();
+          if had_update {
+              self.dirty = true;
+          }
+
+          let timeout = if self.dirty {
+            Duration::from_millis(0)  // render immediately, don't wait
+          } else {
+              Duration::from_millis(100) // idle, check 10x/sec is plenty
+          };
+
+          if self.dirty {
+            terminal.draw(|f| ui::draw(f, self))?;
+            self.dirty = false;
+          }
+
+          if crossterm::event::poll(timeout)? {
+              if let Event::Key(key) = event::read()? {
+                  self.handle_key(key);
+              }
+          }
         }
         Ok(())
     }
