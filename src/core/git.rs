@@ -24,7 +24,7 @@ pub struct GitFileChange {
 }
 
 pub struct GitManager {
-    pub root: Option<String>,
+    pub root: Option<std::path::PathBuf>,
 }
 
 impl GitManager {
@@ -32,8 +32,8 @@ impl GitManager {
         Self { root: None }
     }
 
-    pub fn set_root(&mut self, path: String) {
-        self.root = Some(path);
+    pub fn set_root(&mut self, path: &Path) {
+        self.root = Some(path.to_path_buf());
     }
 
     pub fn get_changes(&self) -> Vec<GitFileChange> {

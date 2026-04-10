@@ -70,10 +70,12 @@ impl App {
     }
 
     pub fn load_workspace(&mut self, path: &Path) {
+      let path = &path.canonicalize().unwrap_or(path.to_path_buf());
+
       self.workspace = Some(crate::core::tree::FileTree::new(
         path.to_path_buf()
       ));
-      self.git_manager.set_root(path.display().to_string());
+      self.git_manager.set_root(path);
       self.refresh_git();
       let _ = self
           .terminal
@@ -104,12 +106,16 @@ impl App {
             }
         });
 
+        if self.workspace.is_none() {
+          let workspace = path.parent().unwrap_or(Path::new("."));
+          self.load_workspace(workspace);
+        }
+
         if let Some(idx) = already_open {
             self.active_tab = idx;
         } else {
             let mut editor = Editor::new();
             if editor.load_file(path) {
-                self.load_workspace(path.parent().expect("ADD SOMETHING HERE"));
                 let current_is_dirty = self.current_editor().map_or(false, |e| e.dirty);
                 if force_new_tab
                     || (self.editors.is_empty())
