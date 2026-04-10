@@ -48,7 +48,7 @@ impl FileTree {
         if self.nodes[node_idx].children.is_empty() {
             use ignore::WalkBuilder;
             let mut new_children = vec![];
-            
+
             let walker = WalkBuilder::new(&node_path)
                 .max_depth(Some(1))
                 .hidden(false) // showing hidden files is usually preferred in trees unless specified
@@ -56,7 +56,7 @@ impl FileTree {
                 .build();
 
             let mut entries: Vec<_> = walker.filter_map(|e| e.ok()).collect();
-            
+
             // Sort: folders first, then files
             entries.sort_by_key(|e| {
                 let is_file = e.path().is_file();
