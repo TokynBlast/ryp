@@ -46,12 +46,22 @@ impl Terminal {
 
         // Read thread (PTY -> App)
         thread::spawn(move || {
+            // help prevent fragmentation
+            #[cfg(windows)]
+            let mut buf = [0u8; 4096];
+            #[cfg(not(windows))]
             let mut buf = [0u8; 1024];
-            while let Ok(n) = reader.read(&mut buf) {
-                if n == 0 {
-                    break;
+
+            loop {
+                match reader.read(&mut buf) {
+                  Ok(0) => break,
+                  Ok(n) => {
+                      let _ = tx_out.send(buf[..n].to_vec());
+                      #[cfg(windows)]
+                      std::thread::sleep(std::time::Duration::from_millis(10));
+                  }
+                  Err(_) => break,
                 }
-                let _ = tx_out.send(buf[..n].to_vec());
             }
         });
 
