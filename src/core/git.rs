@@ -1,4 +1,5 @@
 use std::process::Command;
+use std::path::Path;
 
 #[derive(Debug, Clone)]
 pub struct GitDiffLine {
@@ -59,7 +60,7 @@ impl GitManager {
                 let status = line[..2].trim().to_string();
                 let path = line[3..].trim().trim_matches('"').to_string();
 
-                let diff = self.get_diff_for_file(&path);
+                let diff = self.get_diff_for_file(Path::new(&path));
                 changes.push(GitFileChange {
                     path,
                     status,
@@ -72,7 +73,7 @@ impl GitManager {
         changes
     }
 
-    fn get_diff_for_file(&self, path: &str) -> Vec<GitDiffLine> {
+    fn get_diff_for_file(&self, path: &Path) -> Vec<GitDiffLine> {
         let root = match &self.root {
             Some(r) => r,
             None => return vec![],
@@ -121,7 +122,7 @@ impl GitManager {
                 line_type: DiffLineType::Header,
             });
             diff_lines.push(GitDiffLine {
-                content: format!("+++ b/{}", path),
+                content: format!("+++ b/{}", path.display()),
                 line_type: DiffLineType::Header,
             });
             for line in content.lines() {
