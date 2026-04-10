@@ -16,7 +16,7 @@ pub fn draw_editor(f: &mut Frame, app: &App, area: Rect) {
                 .borders(Borders::ALL)
                 .border_style(Style::default().fg(Color::Rgb(50, 50, 50)));
             f.render_widget(block.clone(), area);
-            
+
             let msg = vec![
                 Line::from(Span::styled("No files open", Style::default().fg(Color::Gray).add_modifier(Modifier::BOLD))),
                 Line::from(""),
@@ -33,11 +33,11 @@ pub fn draw_editor(f: &mut Frame, app: &App, area: Rect) {
                     Span::styled("Ctrl + W", Style::default().fg(Color::Cyan)),
                 ]),
             ];
-            
+
             let p = Paragraph::new(msg)
                 .alignment(ratatui::layout::Alignment::Center)
                 .block(block);
-                
+
             let centered_area = centered_rect(60, 20, area);
             f.render_widget(p, centered_area);
             return;
@@ -59,17 +59,17 @@ pub fn draw_editor(f: &mut Frame, app: &App, area: Rect) {
 
     let height = area.height as usize;
     let margin = (height / 3).max(1);
-    
+
     // Retrieve and update scroll_y using Cell to keep it across frames
     let current_scroll = editor.scroll_y.get();
     let mut scroll_y = current_scroll;
-    
+
     if editor.cursor_y < height {
         scroll_y = 0;
     } else {
         let desired_min_scroll = editor.cursor_y.saturating_sub(height).saturating_add(margin).saturating_add(1);
         let desired_max_scroll = editor.cursor_y.saturating_sub(margin);
-        
+
         if scroll_y < desired_min_scroll {
             scroll_y = desired_min_scroll;
         } else if scroll_y > desired_max_scroll {

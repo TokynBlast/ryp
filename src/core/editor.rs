@@ -1,6 +1,7 @@
 use std::cell::Cell;
 use std::fs;
 use std::path::PathBuf;
+use std::path::Path;
 
 pub struct Editor {
     pub lines: Vec<String>,
@@ -31,13 +32,13 @@ impl Editor {
         }
     }
 
-    pub fn load_file(&mut self, path: &str) -> bool {
+    pub fn load_file(&mut self, path: &Path) -> bool {
         if let Ok(content) = fs::read_to_string(path) {
             self.lines = content.lines().map(|s| s.to_string()).collect();
             if self.lines.is_empty() {
                 self.lines.push(String::new());
             }
-            self.filepath = Some(PathBuf::from(path));
+            self.filepath = Some(path.to_path_buf());
             self.dirty = false;
             self.is_diff = false;
             true
@@ -46,12 +47,12 @@ impl Editor {
         }
     }
 
-    pub fn load_diff(&mut self, path: &str, content: Vec<String>) {
+    pub fn load_diff(&mut self, path: &Path, content: Vec<String>) {
         self.lines = content;
         if self.lines.is_empty() {
             self.lines.push(String::new());
         }
-        self.filepath = Some(PathBuf::from(path));
+        self.filepath = Some(path.to_path_buf());
         self.dirty = false;
         self.is_diff = true;
     }
@@ -140,12 +141,12 @@ impl Editor {
             } else {
                 let bs = Self::char_to_byte_idx(&self.lines[sy], sx);
                 let mut new_start = self.lines[sy][..bs].to_string();
-                
+
                 let be = Self::char_to_byte_idx(&self.lines[ey], ex);
                 let new_end = self.lines[ey][be..].to_string();
-                
+
                 new_start.push_str(&new_end);
-                
+
                 self.lines.drain(sy..=ey);
                 self.lines.insert(sy, new_start);
             }

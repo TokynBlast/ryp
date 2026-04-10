@@ -72,6 +72,7 @@ pub fn map_key(key: KeyEvent, in_modal: bool, is_sidebar_focused: bool) -> Optio
                     'n' | 'N' => Some(Action::OpenNewFileModal),
                     's' | 'S' => Some(Action::Save),
                     't' | 'T' => Some(Action::ToggleTerminal),
+                    'g' | 'G' => Some(Action::RefreshGit),
                     _ => None,
                 }
             } else {

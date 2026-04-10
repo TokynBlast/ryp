@@ -7,11 +7,13 @@ use std::collections::HashSet;
 use std::time::Duration;
 use syntect::highlighting::ThemeSet;
 use syntect::parsing::SyntaxSet;
+use std::path::Path;
+use std::path::PathBuf;
 
 mod ui;
 
 pub struct SearchResult {
-    pub filepath: String,
+    pub filepath: PathBuf,
     pub line_number: usize,
     pub content: String,
 }
@@ -62,21 +64,21 @@ impl App {
             git_changes: vec![],
             git_scroll: 0,
             git_selected: 0,
-            terminal: crate::core::terminal::Terminal::new(std::path::PathBuf::from(".")),
+            terminal: crate::core::terminal::Terminal::new(PathBuf::from(".")),
             terminal_visible: false,
         }
     }
 
-    pub fn load_workspace(&mut self, path: &str) {
-        self.workspace = Some(crate::core::tree::FileTree::new(std::path::PathBuf::from(
-            path,
-        )));
-        self.git_manager.set_root(path.to_string());
-        self.refresh_git();
-        let _ = self
-            .terminal
-            .tx
-            .send(format!("cd {}\n", path).as_bytes().to_vec());
+    pub fn load_workspace(&mut self, path: &Path) {
+      self.workspace = Some(crate::core::tree::FileTree::new(
+        path.to_path_buf()
+      ));
+      self.git_manager.set_root(path.display().to_string());
+      self.refresh_git();
+      let _ = self
+          .terminal
+          .tx
+          .send(format!("cd {}\n", path.display()).as_bytes().to_vec());
     }
 
     pub fn open_diff(&mut self, change_idx: usize) {
@@ -86,17 +88,17 @@ impl App {
             for dl in change.diff {
                 lines.push(dl.content);
             }
-            editor.load_diff(&change.path, lines);
+            editor.load_diff(Path::new(&change.path), lines);
             self.editors.push(editor);
             self.active_tab = self.editors.len() - 1;
         }
     }
 
-    pub fn open_file(&mut self, path: &str, force_new_tab: bool) {
+    pub fn open_file(&mut self, path: &Path, force_new_tab: bool) {
         // Check if file is already open
         let already_open = self.editors.iter().position(|e| {
             if let Some(p) = &e.filepath {
-                p.to_str() == Some(path)
+                p == path
             } else {
                 false
             }
@@ -107,6 +109,7 @@ impl App {
         } else {
             let mut editor = Editor::new();
             if editor.load_file(path) {
+                self.load_workspace(path.parent().expect("ADD SOMETHING HERE"));
                 let current_is_dirty = self.current_editor().map_or(false, |e| e.dirty);
                 if force_new_tab
                     || (self.editors.is_empty())
@@ -275,7 +278,7 @@ impl App {
                             let root = if let Some(ws) = &self.workspace {
                                 &ws.nodes[ws.root].path
                             } else {
-                                &std::path::PathBuf::from(".")
+                                &PathBuf::from(".")
                             };
                             let full_path = root.join(&path_str);
 
@@ -286,7 +289,7 @@ impl App {
 
                             if let Ok(_) = std::fs::write(&full_path, "") {
                                 self.modal = None;
-                                self.open_file(&full_path.to_string_lossy(), true);
+                                self.open_file(&full_path, true);
                             }
                         }
                     } else if modal.modal_type == ModalType::ConfirmExit {
@@ -387,7 +390,7 @@ impl App {
         let is_tree_focused = self.workspace.as_ref().map_or(false, |w| w.focused);
         if is_tree_focused {
             let mut close_focused = false;
-            let mut file_to_open = None;
+            let mut file_to_open: Option<PathBuf> = None;
             let mut open_in_new_tab = false;
 
             {
@@ -452,8 +455,7 @@ impl App {
                                             ws.toggle(node_idx);
                                         }
                                     } else {
-                                        file_to_open =
-                                            ws.nodes[node_idx].path.to_str().map(|s| s.to_string());
+                                      file_to_open = Some(ws.nodes[node_idx].path.clone());
                                         let current_is_dirty =
                                             self.current_editor().map_or(false, |e| e.dirty);
                                         open_in_new_tab = force_new || current_is_dirty;
@@ -767,7 +769,7 @@ impl App {
                     for (i, line) in content.lines().enumerate() {
                         if line.to_lowercase().contains(&query) {
                             results.push(SearchResult {
-                                filepath: entry.path().to_string_lossy().to_string(),
+                                filepath: entry.path().to_path_buf(),
                                 line_number: i + 1,
                                 content: line.trim().to_string(),
                             });
