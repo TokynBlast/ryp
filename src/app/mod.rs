@@ -6,9 +6,12 @@ use crossterm::event::{self, Event};
 use std::collections::HashSet;
 use std::time::Duration;
 use syntect::highlighting::ThemeSet;
+use syntect::highlighting::Style;
 use syntect::parsing::SyntaxSet;
 use std::path::Path;
 use std::path::PathBuf;
+use std::sync::{Arc, Mutex};
+use std::thread;
 
 mod ui;
 
@@ -41,6 +44,8 @@ pub struct App {
     pub terminal: crate::core::terminal::Terminal,
     pub terminal_visible: bool,
     pub dirty: bool,
+    pub whitespace_cache: Arc<Mutex<Vec<usize>>>,
+    pub highlight_cache: Arc<Mutex<Vec<Vec<(Style, String)>>>>,
 }
 
 impl App {
@@ -68,6 +73,8 @@ impl App {
             terminal: crate::core::terminal::Terminal::new(PathBuf::from(".")),
             terminal_visible: false,
             dirty: true,
+            whitespace_cache: Arc::new(Mutex::new(Vec::new())),
+            highlight_cache: Arc::new(Mutex::new(Vec::new())),
         }
     }
 
@@ -169,8 +176,25 @@ impl App {
           };
 
           if self.dirty {
-            terminal.draw(|f| ui::draw(f, self))?;
-            self.dirty = false;
+              let cache = Arc::clone(&self.whitespace_cache);
+              let lines: Vec<String> = self.current_editor()
+                  .map(|e| e.lines.clone())
+                  .unwrap_or_default();
+
+              thread::spawn(move || {
+                  let result: Vec<usize> = lines.iter()
+                      .enumerate()
+                      .filter(|(_, line)| line.chars().any(|c| c == ' ' || c == '\t'))
+                      .map(|(i, _)| i)
+                      .collect();
+
+                  if let Ok(mut cache) = cache.lock() {
+                      *cache = result;
+                  }
+              });
+
+              terminal.draw(|f| ui::draw(f, self))?;
+              self.dirty = false;
           }
 
           if crossterm::event::poll(timeout)? {
@@ -669,35 +693,29 @@ impl App {
     }
 
     fn find_next_match(&mut self) {
-        let search_term = if let Some(modal) = &self.modal {
-            modal.input.clone()
-        } else {
-            return;
+        // Extract and clone the search term to drop the immutable borrow of self
+        let search_term = match &self.modal {
+            Some(modal) if !modal.input.is_empty() => modal.input.clone(),
+            _ => return,
         };
 
-        if search_term.is_empty() {
-            return;
-        }
-
         if let Some(editor) = self.current_editor_mut() {
-            let mut y = editor.cursor_y;
-            let mut x = editor.cursor_x + 1; // start from next char
             let total_lines = editor.lines.len();
+            let start_y = editor.cursor_y;
+            let start_x = editor.cursor_x + 1;
 
-            for _ in 0..total_lines {
-                if y >= total_lines {
-                    y = 0;
-                }
+            for i in 0..total_lines {
+                let y = (start_y + i) % total_lines;
                 let line = &editor.lines[y];
-                if x < line.len() {
-                    if let Some(match_x) = line[x..].find(&search_term) {
+                let x_offset = if i == 0 { start_x } else { 0 };
+
+                if x_offset < line.len() {
+                    if let Some(match_x) = line[x_offset..].find(&search_term) {
                         editor.cursor_y = y;
-                        editor.cursor_x = x + match_x;
+                        editor.cursor_x = x_offset + match_x;
                         return;
                     }
                 }
-                y += 1;
-                x = 0;
             }
         }
     }
