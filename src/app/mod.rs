@@ -70,6 +70,8 @@ impl App {
     }
 
     pub fn load_workspace(&mut self, path: &Path) {
+      let path = &path.canonicalize().unwrap_or(path.to_path_buf());
+
       self.workspace = Some(crate::core::tree::FileTree::new(
         path.to_path_buf()
       ));
@@ -114,7 +116,6 @@ impl App {
         } else {
             let mut editor = Editor::new();
             if editor.load_file(path) {
-                self.load_workspace(path.parent().expect("ADD SOMETHING HERE"));
                 let current_is_dirty = self.current_editor().map_or(false, |e| e.dirty);
                 if force_new_tab
                     || (self.editors.is_empty())
