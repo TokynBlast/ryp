@@ -167,10 +167,7 @@ impl App {
           } else if cfg!(windows) {
             Duration::from_millis(200)
           } else {
-              #[cfg(not(windows))]
-              Duration::from_millis(100) // idle, check 10x/sec is plenty
-              #[cfg(windows)]
-              Duration::from_millis(200)
+            Duration::from_millis(100)
           };
 
           if self.dirty {
