@@ -104,6 +104,11 @@ impl App {
             }
         });
 
+        if self.workspace.is_none() {
+          let workspace = path.parent().unwrap_or(Path::new("."));
+          self.load_workspace(workspace);
+        }
+
         if let Some(idx) = already_open {
             self.active_tab = idx;
         } else {
