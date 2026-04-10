@@ -73,7 +73,7 @@ impl App {
       self.workspace = Some(crate::core::tree::FileTree::new(
         path.to_path_buf()
       ));
-      self.git_manager.set_root(path.display().to_string());
+      self.git_manager.set_root(path);
       self.refresh_git();
       let _ = self
           .terminal
