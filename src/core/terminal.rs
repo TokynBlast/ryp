@@ -23,6 +23,10 @@ impl Terminal {
             })
             .expect("Failed to open PTY");
 
+        #[cfg(windows)]
+        let shell = std::env::var("COMSPEC").unwrap_or_else(|_| "cmd.exe".to_string());
+
+        #[cfg(not(windows))]
         let shell = std::env::var("SHELL").unwrap_or_else(|_| "sh".to_string());
         let mut cmd = CommandBuilder::new(shell);
         cmd.cwd(cwd);
@@ -42,12 +46,22 @@ impl Terminal {
 
         // Read thread (PTY -> App)
         thread::spawn(move || {
+            // help prevent fragmentation
+            #[cfg(windows)]
+            let mut buf = [0u8; 4096];
+            #[cfg(not(windows))]
             let mut buf = [0u8; 1024];
-            while let Ok(n) = reader.read(&mut buf) {
-                if n == 0 {
-                    break;
+
+            loop {
+                match reader.read(&mut buf) {
+                  Ok(0) => break,
+                  Ok(n) => {
+                      let _ = tx_out.send(buf[..n].to_vec());
+                      #[cfg(windows)]
+                      std::thread::sleep(std::time::Duration::from_millis(10));
+                  }
+                  Err(_) => break,
                 }
-                let _ = tx_out.send(buf[..n].to_vec());
             }
         });
 
@@ -67,7 +81,7 @@ impl Terminal {
         }
     }
 
-    pub fn update(&mut self) {
+    pub fn update(&mut self) -> bool {
         let mut any_new_data = false;
         while let Ok(data) = self.rx.try_recv() {
             any_new_data = true;
@@ -85,16 +99,12 @@ impl Terminal {
             let s_clean = String::from_utf8_lossy(&stripped);
 
             for c in s_clean.chars() {
-                if c == '\n' {
-                    self.output_lines.push(self.current_line.clone());
-                    self.current_line.clear();
-                } else if c == '\r' {
-                    // ignore
-                } else if c == '\x08' || c == '\x7f' || c == '\u{7f}' {
-                    // Backspace - Remove char from current line
-                    self.current_line.pop();
-                } else {
-                    self.current_line.push(c);
+                match c {
+                    '\n' => { self.output_lines.push(self.current_line.clone()); self.current_line.clear(); }
+                    '\r' => { self.current_line.clear(); }
+                    '\x08' | '\x7f' => { self.current_line.pop(); }
+                    '\x1b' | '\x00' => {} // ignore leftover escape chars
+                    c => { self.current_line.push(c); }
                 }
             }
         }
@@ -102,6 +112,8 @@ impl Terminal {
         if any_new_data && self.output_lines.len() > 1000 {
             self.output_lines.drain(0..self.output_lines.len() - 1000);
         }
+
+        return any_new_data;
     }
 
     pub fn handle_key(&mut self, key: KeyEvent) {

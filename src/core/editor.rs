@@ -1,6 +1,7 @@
 use std::cell::Cell;
 use std::fs;
 use std::path::PathBuf;
+use std::path::Path;
 
 pub struct Editor {
     pub lines: Vec<String>,
@@ -13,6 +14,7 @@ pub struct Editor {
     pub filepath: Option<PathBuf>,
     pub dirty: bool,
     pub is_diff: bool,
+    pub highlight_cache: Vec<Vec<(syntect::highlighting::Style, String)>>,
 }
 
 impl Editor {
@@ -28,16 +30,36 @@ impl Editor {
             filepath: None,
             dirty: false,
             is_diff: false,
+            highlight_cache: vec![],
         }
     }
 
-    pub fn load_file(&mut self, path: &str) -> bool {
+    pub fn rebuild_highlight_cache(&mut self, syntax_set: &syntect::parsing::SyntaxSet, theme: &syntect::highlighting::Theme) {
+      let ext = self.filepath.as_ref()
+          .and_then(|p| p.extension())
+          .and_then(|e| e.to_str())
+          .unwrap_or("txt");
+      let syntax = syntax_set.find_syntax_by_extension(ext)
+          .unwrap_or_else(|| syntax_set.find_syntax_plain_text());
+      let mut h = syntect::easy::HighlightLines::new(syntax, theme);
+
+      self.highlight_cache = self.lines.iter().map(|line| {
+          let line_with_nl = format!("{}\n", line);
+          h.highlight_line(&line_with_nl, syntax_set)
+              .unwrap_or_default()
+              .into_iter()
+              .map(|(s, t)| (s, t.trim_end_matches('\n').to_string()))
+              .collect()
+      }).collect();
+    }
+
+    pub fn load_file(&mut self, path: &Path) -> bool {
         if let Ok(content) = fs::read_to_string(path) {
             self.lines = content.lines().map(|s| s.to_string()).collect();
             if self.lines.is_empty() {
                 self.lines.push(String::new());
             }
-            self.filepath = Some(PathBuf::from(path));
+            self.filepath = Some(path.to_path_buf());
             self.dirty = false;
             self.is_diff = false;
             true
@@ -46,12 +68,12 @@ impl Editor {
         }
     }
 
-    pub fn load_diff(&mut self, path: &str, content: Vec<String>) {
+    pub fn load_diff(&mut self, path: &Path, content: Vec<String>) {
         self.lines = content;
         if self.lines.is_empty() {
             self.lines.push(String::new());
         }
-        self.filepath = Some(PathBuf::from(path));
+        self.filepath = Some(path.to_path_buf());
         self.dirty = false;
         self.is_diff = true;
     }
@@ -140,12 +162,12 @@ impl Editor {
             } else {
                 let bs = Self::char_to_byte_idx(&self.lines[sy], sx);
                 let mut new_start = self.lines[sy][..bs].to_string();
-                
+
                 let be = Self::char_to_byte_idx(&self.lines[ey], ex);
                 let new_end = self.lines[ey][be..].to_string();
-                
+
                 new_start.push_str(&new_end);
-                
+
                 self.lines.drain(sy..=ey);
                 self.lines.insert(sy, new_start);
             }

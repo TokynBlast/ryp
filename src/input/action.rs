@@ -39,7 +39,7 @@ pub enum Action {
     SwitchSidebarCategory(SidebarCategory),
     NextSidebarCategory,
     PrevSidebarCategory,
-    FocusFile(String, Option<usize>),
+    FocusFile(std::path::PathBuf, Option<usize>),
     SearchFiles(String),
     OpenNewFileModal,
     Save,

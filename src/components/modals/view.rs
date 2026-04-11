@@ -56,7 +56,7 @@ pub fn draw_modal(f: &mut Frame, app: &App, area: Rect) {
     match modal.modal_type {
         ModalType::Search => {
             let block = Block::default()
-                .title(" Search (F1) ")
+                .title(" Search (F2) ")
                 .borders(Borders::ALL)
                 .style(Style::default().bg(Color::Rgb(50, 50, 50)));
             let p = Paragraph::new(modal.input.clone())
@@ -71,7 +71,7 @@ pub fn draw_modal(f: &mut Frame, app: &App, area: Rect) {
         }
         ModalType::Replace => {
             let block = Block::default()
-                .title(" Replace (F2) ")
+                .title(" Replace (F3) ")
                 .borders(Borders::ALL)
                 .style(Style::default().bg(Color::Rgb(50, 50, 50)));
             let text = vec![

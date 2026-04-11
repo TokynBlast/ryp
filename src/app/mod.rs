@@ -6,12 +6,17 @@ use crossterm::event::{self, Event};
 use std::collections::HashSet;
 use std::time::Duration;
 use syntect::highlighting::ThemeSet;
+use syntect::highlighting::Style;
 use syntect::parsing::SyntaxSet;
+use std::path::Path;
+use std::path::PathBuf;
+use std::sync::{Arc, Mutex};
+use std::thread;
 
 mod ui;
 
 pub struct SearchResult {
-    pub filepath: String,
+    pub filepath: PathBuf,
     pub line_number: usize,
     pub content: String,
 }
@@ -38,6 +43,9 @@ pub struct App {
     pub git_selected: usize,
     pub terminal: crate::core::terminal::Terminal,
     pub terminal_visible: bool,
+    pub dirty: bool,
+    pub whitespace_cache: Arc<Mutex<Vec<usize>>>,
+    pub highlight_cache: Arc<Mutex<Vec<Vec<(Style, String)>>>>,
 }
 
 impl App {
@@ -62,21 +70,26 @@ impl App {
             git_changes: vec![],
             git_scroll: 0,
             git_selected: 0,
-            terminal: crate::core::terminal::Terminal::new(std::path::PathBuf::from(".")),
+            terminal: crate::core::terminal::Terminal::new(PathBuf::from(".")),
             terminal_visible: false,
+            dirty: true,
+            whitespace_cache: Arc::new(Mutex::new(Vec::new())),
+            highlight_cache: Arc::new(Mutex::new(Vec::new())),
         }
     }
 
-    pub fn load_workspace(&mut self, path: &str) {
-        self.workspace = Some(crate::core::tree::FileTree::new(std::path::PathBuf::from(
-            path,
-        )));
-        self.git_manager.set_root(path.to_string());
-        self.refresh_git();
-        let _ = self
-            .terminal
-            .tx
-            .send(format!("cd {}\n", path).as_bytes().to_vec());
+    pub fn load_workspace(&mut self, path: &Path) {
+      let path = &path.canonicalize().unwrap_or(path.to_path_buf());
+
+      self.workspace = Some(crate::core::tree::FileTree::new(
+        path.to_path_buf()
+      ));
+      self.git_manager.set_root(path);
+      self.refresh_git();
+      let _ = self
+          .terminal
+          .tx
+          .send(format!("cd {}\n", path.display()).as_bytes().to_vec());
     }
 
     pub fn open_diff(&mut self, change_idx: usize) {
@@ -86,27 +99,34 @@ impl App {
             for dl in change.diff {
                 lines.push(dl.content);
             }
-            editor.load_diff(&change.path, lines);
+            editor.load_diff(Path::new(&change.path), lines);
             self.editors.push(editor);
             self.active_tab = self.editors.len() - 1;
         }
     }
 
-    pub fn open_file(&mut self, path: &str, force_new_tab: bool) {
+    pub fn open_file(&mut self, path: &Path, force_new_tab: bool) {
         // Check if file is already open
         let already_open = self.editors.iter().position(|e| {
             if let Some(p) = &e.filepath {
-                p.to_str() == Some(path)
+                p == path
             } else {
                 false
             }
         });
+
+        if self.workspace.is_none() {
+          let workspace = path.parent().unwrap_or(Path::new("."));
+          self.load_workspace(workspace);
+        }
 
         if let Some(idx) = already_open {
             self.active_tab = idx;
         } else {
             let mut editor = Editor::new();
             if editor.load_file(path) {
+                let theme = &self.theme_set.themes["base16-ocean.dark"];
+                editor.rebuild_highlight_cache(&self.syntax_set, theme);
                 let current_is_dirty = self.current_editor().map_or(false, |e| e.dirty);
                 if force_new_tab
                     || (self.editors.is_empty())
@@ -145,10 +165,41 @@ impl App {
 
     pub fn run(&mut self, terminal: &mut ratatui::DefaultTerminal) -> std::io::Result<()> {
         while !self.should_quit {
-            self.terminal.update();
-            terminal.draw(|f| ui::draw(f, self))?;
+            let had_update = self.terminal.update();
+            if had_update {
+                self.dirty = true;
+            }
 
-            if crossterm::event::poll(Duration::from_millis(10))? {
+            if self.dirty {
+                // do the cache spawn first, completely separately
+                {
+                    let cache = Arc::clone(&self.whitespace_cache);
+                    let lines: Vec<String> = self.current_editor()
+                        .map(|e| e.lines.clone())
+                        .unwrap_or_default();
+                    thread::spawn(move || {
+                        let result: Vec<usize> = lines.iter()
+                            .enumerate()
+                            .filter(|(_, line)| line.chars().any(|c| c == ' ' || c == '\t'))
+                            .map(|(i, _)| i)
+                            .collect();
+                        if let Ok(mut cache) = cache.lock() {
+                            *cache = result;
+                        }
+                    });
+                } // borrow of self ends here
+
+                terminal.draw(|f| ui::draw(f, self))?;
+                self.dirty = false;
+            }
+
+            let timeout = if self.dirty {
+                Duration::from_millis(0)
+            } else {
+                Duration::from_millis(100)
+            };
+
+            if crossterm::event::poll(timeout)? {
                 if let Event::Key(key) = event::read()? {
                     self.handle_key(key);
                 }
@@ -183,6 +234,7 @@ impl App {
         if let Some(action) = keymap::map_key(key, in_modal, is_tree_focused) {
             self.dispatch(action);
         }
+        self.dirty = true;
     }
 
     pub fn dispatch(&mut self, action: crate::input::action::Action) {
@@ -275,7 +327,7 @@ impl App {
                             let root = if let Some(ws) = &self.workspace {
                                 &ws.nodes[ws.root].path
                             } else {
-                                &std::path::PathBuf::from(".")
+                                &PathBuf::from(".")
                             };
                             let full_path = root.join(&path_str);
 
@@ -286,7 +338,7 @@ impl App {
 
                             if let Ok(_) = std::fs::write(&full_path, "") {
                                 self.modal = None;
-                                self.open_file(&full_path.to_string_lossy(), true);
+                                self.open_file(&full_path, true);
                             }
                         }
                     } else if modal.modal_type == ModalType::ConfirmExit {
@@ -373,6 +425,7 @@ impl App {
             }
             Action::ToggleTerminal => {
                 self.terminal_visible = !self.terminal_visible;
+                self.dirty = true;
                 return;
             }
             Action::TerminalInput(key) => {
@@ -387,7 +440,7 @@ impl App {
         let is_tree_focused = self.workspace.as_ref().map_or(false, |w| w.focused);
         if is_tree_focused {
             let mut close_focused = false;
-            let mut file_to_open = None;
+            let mut file_to_open: Option<PathBuf> = None;
             let mut open_in_new_tab = false;
 
             {
@@ -452,8 +505,7 @@ impl App {
                                             ws.toggle(node_idx);
                                         }
                                     } else {
-                                        file_to_open =
-                                            ws.nodes[node_idx].path.to_str().map(|s| s.to_string());
+                                      file_to_open = Some(ws.nodes[node_idx].path.clone());
                                         let current_is_dirty =
                                             self.current_editor().map_or(false, |e| e.dirty);
                                         open_in_new_tab = force_new || current_is_dirty;
@@ -643,35 +695,29 @@ impl App {
     }
 
     fn find_next_match(&mut self) {
-        let search_term = if let Some(modal) = &self.modal {
-            modal.input.clone()
-        } else {
-            return;
+        // Extract and clone the search term to drop the immutable borrow of self
+        let search_term = match &self.modal {
+            Some(modal) if !modal.input.is_empty() => modal.input.clone(),
+            _ => return,
         };
 
-        if search_term.is_empty() {
-            return;
-        }
-
         if let Some(editor) = self.current_editor_mut() {
-            let mut y = editor.cursor_y;
-            let mut x = editor.cursor_x + 1; // start from next char
             let total_lines = editor.lines.len();
+            let start_y = editor.cursor_y;
+            let start_x = editor.cursor_x + 1;
 
-            for _ in 0..total_lines {
-                if y >= total_lines {
-                    y = 0;
-                }
+            for i in 0..total_lines {
+                let y = (start_y + i) % total_lines;
                 let line = &editor.lines[y];
-                if x < line.len() {
-                    if let Some(match_x) = line[x..].find(&search_term) {
+                let x_offset = if i == 0 { start_x } else { 0 };
+
+                if x_offset < line.len() {
+                    if let Some(match_x) = line[x_offset..].find(&search_term) {
                         editor.cursor_y = y;
-                        editor.cursor_x = x + match_x;
+                        editor.cursor_x = x_offset + match_x;
                         return;
                     }
                 }
-                y += 1;
-                x = 0;
             }
         }
     }
@@ -767,7 +813,7 @@ impl App {
                     for (i, line) in content.lines().enumerate() {
                         if line.to_lowercase().contains(&query) {
                             results.push(SearchResult {
-                                filepath: entry.path().to_string_lossy().to_string(),
+                                filepath: entry.path().to_path_buf(),
                                 line_number: i + 1,
                                 content: line.trim().to_string(),
                             });

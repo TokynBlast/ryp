@@ -16,7 +16,7 @@ pub fn draw_editor(f: &mut Frame, app: &App, area: Rect) {
                 .borders(Borders::ALL)
                 .border_style(Style::default().fg(Color::Rgb(50, 50, 50)));
             f.render_widget(block.clone(), area);
-            
+
             let msg = vec![
                 Line::from(Span::styled("No files open", Style::default().fg(Color::Gray).add_modifier(Modifier::BOLD))),
                 Line::from(""),
@@ -33,43 +33,32 @@ pub fn draw_editor(f: &mut Frame, app: &App, area: Rect) {
                     Span::styled("Ctrl + W", Style::default().fg(Color::Cyan)),
                 ]),
             ];
-            
+
             let p = Paragraph::new(msg)
                 .alignment(ratatui::layout::Alignment::Center)
                 .block(block);
-                
+
             let centered_area = centered_rect(60, 20, area);
             f.render_widget(p, centered_area);
             return;
         }
     };
 
-    let ext = editor
-        .filepath
-        .as_ref()
-        .and_then(|p| p.extension())
-        .and_then(|e| e.to_str())
-        .unwrap_or("txt");
-    let syntax = app
-        .syntax_set
-        .find_syntax_by_extension(ext)
-        .unwrap_or_else(|| app.syntax_set.find_syntax_plain_text());
-    let theme = &app.theme_set.themes["base16-ocean.dark"];
-    let mut h = syntect::easy::HighlightLines::new(syntax, theme);
+
 
     let height = area.height as usize;
     let margin = (height / 3).max(1);
-    
+
     // Retrieve and update scroll_y using Cell to keep it across frames
     let current_scroll = editor.scroll_y.get();
     let mut scroll_y = current_scroll;
-    
+
     if editor.cursor_y < height {
         scroll_y = 0;
     } else {
         let desired_min_scroll = editor.cursor_y.saturating_sub(height).saturating_add(margin).saturating_add(1);
         let desired_max_scroll = editor.cursor_y.saturating_sub(margin);
-        
+
         if scroll_y < desired_min_scroll {
             scroll_y = desired_min_scroll;
         } else if scroll_y > desired_max_scroll {
@@ -82,11 +71,6 @@ pub fn draw_editor(f: &mut Frame, app: &App, area: Rect) {
     editor.scroll_y.set(scroll_y);
 
     let mut lines = vec![];
-
-    for line in editor.lines.iter().take(scroll_y) {
-        let line_with_nl = format!("{}\n", line);
-        let _ = h.highlight_line(&line_with_nl, &app.syntax_set);
-    }
 
     let search_term = if let Some(modal) = &app.modal {
         if modal.modal_type == ModalType::Search || modal.modal_type == ModalType::Replace {
@@ -133,10 +117,10 @@ pub fn draw_editor(f: &mut Frame, app: &App, area: Rect) {
             }
         }
 
-        let line_with_nl = format!("{}\n", line);
-        if let Ok(ranges) = h.highlight_line(&line_with_nl, &app.syntax_set) {
+        if let Some(ranges) = editor.highlight_cache.get(scroll_y + i) {
             let mut char_idx = 0;
-            for &(style, text) in &ranges {
+            for (style, text) in ranges {
+                let style = *style;
                 let text = text.trim_end_matches('\n');
                 if text.is_empty() {
                     continue;
