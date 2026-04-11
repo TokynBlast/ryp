@@ -7,6 +7,7 @@ pub mod windows;
 
 use app::App;
 use std::error::Error;
+use std::path::{Path, PathBuf};
 
 fn main() -> Result<(), Box<dyn Error>> {
     let mut terminal = ratatui::init();
@@ -16,17 +17,17 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     // Check if an argument is passed
     let args: Vec<String> = std::env::args().collect();
-    if args.len() > 1 {
-      let path = std::path::Path::new(&args[1])
-          .canonicalize()
-          .unwrap_or(std::path::PathBuf::from(&args[1]));
+    let target = if args.len() > 1 {
+        Path::new(&args[1]).canonicalize().unwrap_or(PathBuf::from(&args[1]))
+    } else {
+        PathBuf::from(".")
+    };
 
-      if path.is_dir() {
-          app.load_workspace(&path);
-      } else {
-          app.open_file(&path, false);
-      }
-  }
+    if target.is_dir() {
+        app.load_workspace(&target);
+    } else {
+        app.open_file(&target, false);
+    }
 
     let res = app.run(&mut terminal);
 
