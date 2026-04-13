@@ -57,6 +57,19 @@ pub fn draw_editor(f: &mut Frame, app: &App, area: Rect) {
     let current_scroll = editor.scroll_y.get();
     let mut scroll_y = current_scroll;
 
+    let ext = editor
+        .filepath
+        .as_ref()
+        .and_then(|p| p.extension())
+        .and_then(|e| e.to_str())
+        .unwrap_or("txt");
+    let syntax = app
+        .syntax_set
+        .find_syntax_by_extension(ext)
+        .unwrap_or_else(|| app.syntax_set.find_syntax_plain_text());
+    let theme = &app.theme_set.themes["base16-ocean.dark"];
+    let mut h = syntect::easy::HighlightLines::new(syntax, theme);
+
     if editor.cursor_y < height {
         scroll_y = 0;
     } else {
@@ -75,6 +88,10 @@ pub fn draw_editor(f: &mut Frame, app: &App, area: Rect) {
     editor.scroll_y.set(scroll_y);
 
     let mut lines = vec![];
+    for line in editor.lines.iter().take(scroll_y) {
+        let line_with_nl = format!("{}\n", line);
+        let _ = h.highlight_line(&line_with_nl, &app.syntax_set);
+    }
 
     let search_term = if let Some(modal) = &app.modal {
         if modal.modal_type == ModalType::Search || modal.modal_type == ModalType::Replace {
@@ -121,10 +138,11 @@ pub fn draw_editor(f: &mut Frame, app: &App, area: Rect) {
             }
         }
 
-        if let Some(ranges) = editor.highlight_cache.get(scroll_y + i) {
+        let line_with_nl = format!("{}\n", line);
+        if let Ok(ranges) = h.highlight_line(&line_with_nl, &app.syntax_set) {
             let mut char_idx = 0;
             for (style, text) in ranges {
-                let style = *style;
+                let style = &style;
                 let text = text.trim_end_matches('\n');
                 if text.is_empty() {
                     continue;
