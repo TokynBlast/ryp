@@ -111,7 +111,7 @@ fn draw_terminal(f: &mut ratatui::Frame, app: &App, area: ratatui::layout::Rect)
     let mut content: Vec<ratatui::text::Line> = Vec::new();
 
     // scrollback first
-    for row in &app.terminal.grid.scrollback {
+    /*for row in &app.terminal.grid.scrollback {
         let s: String = row.iter().map(|c| c.c).collect();
         content.push(ratatui::text::Line::from(s.trim_end().to_string()));
     }
