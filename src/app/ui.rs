@@ -136,10 +136,6 @@ fn draw_terminal(f: &mut ratatui::Frame, app: &App, area: ratatui::layout::Rect)
     }
 }
 
-    // only show what fits
-    let height = area.height.saturating_sub(2) as usize;
-    //let skip = content.len().saturating_sub(height);
-    //let content: Vec<ratatui::text::Line> = content.into_iter().skip(skip).collect();
     f.render_widget(Clear, area);
     f.render_widget(Paragraph::new(content).block(block), area);
 }
