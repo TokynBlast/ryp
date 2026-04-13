@@ -87,6 +87,7 @@ fn draw_terminal(f: &mut ratatui::Frame, app: &App, area: ratatui::layout::Rect)
     let popup_layout = Layout::default()
         .direction(Direction::Vertical)
         .constraints([
+            // I'm not exactly sure how 3+2 works, but 2+2 and 3+3 don't work-
             Constraint::Length(vertical_margin.saturating_sub(3)),
             Constraint::Min(0),
             Constraint::Length(vertical_margin.saturating_sub(2)),
