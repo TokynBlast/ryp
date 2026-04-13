@@ -76,6 +76,8 @@ pub fn draw(f: &mut Frame, app: &App) {
     }
 }
 
+// TODO: When terminal too small, it overflows
+//       Could set minimum size, or add code to adjust size :)
 fn draw_terminal(f: &mut ratatui::Frame, app: &App, area: ratatui::layout::Rect) {
     use ratatui::layout::{Constraint, Direction, Layout};
     use ratatui::style::{Color, Style};
@@ -87,9 +89,9 @@ fn draw_terminal(f: &mut ratatui::Frame, app: &App, area: ratatui::layout::Rect)
     let popup_layout = Layout::default()
         .direction(Direction::Vertical)
         .constraints([
-            Constraint::Length(vertical_margin),
+            Constraint::Length(vertical_margin - 3),
             Constraint::Min(0),
-            Constraint::Length(vertical_margin),
+            Constraint::Length(vertical_margin - 2),
         ])
         .split(area);
 
@@ -107,20 +109,28 @@ fn draw_terminal(f: &mut ratatui::Frame, app: &App, area: ratatui::layout::Rect)
         .borders(Borders::ALL)
         .border_style(Style::default().fg(Color::Cyan));
 
-    let mut lines = app.terminal.output_lines.clone();
-    // We don't add current_line here because update() already pushes to output_lines on \n
-    // but the part of the line that hasn't finished yet is in current_line.
-    let mut current_line = app.terminal.current_line.clone();
-    current_line.push('_'); // Cursor simulation
-    lines.push(current_line);
+    // show scrollback + grid rows as lines
+    let mut content: Vec<ratatui::text::Line> = Vec::new();
 
-    let content: Vec<ratatui::text::Line> = lines
-        .iter()
-        .rev()
-        .take(area.height.saturating_sub(2) as usize)
-        .rev()
-        .map(|l| ratatui::text::Line::from(l.as_str()))
-        .collect();
+
+    // then the active grid
+    for (r, row) in app.terminal.grid.cells.iter().enumerate() {
+        let line: String = row.iter().map(|c| c.c).collect();
+
+        if r == app.terminal.grid.cursor_row {
+            // split at cursor position and insert cursor
+            let before = line.chars().take(app.terminal.grid.cursor_col).collect::<String>();
+            let after = line.chars().skip(app.terminal.grid.cursor_col + 1).collect::<String>();
+            let spans = vec![
+                ratatui::text::Span::raw(before),
+                ratatui::text::Span::styled("_", Style::default().bg(Color::White).fg(Color::Black)),
+                ratatui::text::Span::raw(after),
+            ];
+            content.push(ratatui::text::Line::from(spans));
+        } else {
+              content.push(ratatui::text::Line::from(line));
+        }
+    }
 
     f.render_widget(Clear, area);
     f.render_widget(Paragraph::new(content).block(block), area);

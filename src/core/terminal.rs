@@ -4,11 +4,34 @@ use std::io::{Read, Write};
 use std::sync::mpsc;
 use std::thread;
 
+#[derive(Clone)]
+pub struct TermCell {
+  pub c: char,
+  // style info later if you want colors
+}
+
+pub struct TerminalGrid {
+  pub cells: Vec<Vec<TermCell>>,  // [row][col]
+  pub cursor_row: usize,
+  pub cursor_col: usize,
+  pub rows: usize,
+  pub cols: usize,
+  pub scrollback: Vec<Vec<TermCell>>,
+}
+
+enum ParseState {
+  Normal,
+  Esc,        // got \x1b
+  Csi,        // got \x1b[, accumulating params
+  Osc,
+}
+
 pub struct Terminal {
-    pub output_lines: Vec<String>,
-    pub tx: mpsc::Sender<Vec<u8>>,
-    rx: mpsc::Receiver<Vec<u8>>,
-    pub current_line: String,
+  pub tx: mpsc::Sender<Vec<u8>>,
+  rx: mpsc::Receiver<Vec<u8>>,
+  pub grid: TerminalGrid,
+  parse_state: ParseState,
+  pub csi_params: String,
 }
 
 impl Terminal {
@@ -74,10 +97,18 @@ impl Terminal {
         });
 
         Self {
-            output_lines: Vec::new(),
             tx: tx_in,
             rx: rx_out,
-            current_line: String::new(),
+            grid: TerminalGrid {
+                cells: vec![vec![TermCell { c: ' ' }; 80]; 24],
+                cursor_row: 0,
+                cursor_col: 0,
+                rows: 24,
+                cols: 80,
+                scrollback: Vec::new(),
+            },
+            parse_state: ParseState::Normal,
+            csi_params: String::new(),
         }
     }
 
@@ -90,27 +121,99 @@ impl Terminal {
             let s = String::from_utf8_lossy(&data);
 
             // Clear screen: Esc[2J or similar
-            if s.contains("\x1b[2J") || s.contains("\x1b[H") || s.contains("\x1b[J") {
+            /*if s.contains("\x1b[2J") || s.contains("\x1b[H") || s.contains("\x1b[J") {
                 self.output_lines.clear();
                 self.current_line.clear();
+            }*/
+
+            for c in s.chars() {
+                match self.parse_state {
+                  ParseState::Normal => match c {
+                      '\x1b' => self.parse_state = ParseState::Esc,
+                      '\r' => self.grid.cursor_col = 0,
+                      '\n' => {
+                          self.grid.cursor_row += 1;
+                          if self.grid.cursor_row >= self.grid.rows {
+                              // push top row to scrollback, shift grid up
+                              let top = self.grid.cells.remove(0);
+                              self.grid.scrollback.push(top);
+                              self.grid.cells.push(vec![TermCell { c: ' ' }; self.grid.cols]);
+                              self.grid.cursor_row = self.grid.rows - 1;
+                          }
+                      }
+                      '\x08' => {
+                          if self.grid.cursor_col > 0 {
+                              self.grid.cursor_col -= 1;
+                          }
+                      }
+                      c => {
+                          self.grid.cells[self.grid.cursor_row][self.grid.cursor_col].c = c;
+                          self.grid.cursor_col += 1;
+                          if self.grid.cursor_col >= self.grid.cols {
+                              self.grid.cursor_col = 0;
+                              self.grid.cursor_row += 1;
+                          }
+                      }
+                  },
+                  ParseState::Osc => {
+                      if c == '\x07' {
+                          self.parse_state = ParseState::Normal;
+                      }
+                      // ignore everything else
+                  }
+                  ParseState::Esc => match c {
+                      '[' => { self.parse_state = ParseState::Csi; self.csi_params.clear(); }
+                      ']' => { self.parse_state = ParseState::Osc; self.csi_params.clear(); } // add this
+                      _ => self.parse_state = ParseState::Normal,
+                  },
+                  ParseState::Csi => {
+                    let n = self.csi_params.parse::<usize>().unwrap_or(1);
+
+                    // collect modifying digits
+                    if c.is_ascii_digit() || c == ';' {
+                        self.csi_params.push(c);
+                        continue;
+                    }
+
+                    match c {
+                      // up, clamp to greater than 0
+                      'A' => self.grid.cursor_row = self.grid.cursor_row.saturating_sub(n),
+                      // left, clamp to greater than 0
+                      'D' => self.grid.cursor_col = self.grid.cursor_col.saturating_sub(n),
+                      // down, clamp to greater than rows - 1
+                      'B' => self.grid.cursor_row = (self.grid.cursor_row + n).min(self.grid.rows - 1),
+                      // right, clamp to greater than cols - 1
+                      'C' => self.grid.cursor_col = (self.grid.cursor_col + n).min(self.grid.cols - 1),
+                      'J' => {
+                          for row in &mut self.grid.cells {
+                              for cell in row.iter_mut() {
+                                  cell.c = ' ';
+                              }
+                          }
+                          self.grid.cursor_row = 0;
+                          self.grid.cursor_col = 0;
+                      },
+                      'K' => {
+                          let row = &mut self.grid.cells[self.grid.cursor_row];
+                          for cell in row[self.grid.cursor_col..].iter_mut() {
+                              cell.c = ' ';
+                          }
+                      },
+                      'H' => {
+                          let mut parts = self.csi_params.split(';');
+                          let row = parts.next().and_then(|s| s.parse::<usize>().ok()).unwrap_or(1).saturating_sub(1);
+                          let col = parts.next().and_then(|s| s.parse::<usize>().ok()).unwrap_or(1).saturating_sub(1);
+                          self.grid.cursor_row = row.min(self.grid.rows - 1);
+                          self.grid.cursor_col = col.min(self.grid.cols - 1);
+                      }
+                      'h' | 'l' => { /* ignore mode set/reset */ }
+                      _ => {},
+                    }
+
+                    self.parse_state = ParseState::Normal;
+                  },
+              }
             }
-
-            let stripped = strip_ansi_escapes::strip(&data);
-            let s_clean = String::from_utf8_lossy(&stripped);
-
-            for c in s_clean.chars() {
-                match c {
-                    '\n' => { self.output_lines.push(self.current_line.clone()); self.current_line.clear(); }
-                    '\r' => { self.current_line.clear(); }
-                    '\x08' | '\x7f' => { self.current_line.pop(); }
-                    '\x1b' | '\x00' => {} // ignore leftover escape chars
-                    c => { self.current_line.push(c); }
-                }
-            }
-        }
-
-        if any_new_data && self.output_lines.len() > 1000 {
-            self.output_lines.drain(0..self.output_lines.len() - 1000);
         }
 
         return any_new_data;
