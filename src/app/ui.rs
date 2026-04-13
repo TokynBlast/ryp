@@ -76,6 +76,8 @@ pub fn draw(f: &mut Frame, app: &App) {
     }
 }
 
+// TODO: When terminal too small, it overflows
+//       Could set minimum size, or add code to adjust size :)
 fn draw_terminal(f: &mut ratatui::Frame, app: &App, area: ratatui::layout::Rect) {
     use ratatui::layout::{Constraint, Direction, Layout};
     use ratatui::style::{Color, Style};
