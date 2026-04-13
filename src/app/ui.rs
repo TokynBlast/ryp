@@ -76,8 +76,6 @@ pub fn draw(f: &mut Frame, app: &App) {
     }
 }
 
-// TODO: When terminal too small, it overflows
-//       Could set minimum size, or add code to adjust size :)
 fn draw_terminal(f: &mut ratatui::Frame, app: &App, area: ratatui::layout::Rect) {
     use ratatui::layout::{Constraint, Direction, Layout};
     use ratatui::style::{Color, Style};
@@ -89,9 +87,9 @@ fn draw_terminal(f: &mut ratatui::Frame, app: &App, area: ratatui::layout::Rect)
     let popup_layout = Layout::default()
         .direction(Direction::Vertical)
         .constraints([
-            Constraint::Length(vertical_margin - 3),
+            Constraint::Length(vertical_margin.saturating_sub(3)),
             Constraint::Min(0),
-            Constraint::Length(vertical_margin - 2),
+            Constraint::Length(vertical_margin.saturating_sub(2)),
         ])
         .split(area);
 
