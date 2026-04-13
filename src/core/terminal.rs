@@ -77,13 +77,13 @@ impl Terminal {
 
             loop {
                 match reader.read(&mut buf) {
-                  Ok(0) => break,
-                  Ok(n) => {
-                      let _ = tx_out.send(buf[..n].to_vec());
-                      #[cfg(windows)]
-                      std::thread::sleep(std::time::Duration::from_millis(10));
-                  }
-                  Err(_) => break,
+                    Ok(0) => break,
+                    Ok(n) => {
+                        let _ = tx_out.send(buf[..n].to_vec());
+                        #[cfg(windows)]
+                        std::thread::sleep(std::time::Duration::from_millis(20));
+                    }
+                    Err(_) => break,
                 }
             }
         });
