@@ -226,7 +226,7 @@ pub fn draw_modal(f: &mut Frame, app: &App, area: Rect) {
                 Line::from(" Ctrl+G          : Reload Git "),
                 Line::from(" Ctrl+A          : Previous Tab "),
                 Line::from(" Ctrl+D          : Next Tab "),
-                Line::from(" Crtl+T / F5     : Open / Close Builtin Terminal"),
+                Line::from(" Crtl+T / F5     : Open / Close Builtin Terminal "),
                 Line::from(""),
                 Line::from(vec![Span::styled(
                     " Press ESC to close ",
