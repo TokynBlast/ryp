@@ -91,7 +91,7 @@ fn draw_terminal(f: &mut ratatui::Frame, app: &App, area: ratatui::layout::Rect)
         .constraints([
             Constraint::Length(vertical_margin - 3),
             Constraint::Min(0),
-            Constraint::Length(vertical_margin),
+            Constraint::Length(vertical_margin - 2),
         ])
         .split(area);
 
