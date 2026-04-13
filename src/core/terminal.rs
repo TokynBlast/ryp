@@ -7,7 +7,7 @@ use std::thread;
 #[derive(Clone)]
 pub struct TermCell {
   pub c: char,
-  // style info later if you want colors
+  // TODO: style info
 }
 
 pub struct TerminalGrid {
