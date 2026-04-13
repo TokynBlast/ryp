@@ -80,7 +80,9 @@ impl Terminal {
                 match reader.read(&mut buf) {
                     Ok(0) => break,
                     Ok(n) => {
-                        let _ = tx_out.send(buf[..n].to_vec());
+                        if tx_out.send(buf[..n].to_vec()).is_err() {
+                            break; // receiver dropped
+                        }
                         #[cfg(windows)]
                         std::thread::sleep(std::time::Duration::from_millis(18));
                     }
