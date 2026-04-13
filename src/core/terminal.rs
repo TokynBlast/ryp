@@ -81,7 +81,7 @@ impl Terminal {
                     Ok(n) => {
                         let _ = tx_out.send(buf[..n].to_vec());
                         #[cfg(windows)]
-                        std::thread::sleep(std::time::Duration::from_millis(15));
+                        std::thread::sleep(std::time::Duration::from_millis(18));
                     }
                     Err(_) => break,
                 }
