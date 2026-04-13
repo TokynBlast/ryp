@@ -222,7 +222,7 @@ pub fn draw_modal(f: &mut Frame, app: &App, area: Rect) {
                 Line::from(" F2 / Ctrl+F     : Search "),
                 Line::from(" F3 / Ctrl+R     : Replace "),
                 Line::from(" ESC             : Escape Mode "),
-                Line::from(" Ctrl+W / Ctrl+C : Quit "),
+                Line::from(" Ctrl+W / Ctrl+C : Quit / Close Tab "),
                 Line::from(" Ctrl+G          : Reload Git "),
                 Line::from(" Ctrl+A          : Previous Tab "),
                 Line::from(" Ctrl+D          : Next Tab "),
