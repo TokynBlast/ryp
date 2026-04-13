@@ -118,20 +118,20 @@ fn draw_terminal(f: &mut ratatui::Frame, app: &App, area: ratatui::layout::Rect)
 
     // then the active grid
     for (r, row) in app.terminal.grid.cells.iter().enumerate() {
-    let line: String = row.iter().map(|c| c.c).collect();
+      let line: String = row.iter().map(|c| c.c).collect();
 
-    if r == app.terminal.grid.cursor_row {
-        // split at cursor position and insert cursor
-        let before = line.chars().take(app.terminal.grid.cursor_col).collect::<String>();
-        let after = line.chars().skip(app.terminal.grid.cursor_col + 1).collect::<String>();
-        let spans = vec![
-            ratatui::text::Span::raw(before),
-            ratatui::text::Span::styled("_", Style::default().bg(Color::White).fg(Color::Black)),
-            ratatui::text::Span::raw(after),
-        ];
-        content.push(ratatui::text::Line::from(spans));
-    } else {
-          content.push(ratatui::text::Line::from(line));
+      if r == app.terminal.grid.cursor_row {
+          // split at cursor position and insert cursor
+          let before = line.chars().take(app.terminal.grid.cursor_col).collect::<String>();
+          let after = line.chars().skip(app.terminal.grid.cursor_col + 1).collect::<String>();
+          let spans = vec![
+              ratatui::text::Span::raw(before),
+              ratatui::text::Span::styled("_", Style::default().bg(Color::White).fg(Color::Black)),
+              ratatui::text::Span::raw(after),
+          ];
+          content.push(ratatui::text::Line::from(spans));
+      } else {
+            content.push(ratatui::text::Line::from(line));
       }
     }
 
