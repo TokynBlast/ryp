@@ -51,6 +51,7 @@ impl Terminal {
 
         #[cfg(not(windows))]
         let shell = std::env::var("SHELL").unwrap_or_else(|_| "sh".to_string());
+
         let mut cmd = CommandBuilder::new(shell);
         cmd.cwd(cwd);
         let _child = pair
