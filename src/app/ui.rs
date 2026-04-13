@@ -115,7 +115,7 @@ fn draw_terminal(f: &mut ratatui::Frame, app: &App, area: ratatui::layout::Rect)
 
     // then the active grid
     for (r, row) in app.terminal.grid.cells.iter().enumerate() {
-      let line: String = row.iter().map(|c| c.c).collect();
+        let line: String = row.iter().map(|c| c.c).collect();
 
         if r == app.terminal.grid.cursor_row {
             // split at cursor position and insert cursor
