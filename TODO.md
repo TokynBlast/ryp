@@ -1,10 +1,9 @@
 # Tools
-- Add MarkDown preview viewer
-- Add settings tab
-- Add Ctrl+Arrow fast move
-- Add auto file reloading on changes
+- MarkDown preview viewer
+- Settings tab
+- Ctrl+Arrow fast move
+- Auto file reload on changes
 - Improve search algoritm
-- Add tool interface
 
 # Bugs
 - Too many lines in the builtin terminal causes a crash
@@ -16,7 +15,10 @@
 - Make themes lazy loaded
 - Implement Luna terminal
 - Implement larger terminal (full terminal?)
+- Better documentation
+- Better bindings (or make them more logical)
 
 # Internal
 - Use vt100 over PortablePTY
 - Add minimum cells size
+- Make searching use SeekStorm
