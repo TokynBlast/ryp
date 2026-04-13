@@ -126,7 +126,7 @@ fn draw_terminal(f: &mut ratatui::Frame, app: &App, area: ratatui::layout::Rect)
             ];
             content.push(ratatui::text::Line::from(spans));
         } else {
-              content.push(ratatui::text::Line::from(line));
+            content.push(ratatui::text::Line::from(line));
         }
     }
 
