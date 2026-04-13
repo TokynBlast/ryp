@@ -123,12 +123,6 @@ impl Terminal {
             // Handle some ANSI codes manually before stripping the rest
             let s = String::from_utf8_lossy(&data);
 
-            // Clear screen: Esc[2J or similar
-            /*if s.contains("\x1b[2J") || s.contains("\x1b[H") || s.contains("\x1b[J") {
-                self.output_lines.clear();
-                self.current_line.clear();
-            }*/
-
             for c in s.chars() {
                 match self.parse_state {
                   ParseState::Normal => match c {
