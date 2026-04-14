@@ -30,6 +30,9 @@ fn query_installed() -> io::Result<usize> {
 pub fn load_plugins() -> Result<()> {
     let lua = Lua::new();
 
+    // Safety; Printing shifts up the screen, which we *DON'T* want
+    globals.set("print", mlua::Value::Nil)?;
+
     // wrap query_installed as a lua function — no args, returns count
     let query_installed_fn = lua.create_function(|_, ()| {
         query_installed().map_err(mlua::Error::external)
