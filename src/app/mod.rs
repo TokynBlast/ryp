@@ -473,24 +473,19 @@ impl App {
                     }
                     Action::MoveUp(_) => match self.sidebar_category {
                         SidebarCategory::FileTree => {
-                            if ws.selected > 0 {
-                                ws.selected -= 1;
-                            }
+                            ws = ws.saturating_sub(1);
                         }
                         SidebarCategory::Search => {
-                            if self.search_selected > 0 {
-                                self.search_selected -= 1;
-                            }
+                            self.search_selected =
+                                self.search_selected.saturating_sub(1);
                         }
                         SidebarCategory::Git => {
-                            if self.git_selected > 0 {
-                                self.git_selected -= 1;
-                            }
+                            self.git_selected =
+                                self.git_selected.saturating_sub(1);
                         }
                         SidebarCategory::Settings => {
-                            if self.settings_selected > 0 {
-                              self.settings_selected -= 1;
-                            }
+                            self.settings_selected =
+                                self.settings_selected.saturating_sub(1);
                         },
                     },
                     Action::MoveDown(_) => match self.sidebar_category {
