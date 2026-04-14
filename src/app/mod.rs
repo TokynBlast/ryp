@@ -43,6 +43,8 @@ pub struct App {
     pub git_changes: Vec<crate::core::git::GitFileChange>,
     pub git_scroll: usize,
     pub git_selected: usize,
+    pub settings_selected: usize,
+    pub settings_scroll: usize,
     pub terminal: crate::core::terminal::Terminal,
     pub terminal_visible: bool,
     pub dirty: bool,
@@ -75,6 +77,7 @@ impl App {
             git_scroll: 0,                                                      // Y index on git tab scroll
             git_selected: 0,                                                    // Git diff file selected
             settings_selected: 0,                                               // Setting selected
+            settings_scroll: 0,                                                 // Scroll on settings
             terminal: crate::core::terminal::Terminal::new(PathBuf::from(".")), // The terminal; Defaults to current path
             terminal_visible: false,                                            // Sets whether the terminal is currently visible or not
             dirty: true,                                                        // Whether there have been changes or not to the file(s)
@@ -505,7 +508,11 @@ impl App {
                                 self.git_selected += 1;
                             }
                         }
-                        SidebarCategory::Settings => todo!(),
+                        SidebarCategory::Settings => {
+                          if self.settings_selected < self.settings_selected.saturating_sub(1) {
+                              self.settings_selected += 1;
+                          }
+                        },
                     },
                     Action::SwitchSidebarCategory(SidebarCategory::Settings) => todo!(),
                     Action::InsertNewline | Action::ModalConfirmForceNewTab => {
