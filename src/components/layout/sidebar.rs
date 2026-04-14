@@ -216,7 +216,6 @@ fn draw_search_view(f: &mut Frame, app: &App, area: Rect) {
 }
 
 fn draw_git_view(f: &mut Frame, app: &App, area: Rect) {
-
     let is_focused = app.workspace.as_ref().map_or(false, |w| w.focused);
     let active_style = if is_focused {
         Style::default()
