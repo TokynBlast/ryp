@@ -3,6 +3,7 @@ pub enum SidebarCategory {
     FileTree,
     Search,
     Git,
+    Settings,
 }
 
 #[derive(Debug, Clone, PartialEq)]

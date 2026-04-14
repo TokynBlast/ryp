@@ -36,6 +36,7 @@ fn draw_activity_bar(f: &mut Frame, app: &App, area: Rect) {
         (SidebarCategory::FileTree, " 󰉓 "), // File icon
         (SidebarCategory::Search, " 󰍉 "),  // Search icon
         (SidebarCategory::Git, " 󰊢 "),     // Git icon
+        (SidebarCategory::Settings, " ⚙ "),     // Git icon
     ];
 
     let mut lines = vec![];
@@ -61,6 +62,7 @@ fn draw_sidebar_content(f: &mut Frame, app: &App, area: Rect) {
         SidebarCategory::FileTree => draw_file_tree(f, app, area),
         SidebarCategory::Search => draw_search_view(f, app, area),
         SidebarCategory::Git => draw_git_view(f, app, area),
+        SidebarCategory::Settings => todo!(), // TODO: Make this
     }
 }
 
