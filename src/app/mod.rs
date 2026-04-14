@@ -12,6 +12,7 @@ use std::path::Path;
 use std::path::PathBuf;
 use std::sync::{Arc, Mutex};
 use std::thread;
+use aho_corasick::AhoCorasick;
 
 mod ui;
 
@@ -811,17 +812,18 @@ impl App {
         };
 
         let mut results = vec![];
-        let query = self.search_query.to_lowercase();
         let mut files_found = HashSet::new();
 
         use ignore::WalkBuilder;
         let builder = WalkBuilder::new(ws_path);
+        let ac = AhoCorasick::new([&self.search_query]).unwrap();
+
         for entry in builder.build().filter_map(|e| e.ok()) {
             if entry.path().is_file() {
                 if let Ok(content) = std::fs::read_to_string(entry.path()) {
                     let mut file_had_match = false;
                     for (i, line) in content.lines().enumerate() {
-                        if line.to_lowercase().contains(&query) {
+                        if ac.is_match(line) {
                             results.push(SearchResult {
                                 filepath: entry.path().to_path_buf(),
                                 line_number: i + 1,
