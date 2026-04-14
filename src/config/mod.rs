@@ -4,6 +4,7 @@ use serde::{Deserialize, Serialize};
 pub struct Config {
     pub tab_size: usize,
     pub theme: ThemeConfig,
+    pub auto_save: bool,
 }
 
 #[derive(Serialize, Deserialize, Clone)]
@@ -22,6 +23,7 @@ impl Default for Config {
                 active_tab_bg: "#2E7D32".to_string(),          // Green
                 highlight_theme: "base16-ocean.dark".to_string(),// Easy to read
             },
+            auto_save: true,
         }
     }
 }
