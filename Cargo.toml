@@ -18,3 +18,4 @@ strip-ansi-escapes = "0.2.1"
 vt100="0.16.2"
 aho-corasick="1.1.4"
 console="0.16.3"
+mlua = { version = "0.9", features = ["lua54", "serialize"] }
