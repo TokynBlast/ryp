@@ -113,6 +113,11 @@ impl App {
         }
     }
 
+    pub fn change_settings(&mut self) {
+        // TODO: Make it so that we can edit the text inside the thing, then turn back to their original type
+        todo!()
+    }
+
     pub fn open_file(&mut self, path: &Path, force_new_tab: bool) {
         // Check if file is already open
         let already_open = self.editors.iter().position(|e| {
@@ -435,6 +440,10 @@ impl App {
                 self.open_diff(idx);
                 return;
             }
+            Action::ChangeSettings => {
+                self.change_settings();
+                return;
+            }
             Action::OpenNewFileModal => {
                 self.modal = Some(Modal::new(ModalType::NewFile));
                 return;
@@ -549,7 +558,11 @@ impl App {
                                     return;
                                 }
                             }
-                            SidebarCategory::Settings => todo!(),
+                            SidebarCategory::Settings => {
+                                if self.settings_selected < self.config.num_of_item { // TODO: This is unsafe, we're doing magic numbers...
+                                    self.dispatch(Action::ChangeSettings);
+                                }
+                            },
                         }
                     }
                     Action::SwitchFocus => {

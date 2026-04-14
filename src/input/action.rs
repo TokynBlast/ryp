@@ -48,4 +48,5 @@ pub enum Action {
     OpenDiff(usize),
     ToggleTerminal,
     TerminalInput(crossterm::event::KeyEvent),
+    ChangeSettings,
 }
