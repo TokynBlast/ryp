@@ -51,30 +51,32 @@ pub struct App {
 impl App {
     pub fn new() -> Self {
         Self {
-            editors: vec![],
-            active_tab: 0,
-            config: Config::default(),
-            modal: None,
-            should_quit: false,
-            syntax_set: SyntaxSet::load_defaults_newlines(),
-            theme_set: ThemeSet::load_defaults(),
-            workspace: None,
-            sidebar_category: SidebarCategory::FileTree,
-            search_query: String::new(),
-            search_results: vec![],
-            search_selected: 0,
-            search_scroll: 0,
-            search_num_files: 0,
-            search_num_occurrences: 0,
-            git_manager: crate::core::git::GitManager::new(),
-            git_changes: vec![],
-            git_scroll: 0,
-            git_selected: 0,
-            terminal: crate::core::terminal::Terminal::new(PathBuf::from(".")),
-            terminal_visible: false,
-            dirty: true,
-            whitespace_cache: Arc::new(Mutex::new(Vec::new())),
-            highlight_cache: Arc::new(Mutex::new(Vec::new())),
+            editors: vec![],                                                    // All editors open
+            active_tab: 0,                                                      // Current active tab
+            config: Config::default(),                                          // Current configuration
+            modal: None,                                                        // ???
+            should_quit: false,                                                 // Whether Ryp should quit or not
+            syntax_set: SyntaxSet::load_defaults_newlines(),                    // ???
+            // TODO: Make this lazy loading...
+            theme_set: ThemeSet::load_defaults(),                               // The current theme
+            workspace: None,                                                    // Filetree, and other stuff
+            sidebar_category: SidebarCategory::FileTree,                        // Current sidebar piece
+            search_query: String::new(),                                        // Actual query to look for
+            search_results: vec![],                                             // All results of search
+            search_selected: 0,                                                 // Selected result in searches
+            search_scroll: 0,                                                   // Y index on scroll
+            search_num_files: 0,                                                // Number of files searched for query
+            search_num_occurrences: 0,                                          // Times a query has occured
+            search_advanced: vec![],                                            // Advanced features, like *.mi, etc.
+            git_manager: crate::core::git::GitManager::new(),                   // manager for git
+            git_changes: vec![],                                                // ???
+            git_scroll: 0,                                                      // Y index on git tab scroll
+            git_selected: 0,                                                    // Git diff file selected
+            terminal: crate::core::terminal::Terminal::new(PathBuf::from(".")), // The terminal; Defaults to current path
+            terminal_visible: false,                                            // Sets whether the terminal is currently visible or not
+            dirty: true,                                                        // Whether there have been changes or not to the file(s)
+            whitespace_cache: Arc::new(Mutex::new(Vec::new())),                 // Cache for where whitespace is, used in searching (performance increase)
+            highlight_cache: Arc::new(Mutex::new(Vec::new())),                  // Cache for highlighting (performance increase)
         }
     }
 
