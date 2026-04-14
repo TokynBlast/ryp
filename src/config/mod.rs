@@ -2,6 +2,7 @@ use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize, Clone)]
 pub struct Config {
+    pub num_of_item: usize,
     pub tab_size: usize,
     pub theme: ThemeConfig,
     pub auto_save: bool,
@@ -18,6 +19,7 @@ pub struct ThemeConfig {
 impl Default for Config {
     fn default() -> Self {
         Self {
+            num_of_item: 6,
             tab_size: 4,
             theme: ThemeConfig {
                 tab_bg: "#333333".to_string(),                 // Dark grey
