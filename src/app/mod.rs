@@ -620,8 +620,7 @@ impl App {
 
                 if any_dirty {
                     if self.editors.len() > 1 {
-                        self.modal =
-                            Some(crate::windows::modal::Modal::new(ModalType::ConfirmExit));
+                        self.modal = Some(crate::windows::modal::Modal::new(ModalType::ConfirmExit));
                     } else {
                         self.modal = Some(crate::windows::modal::Modal::new(ModalType::QuitPrompt));
                     }
