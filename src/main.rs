@@ -4,6 +4,7 @@ pub mod config;
 pub mod core;
 pub mod input;
 pub mod windows;
+pub mod plugin;
 
 use app::App;
 use std::error::Error;

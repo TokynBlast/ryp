@@ -1,12 +1,11 @@
-use mlua::{Lua, UserData, UserDataMethods, Result, Error};
+use mlua::{UserData, UserDataMethods, Result, Error};
 use std::fs::File;
 use std::io::{Read, Seek, SeekFrom, BufReader, BufRead};
 use std::sync::{Arc, Mutex};
 use std::path::Path;
-use aho_corasick::AhoCorasick;
 
 #[derive(Clone)]
-struct OpenFile(Arc<Mutex<Option<File>>>);
+pub struct OpenFile(Arc<Mutex<Option<File>>>);
 
 impl UserData for OpenFile {
     fn add_methods<M: UserDataMethods<Self>>(methods: &mut M) {
@@ -76,7 +75,7 @@ impl UserData for OpenFile {
     }
 }
 
-fn open_file<P: AsRef<Path>>(path: P) -> Result<OpenFile> {
+pub fn open_file<P: AsRef<Path>>(path: P) -> Result<OpenFile> {
     let f = File::open(path).map_err(Error::external)?;
     Ok(OpenFile(Arc::new(Mutex::new(Some(f)))))
 }
