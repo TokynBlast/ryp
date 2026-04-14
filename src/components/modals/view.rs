@@ -95,6 +95,7 @@ pub fn draw_modal(f: &mut Frame, app: &App, area: Rect) {
                 ));
             }
         }
+        ModalType::ReplaceAll => todo!(),
         ModalType::QuitPrompt => {
             let block = Block::default()
                 .title(" Unsaved Changes ")

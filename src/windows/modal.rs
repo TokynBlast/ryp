@@ -9,6 +9,7 @@ pub enum ModalLayout {
 pub enum ModalType {
     Search,
     Replace,
+    ReplaceAll,
     QuitPrompt,
     ConfirmExit,
     Help,
@@ -18,7 +19,7 @@ pub enum ModalType {
 impl ModalType {
     pub fn layout(&self) -> ModalLayout {
         match self {
-            ModalType::Search | ModalType::Replace => ModalLayout::Island,
+            ModalType::Search | ModalType::Replace | ModalType::ReplaceAll => ModalLayout::Island,
             ModalType::QuitPrompt
             | ModalType::ConfirmExit
             | ModalType::Help

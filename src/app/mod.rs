@@ -37,6 +37,7 @@ pub struct App {
     pub search_scroll: usize,
     pub search_num_files: usize,
     pub search_num_occurrences: usize,
+    pub search_advanced: Vec<String>,
     pub git_manager: crate::core::git::GitManager,
     pub git_changes: Vec<crate::core::git::GitFileChange>,
     pub git_scroll: usize,
@@ -299,6 +300,12 @@ impl App {
                     } else if modal.modal_type == ModalType::Replace {
                         self.replace_match();
                         self.find_next_match();
+                    } else if modal.modal_type == ModalType::ReplaceAll {
+                        // TODO: Implement loop stopping
+                        loop {
+                            self.replace_match();
+                            self.find_next_match();
+                        }
                     } else if modal.modal_type == ModalType::QuitPrompt {
                         match modal.active_button {
                             0 => self.should_quit = true, // Discard
@@ -793,6 +800,7 @@ impl App {
             self.search_results.clear();
             self.search_num_files = 0;
             self.search_num_occurrences = 0;
+            self.search_advanced.clear();
             return;
         }
 
