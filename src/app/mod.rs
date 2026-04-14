@@ -476,7 +476,7 @@ impl App {
                     }
                     Action::MoveUp(_) => match self.sidebar_category {
                         SidebarCategory::FileTree => {
-                            ws = ws.saturating_sub(1);
+                            ws.selected = ws.selected.saturating_sub(1);
                         }
                         SidebarCategory::Search => {
                             self.search_selected =
