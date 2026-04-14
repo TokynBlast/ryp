@@ -18,9 +18,9 @@ impl Default for Config {
         Self {
             tab_size: 4,
             theme: ThemeConfig {
-                tab_bg: "#333333".to_string(),        // Dark grey
-                active_tab_bg: "#2E7D32".to_string(), // Green
-                highlight_theme: "base16-ocean.dark".to_string(),
+                tab_bg: "#333333".to_string(),                 // Dark grey
+                active_tab_bg: "#2E7D32".to_string(),          // Green
+                highlight_theme: "base16-ocean.dark".to_string(),// Easy to read
             },
         }
     }
