@@ -7,6 +7,7 @@ use ratatui::{
     text::{Line, Span},
     widgets::{Block, Borders, Paragraph},
 };
+use console::Emoji;
 
 pub fn draw_sidebar(f: &mut Frame, app: &App, area: Rect) {
     if let Some(ws) = &app.workspace {
@@ -91,9 +92,9 @@ fn draw_file_tree(f: &mut Frame, app: &App, area: Rect) {
             let indent = " ".repeat(depth * 2);
 
             let icon = if node.is_dir {
-                if node.expanded { "▼ " } else { "▶ " }
+                if node.expanded { Emoji("▼ ", "v ") } else { Emoji("▶ ", "> ") }
             } else {
-                "  " // no icon for generic file
+                Emoji("  ", "  ") // no icon for generic file
             };
 
             let style = if ws.focused && ws.selected == i {
