@@ -4,6 +4,7 @@
 - Ctrl+Arrow fast move
 - Auto file reload on changes
 - Improve search algoritm
+- Lua plugins
 
 # Bugs
 - Too many lines in the builtin terminal causes a crash
@@ -18,6 +19,7 @@
 - Better documentation
 - Better bindings (or make them more logical)
 - Update only changed cells
+- Resource limiting
 
 # Internal
 - Use vt100 over PortablePTY
