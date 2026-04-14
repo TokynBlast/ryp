@@ -74,6 +74,7 @@ impl App {
             git_changes: vec![],                                                // ???
             git_scroll: 0,                                                      // Y index on git tab scroll
             git_selected: 0,                                                    // Git diff file selected
+            settings_selected: 0,                                               // Setting selected
             terminal: crate::core::terminal::Terminal::new(PathBuf::from(".")), // The terminal; Defaults to current path
             terminal_visible: false,                                            // Sets whether the terminal is currently visible or not
             dirty: true,                                                        // Whether there have been changes or not to the file(s)
@@ -129,7 +130,7 @@ impl App {
         } else {
             let mut editor = Editor::new();
             if editor.load_file(path) {
-                let theme = &self.theme_set.themes["base16-ocean.dark"];
+                let theme = &self.theme_set.themes[&self.config.theme.highlight_theme];
                 editor.rebuild_highlight_cache(&self.syntax_set, theme);
                 let current_is_dirty = self.current_editor().map_or(false, |e| e.dirty);
                 if force_new_tab
@@ -377,7 +378,8 @@ impl App {
                 self.sidebar_category = match self.sidebar_category {
                     SidebarCategory::FileTree => SidebarCategory::Search,
                     SidebarCategory::Search => SidebarCategory::Git,
-                    SidebarCategory::Git => SidebarCategory::FileTree,
+                    SidebarCategory::Git => SidebarCategory::Settings,
+                    SidebarCategory::Settings => SidebarCategory::FileTree,
                 };
                 if self.sidebar_category == SidebarCategory::Git {
                     self.refresh_git();
@@ -392,7 +394,8 @@ impl App {
                 self.sidebar_category = match self.sidebar_category {
                     SidebarCategory::FileTree => SidebarCategory::Git,
                     SidebarCategory::Git => SidebarCategory::Search,
-                    SidebarCategory::Search => SidebarCategory::FileTree,
+                    SidebarCategory::Search => SidebarCategory::Settings,
+                    SidebarCategory::Settings => SidebarCategory::FileTree,
                 };
                 if self.sidebar_category == SidebarCategory::Git {
                     self.refresh_git();
@@ -484,6 +487,11 @@ impl App {
                                 self.git_selected -= 1;
                             }
                         }
+                        SidebarCategory::Settings => {
+                            if self.settings_selected > 0 {
+                              self.settings_selected -= 1;
+                            }
+                        },
                     },
                     Action::MoveDown(_) => match self.sidebar_category {
                         SidebarCategory::FileTree => {
@@ -502,7 +510,9 @@ impl App {
                                 self.git_selected += 1;
                             }
                         }
+                        SidebarCategory::Settings => todo!(),
                     },
+                    Action::SwitchSidebarCategory(SidebarCategory::Settings) => todo!(),
                     Action::InsertNewline | Action::ModalConfirmForceNewTab => {
                         match self.sidebar_category {
                             SidebarCategory::FileTree => {
@@ -538,6 +548,7 @@ impl App {
                                     return;
                                 }
                             }
+                            SidebarCategory::Settings => todo!(),
                         }
                     }
                     Action::SwitchFocus => {
