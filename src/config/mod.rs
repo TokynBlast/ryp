@@ -10,6 +10,7 @@ pub struct Config {
 pub struct ThemeConfig {
     pub tab_bg: String,
     pub active_tab_bg: String,
+    pub highlight_theme: String,
 }
 
 impl Default for Config {
@@ -19,6 +20,7 @@ impl Default for Config {
             theme: ThemeConfig {
                 tab_bg: "#333333".to_string(),        // Dark grey
                 active_tab_bg: "#2E7D32".to_string(), // Green
+                highlight_theme: "base16-ocean.dark".to_string(),
             },
         }
     }
