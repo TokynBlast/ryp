@@ -733,7 +733,7 @@ impl App {
 
     fn replace_match(&mut self) {
         let (search_term, replace_term) = if let Some(modal) = &self.modal {
-            (modal.input.clone(), modal.input.clone()) // Assuming replace_input was meant if modal_type was Replace, but using input for now
+            (modal.input.clone(), modal.replace_input.clone())
         } else {
             return;
         };
