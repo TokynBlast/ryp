@@ -63,7 +63,7 @@ fn draw_sidebar_content(f: &mut Frame, app: &App, area: Rect) {
         SidebarCategory::FileTree => draw_file_tree(f, app, area),
         SidebarCategory::Search => draw_search_view(f, app, area),
         SidebarCategory::Git => draw_git_view(f, app, area),
-        SidebarCategory::Settings => todo!(), // TODO: Make this
+        SidebarCategory::Settings => draw_settings_view(f, app, area),
     }
 }
 
@@ -285,5 +285,103 @@ fn draw_git_view(f: &mut Frame, app: &App, area: Rect) {
     if is_focused {
         // Approximate position for cursor
         f.set_cursor_position((area.x + 1, area.y + 1));
+    }
+}
+
+fn draw_settings_view(f: &mut Frame, app: &App, area: Rect) {
+    let is_focused = app.workspace.as_ref().map_or(false, |w| w.focused);
+    let active_style = if is_focused {
+        Style::default()
+            .fg(Color::Yellow)
+            .add_modifier(Modifier::BOLD)
+    } else {
+        Style::default()
+            .fg(Color::Gray)
+            .add_modifier(Modifier::BOLD)
+    };
+
+    struct Setting {
+      title: String,
+      value: String,
+    }
+
+    let mut settings = vec![
+        Setting {
+          title: "Tab BG Color".into(),
+          value: app.config.theme.tab_bg.clone(),
+        },
+        Setting {
+          title: "Active Tab BG Color".into(),
+          value: app.config.theme.active_tab_bg.clone(),
+        },
+        Setting {
+          title: "Highlighting Theme".into(),
+          value: app.config.theme.highlight_theme.clone(),
+        },
+        Setting {
+          title: "Tab Size".into(),
+          value: app.config.tab_size.to_string(),
+        },
+        Setting {
+          title: "Auto Save".into(),
+          value: app.config.auto_save.to_string(),
+        },
+        Setting {
+          title: "Time To Auto Save".into(),
+          value: app.config.auto_save_timer.to_string(),
+        },
+    ];
+
+    let settings_block = Block::default()
+        .title(" Settings ")
+        .borders(Borders::ALL)
+        .border_style(active_style);
+
+    // render the block
+    f.render_widget(settings_block.clone(), area);
+    let inner = settings_block.inner(area);
+
+    // compute visible area and scrolling using inner size
+    let height = inner.height as usize;
+    let item_count = settings.len();
+    let scroll_y = if app.settings_selected >= height / 2 {
+        app.settings_selected - height / 2
+    } else {
+        0
+    };
+
+    // build one chunk per visible row (cap at item_count)
+    let mut constraints = Vec::with_capacity(item_count);
+    for _ in 0..item_count {
+        constraints.push(Constraint::Length(3)); // or 1/2 depending desired row height
+    }
+    let chunks = Layout::default()
+        .direction(Direction::Vertical)
+        .constraints(constraints)
+        .split(inner);
+
+    // render each setting into its chunk (safe indexing)
+    for (i, setting) in settings.iter().enumerate() {
+        let is_selected = is_focused && app.settings_selected == i;
+        let style = if is_selected {
+            Style::default().bg(Color::Rgb(60, 60, 60)).fg(Color::White)
+        } else {
+            Style::default().fg(Color::Gray)
+        };
+
+        let block = Block::default()
+            .title(format!(" {} ", setting.title))
+            .borders(Borders::ALL)
+            .border_style(active_style);
+
+        let p = Paragraph::new(setting.value.clone())
+            .block(block)
+            .scroll((scroll_y as u16, 0));
+        f.render_widget(p, chunks[i]);
+    }
+
+    if is_focused {
+        // Approximate position for cursor
+        f.set_cursor_position((area.x + 2, area.y + 2));
     }
 }

@@ -395,10 +395,10 @@ impl App {
             }
             Action::PrevSidebarCategory => {
                 self.sidebar_category = match self.sidebar_category {
-                    SidebarCategory::FileTree => SidebarCategory::Git,
+                    SidebarCategory::FileTree => SidebarCategory::Settings,
                     SidebarCategory::Git => SidebarCategory::Search,
-                    SidebarCategory::Search => SidebarCategory::Settings,
-                    SidebarCategory::Settings => SidebarCategory::FileTree,
+                    SidebarCategory::Search => SidebarCategory::FileTree,
+                    SidebarCategory::Settings => SidebarCategory::Git,
                 };
                 if self.sidebar_category == SidebarCategory::Git {
                     self.refresh_git();
@@ -514,7 +514,6 @@ impl App {
                           }
                         },
                     },
-                    Action::SwitchSidebarCategory(SidebarCategory::Settings) => todo!(),
                     Action::InsertNewline | Action::ModalConfirmForceNewTab => {
                         match self.sidebar_category {
                             SidebarCategory::FileTree => {
