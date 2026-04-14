@@ -5,6 +5,7 @@ pub struct Config {
     pub tab_size: usize,
     pub theme: ThemeConfig,
     pub auto_save: bool,
+    pub auto_save_timer: usize,
 }
 
 #[derive(Serialize, Deserialize, Clone)]
@@ -24,6 +25,7 @@ impl Default for Config {
                 highlight_theme: "base16-ocean.dark".to_string(),// Easy to read
             },
             auto_save: true,
+            auto_save_timer: 30_000, // every 5 minutes, miliseconds
         }
     }
 }
