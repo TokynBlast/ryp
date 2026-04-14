@@ -17,6 +17,7 @@
 - Implement larger terminal (full terminal?)
 - Better documentation
 - Better bindings (or make them more logical)
+- Update only changed cells
 
 # Internal
 - Use vt100 over PortablePTY
