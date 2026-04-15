@@ -12,7 +12,7 @@ pub fn apply_restrictions(lua: &Lua) -> Result<()> {
     globals.set("print", Nil)?;
 
     // Help to prevent version specific exploits
-    globals.set("_VERSION", "")?;
+    globals.set("_VERSION", Nil)?;
 
     // Fail on value not existing in table / global variables
     let strict_index = lua.create_function(|_, (_table, key): (Value, String)| {
