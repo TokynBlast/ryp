@@ -1,9 +1,7 @@
 # Tools
 - MarkDown preview viewer
-- Settings tab
 - Ctrl+Arrow fast move
 - Auto file reload on changes
-- Improve search algoritm
 - Lua plugins
 
 # Bugs
@@ -23,6 +21,4 @@
 - Resource limiting
 
 # Internal
-- Use vt100 over PortablePTY
 - Add minimum cells size
-- Make searching use SeekStorm
