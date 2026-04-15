@@ -305,7 +305,7 @@ fn draw_settings_view(f: &mut Frame, app: &App, area: Rect) {
       value: String,
     }
 
-    let mut settings = vec![
+    let settings = vec![
         Setting {
           title: "Tab BG Color".into(),
           value: app.config.theme.tab_bg.clone(),
