@@ -50,8 +50,7 @@ pub fn load_plugins() -> Result<()> {
     })?;
     globals.set("open", open_fn)?;
 
-    // TODO: Load each into their own thread
-    //       Or, we pool them all into 3 threads
+    // TODO: Make 3 worker threads, then make Lua give tasks
     lua.load(r#"
         print("This still needs to be done")
     "#).exec()?;
