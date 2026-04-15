@@ -15,6 +15,8 @@ pub fn draw_status_bar(f: &mut Frame, app: &App, area: Rect) {
                     "C++ (cpp)"
                 } else if path.extension().and_then(|e| e.to_str()) == Some("rs") {
                     "Rust (rs)"
+                } else if path.extension().and_then(|e| e.to_str()) == Some("lua") {
+                    "Lua (lua)"
                 } else {
                     "Plain Text"
                 }
