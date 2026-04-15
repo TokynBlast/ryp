@@ -6,9 +6,9 @@ use crate::plugin::lua_io;
 #[inline(always)]
 fn query_installed() -> io::Result<usize> {
     let plugin_dir = if cfg!(windows) {
-        "C:/.ryp_plugins"
+        "%APPDATA%\\ryp"
     } else {
-        "~/.ryp_plugins"
+        "/home/.ryp"
     };
 
     match fs::metadata(plugin_dir) {
