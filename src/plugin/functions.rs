@@ -9,6 +9,9 @@ pub fn load_plugins() -> Result<()> {
 
     let globals = lua.globals();
 
+    // Included in ALL_SAFE; This is something unsafe for us
+    globals.set("package", Nil)?;
+
     // Printing shifts up the screen, which we *DON'T* want
     globals.set("print", Nil)?;
 
