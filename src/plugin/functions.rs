@@ -1,6 +1,4 @@
 use mlua::{Lua, Result, StdLib};
-use std::io::{self};
-use std::fs;
 use crate::plugin::lua_io;
 use mlua::Value::Nil;
 
