@@ -20,8 +20,7 @@ pub struct ThemeConfig {
 
 impl Config {
     pub fn len(&self) -> usize {
-        const BASE_SIZE: usize = 6;              // MUST MATCH
-        BASE_SIZE + self.extra.len()
+        self.base() + self.extra.len()
     }
     #[inline(always)]
     pub fn base(&self) -> usize { return 6; }    // MUST MATCH
