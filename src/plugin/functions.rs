@@ -1,6 +1,5 @@
 use mlua::{Lua, Result, StdLib};
 use crate::plugin::lua_io;
-use mlua::Value::Nil;
 
 pub fn load_plugins() -> Result<()> {
     let lua = Lua::new();
