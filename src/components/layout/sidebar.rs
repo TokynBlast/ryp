@@ -346,6 +346,7 @@ fn draw_settings_view(f: &mut Frame, app: &App, area: Rect) {
                 .unwrap_or(30_000).to_string(),
         },
     ];
+
     for (key, value) in &app.config {
         settings.push(Setting {
             title: key.clone(),       // The name of the setting/plugin
@@ -360,6 +361,7 @@ fn draw_settings_view(f: &mut Frame, app: &App, area: Rect) {
 
     // render the block
     f.render_widget(settings_block.clone(), area);
+
     let inner = settings_block.inner(area);
 
     // compute visible area and scrolling using inner size
