@@ -44,7 +44,7 @@ pub fn load_plugins() -> Result<()> {
         globals.set("InstallQuery", query_installed_fn)?;
     }
 
-    // wrap open_file as a lua function — takes a path string
+    // Opens a file, for functions to perform on
     let open_fn = lua.create_function(|_, path: String| {
         lua_io::open_file(path)
     })?;
