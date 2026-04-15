@@ -31,6 +31,7 @@ fn query_installed() -> io::Result<usize> {
 
 pub fn load_plugins() -> Result<()> {
     let lua = Lua::new();
+    let globals = lua.globals();
 
     // Safety; Printing shifts up the screen, which we *DON'T* want
     globals.set("print", mlua::Value::Nil)?;
