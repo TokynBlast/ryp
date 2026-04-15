@@ -10,6 +10,7 @@ pub fn draw_status_bar(f: &mut Frame, app: &App, area: Rect) {
     let text = match app.current_editor() {
         Some(editor) => {
             let lang = if let Some(path) = &editor.filepath {
+                //TODO: Add hpp files
                 if path.extension().and_then(|e| e.to_str()) == Some("cpp") {
                     "C++ (cpp)"
                 } else if path.extension().and_then(|e| e.to_str()) == Some("rs") {
