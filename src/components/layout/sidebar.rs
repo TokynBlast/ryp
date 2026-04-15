@@ -375,7 +375,7 @@ fn draw_settings_view(f: &mut Frame, app: &App, area: Rect) {
     let mut constraints = Vec::with_capacity(item_count);
 
     for _ in 0..item_count {
-        constraints.push(Constraint::Length(3)); // or 1/2 depending desired row height
+        constraints.push(Constraint::Length(3));
     }
 
     let chunks = Layout::default()
