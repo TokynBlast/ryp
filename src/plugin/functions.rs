@@ -8,7 +8,7 @@ fn query_installed() -> io::Result<usize> {
     let plugin_dir = if cfg!(windows) {
         "C:/.ryp_plugins"
     } else {
-        "./.ryp_plugins"
+        "~/.ryp_plugins"
     };
 
     match fs::metadata(plugin_dir) {
