@@ -6,9 +6,7 @@ pub fn apply_restrictions(lua: &Lua) -> Result<()> {
     // Included in ALL_SAFE; This is something unsafe for us
     globals.set("package", Nil)?;
 
-    if cfg!(debug_assertions) {
-      globals.set("debug", Nil)?;
-    }
+    globals.set("debug", Nil)?;
 
     // Printing shifts up the screen, which we *DON'T* want
     globals.set("print", Nil)?;
