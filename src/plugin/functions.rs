@@ -17,6 +17,10 @@ pub fn load_plugins() -> Result<()> {
     })?;
     globals.set("open", open_fn)?;
 
+    // TODO: Hook this up to real cursor
+    globals.set("cursor_x", 0)?;
+    globals.set("cursor_y", 0)?;
+
     // TODO: Make 3 worker threads, then make Lua give tasks
     lua.load(r#"
         print("This still needs to be done")
