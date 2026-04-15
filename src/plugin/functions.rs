@@ -3,6 +3,8 @@ use std::io::{self};
 use std::fs;
 use crate::plugin::lua_io;
 
+// Only meant for debugging
+#[cfg(debug_assertions)]
 #[inline(always)]
 fn query_installed() -> io::Result<usize> {
     let plugin_dir = if cfg!(windows) {
@@ -33,10 +35,13 @@ pub fn load_plugins() -> Result<()> {
     // Safety; Printing shifts up the screen, which we *DON'T* want
     globals.set("print", mlua::Value::Nil)?;
 
-    // wrap query_installed as a lua function — no args, returns count
-    let query_installed_fn = lua.create_function(|_, ()| {
-        query_installed().map_err(mlua::Error::external)
-    })?;
+    if cfg!(debug_assertions) {
+        // returns number of plugins installed
+        let query_installed_fn = lua.create_function(|_, ()| {
+            query_installed().map_err(mlua::Error::external)
+        })?;
+        globals.set("InstallQuery", query_installed_fn)?;
+    }
 
     // wrap open_file as a lua function — takes a path string
     let open_fn = lua.create_function(|_, path: String| {
