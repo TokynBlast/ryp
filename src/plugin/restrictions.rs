@@ -17,7 +17,7 @@ pub fn apply_restrictions(lua: &Lua) -> Result<()> {
     // Fail on value not existing in table / global variables
     let strict_index = lua.create_function(|_, (_table, key): (Value, String)| {
         Err::<Value, _>(Error::RuntimeError(format!(
-            "STRICTNESS ERROR: Variable or Field '{}' does not exist.",
+            "RuntimeError: Variable or Field '{}' does not exist.",
             key
         )))
     })?;
