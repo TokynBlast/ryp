@@ -33,7 +33,7 @@ This will error, instead of printing object 3.
 Now, you can pass variable types as actual values!<br>
 Here's a few examples:
 ```
-some_func(type_passed)
+function some_func(type_passed)
   if type_passed == bool
     return true
   end
