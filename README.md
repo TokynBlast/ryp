@@ -1,8 +1,8 @@
 ## What Is Ryp
 
-Ryp is a text editor, all within the terminal!<br>
+Ryp is a highly customizable text editor, all within the terminal!<br>
 It's lightweight, and feature rich!<br>
-Including things, like a git viewer, search, replace, and so much more.
+Including things, like a git viewer, plugins, replace, and so much more.<br>
 
 ## Features
 There are multiple features, such as...
