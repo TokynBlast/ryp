@@ -40,7 +40,7 @@ impl Manager {
             if mods == sc.mods && self.seq_buf.ends_with(&sc.keys) {
                 // call Lua handler
                 let f: Function = self.lua.registry_value(&sc.handler)?;
-                f.call::<(), ()>(())?; // no args; adapt if you want to pass info
+                f.call::<()>(())?;
             }
         }
         Ok(())
