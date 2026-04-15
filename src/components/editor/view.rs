@@ -63,6 +63,7 @@ pub fn draw_editor(f: &mut Frame, app: &App, area: Rect) {
         .and_then(|p| p.extension())
         .and_then(|e| e.to_str())
         .unwrap_or("txt");
+
     let syntax = app
         .syntax_set
         .find_syntax_by_extension(ext)

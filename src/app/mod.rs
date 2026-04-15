@@ -147,6 +147,7 @@ impl App {
                 let theme = &self.theme_set.themes[theme_name];
 
                 editor.rebuild_highlight_cache(&self.syntax_set, theme);
+
                 let current_is_dirty = self.current_editor().map_or(false, |e| e.dirty);
                 if force_new_tab
                     || (self.editors.is_empty())
