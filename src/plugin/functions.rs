@@ -2,6 +2,7 @@ use mlua::{Lua, Result};
 use std::io::{self};
 use std::fs;
 use crate::plugin::lua_io;
+use mlua::Value::Nil;
 
 // Only meant for debugging
 #[cfg(debug_assertions)]
@@ -33,8 +34,22 @@ pub fn load_plugins() -> Result<()> {
     let lua = Lua::new();
     let globals = lua.globals();
 
-    // Safety; Printing shifts up the screen, which we *DON'T* want
-    globals.set("print", mlua::Value::Nil)?;
+    // Printing shifts up the screen, which we *DON'T* want
+    globals.set("print", Nil)?;
+
+    // OS lib; Could be used for OS-specific exploits.
+    // We lock the developer into "If it can't run for all, it can't run for this."
+    globals.set("os", Nil)?;
+
+    // Allows external C code to be run
+    // Quite obvious, this prevents malicous code from being run
+    globals.set("package", Nil)?;
+
+    // Forces our safer IO
+    globals.set("io", Nil)?;
+
+    // Prevent anyone from being able to look at stack or variables
+    globals.set("debug", Nil)?;
 
     if cfg!(debug_assertions) {
         // returns number of plugins installed
