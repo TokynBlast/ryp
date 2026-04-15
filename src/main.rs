@@ -9,8 +9,23 @@ pub mod plugin;
 use app::App;
 use std::error::Error;
 use std::path::{Path, PathBuf};
+use std::{env, fs};
 
 fn main() -> Result<(), Box<dyn Error>> {
+    let path = if cfg!(windows) {
+        // Rust won't expand %APPDATA%, so we get the variable
+        let base = env::var("APPDATA")?;
+        PathBuf::from(base).join("ryp")
+    } else {
+        // Get /home/user from $HOME
+        let base = env::var("HOME")?;
+        PathBuf::from(base).join(".ryp")
+    };
+
+    if !path.exists() {
+        fs::create_dir_all(&path)?;
+    }
+
     let mut terminal = ratatui::init();
 
     // Create app and run it
