@@ -4,32 +4,6 @@ use std::fs;
 use crate::plugin::lua_io;
 use mlua::Value::Nil;
 
-// Only meant for debugging
-#[cfg(debug_assertions)]
-#[inline(always)]
-fn query_installed() -> io::Result<usize> {
-    let plugin_dir = if cfg!(windows) {
-        "%APPDATA%\\ryp"
-    } else {
-        "/home/.ryp"
-    };
-
-    match fs::metadata(plugin_dir) {
-        Ok(meta) => {
-            if !meta.is_dir() {
-                return Err(io::Error::new(io::ErrorKind::AlreadyExists, "plugin path exists but is not a directory"));
-            }
-            let count = fs::read_dir(plugin_dir)?.count();
-            Ok(count)
-        }
-        Err(e) if e.kind() == io::ErrorKind::NotFound => {
-            fs::create_dir_all(plugin_dir)?;
-            Ok(0)
-        }
-        Err(e) => Err(e),
-    }
-}
-
 pub fn load_plugins() -> Result<()> {
     let lua = Lua::new();
 
@@ -42,14 +16,6 @@ pub fn load_plugins() -> Result<()> {
 
     // Help to prevent version specific exploits
     globals.set("_VERSION", "")?;
-
-    if cfg!(debug_assertions) {
-        // returns number of plugins installed
-        let query_installed_fn = lua.create_function(|_, ()| {
-            query_installed().map_err(mlua::Error::external)
-        })?;
-        globals.set("InstallQuery", query_installed_fn)?;
-    }
 
     // Opens a file, for functions to perform on
     let open_fn = lua.create_function(|_, path: String| {
