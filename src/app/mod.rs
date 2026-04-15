@@ -58,7 +58,7 @@ impl App {
         Self {
             editors: vec![],                                                    // All editors open
             active_tab: 0,                                                      // Current active tab
-            config: Config::default(),                                          // Current configuration
+            config: crate::config::default(),                                          // Current configuration
             modal: None,                                                        // ???
             should_quit: false,                                                 // Whether Ryp should quit or not
             syntax_set: SyntaxSet::load_defaults_newlines(),                    // ???
