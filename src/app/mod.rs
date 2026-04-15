@@ -115,8 +115,8 @@ impl App {
     }
 
     pub fn change_settings(&mut self) {
-        // TODO: Make it so that we can edit the text inside the thing, then turn back to their original type
-        todo!()
+        // Inside our own set settings
+        todo!("Implement settings setting");
     }
 
     pub fn open_file(&mut self, path: &Path, force_new_tab: bool) {
