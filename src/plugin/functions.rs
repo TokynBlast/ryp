@@ -5,18 +5,11 @@ use mlua::Value::Nil;
 pub fn load_plugins() -> Result<()> {
     let lua = Lua::new();
 
+    crate::plugin::restrictions::apply_restrictions(&lua).expect("Something went wrong with applying resrtictions to plugin Lua.");
+
     lua.load_std_libs(StdLib::ALL_SAFE)?;
 
     let globals = lua.globals();
-
-    // Included in ALL_SAFE; This is something unsafe for us
-    globals.set("package", Nil)?;
-
-    // Printing shifts up the screen, which we *DON'T* want
-    globals.set("print", Nil)?;
-
-    // Help to prevent version specific exploits
-    globals.set("_VERSION", "")?;
 
     // Opens a file, for functions to perform on
     let open_fn = lua.create_function(|_, path: String| {
