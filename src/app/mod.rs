@@ -522,7 +522,7 @@ impl App {
                             }
                         }
                         SidebarCategory::Settings => {
-                            if self.settings_selected < 7 {
+                            if self.settings_selected < self.config.len().saturating_sub(1) {
                                 self.settings_scroll += 3;
                                 self.settings_selected += 1;
                             }
@@ -564,7 +564,7 @@ impl App {
                                 }
                             }
                             SidebarCategory::Settings => {
-                                if self.settings_selected < 7 { // TODO: This is unsafe, we're doing magic numbers...
+                                if self.settings_selected < self.config.len().saturating_sub(1) {
                                     self.dispatch(Action::ChangeSettings);
                                 }
                             },
