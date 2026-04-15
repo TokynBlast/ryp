@@ -29,10 +29,10 @@ pub fn draw_status_bar(f: &mut Frame, app: &App, area: Rect) {
                 lang,
                 editor.lines.len(),
                 editor.cursor_x + 1,
-                app.config.get("tab_size").and_then(|v| v.as_u64()).unwrap_or(4)
+                app.config.get("Tab Size").and_then(|v| v.as_u64()).unwrap_or(4)
             )
         }
-        None => format!(" No files open | Tab Size: {} ", app.config.get("tab_size").and_then(|v| v.as_u64()).unwrap_or(4)),
+        None => format!(" No files open | Tab Size: {} ", app.config.get("Tab Size").and_then(|v| v.as_u64()).unwrap_or(4)),
     };
 
     let p = Paragraph::new(text).style(Style::default().bg(Color::Blue).fg(Color::White));

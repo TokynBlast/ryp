@@ -140,7 +140,7 @@ impl App {
             let mut editor = Editor::new();
             if editor.load_file(path) {
                 let theme_name = self.config.get("theme")
-                    .and_then(|v| v.get("highlight_theme"))
+                    .and_then(|v| v.get("Highlighting Theme"))
                     .and_then(|v| v.as_str())
                     .unwrap_or("base16-ocean.dark");
 
@@ -469,7 +469,7 @@ impl App {
             _ => {}
         }
 
-        let tab_size = self.config.get("tab_size").and_then(|v| v.as_u64()).unwrap_or(4);
+        let tab_size = self.config.get("Tab Size").and_then(|v| v.as_u64()).unwrap_or(4);
 
         let is_tree_focused = self.workspace.as_ref().map_or(false, |w| w.focused);
         if is_tree_focused {
@@ -529,7 +529,7 @@ impl App {
                             }
                         }
                         SidebarCategory::Settings => {
-                            if self.settings_selected < self.config.len().saturating_sub(1) {
+                            if self.settings_selected < crate::config::nested_len(&self.config) {
                                 self.settings_scroll += 3;
                                 self.settings_selected += 1;
                             }

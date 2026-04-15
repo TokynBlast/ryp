@@ -305,47 +305,7 @@ fn draw_settings_view(f: &mut Frame, app: &App, area: Rect) {
       value: String,
     }
 
-    let mut settings = vec![
-        Setting {
-            title: "Tab BG Color".into(),
-            value: app.config.get("theme")
-                .and_then(|v| v.get("tab_bg"))
-                .and_then(|v| v.as_str())
-                .unwrap_or("#333333").to_string(),
-        },
-        Setting {
-            title: "Active Tab BG Color".into(),
-            value: app.config.get("theme")
-                .and_then(|v| v.get("active_tab_bg"))
-                .and_then(|v| v.as_str())
-                .unwrap_or("#2E7D32").to_string(),
-        },
-        Setting {
-            title: "Highlighting Theme".into(),
-            value: app.config.get("theme")
-                .and_then(|v| v.get("highlight_theme"))
-                .and_then(|v| v.as_str())
-                .unwrap_or("base16-ocean.dark").to_string(),
-        },
-        Setting {
-            title: "Tab Size".into(),
-            value: app.config.get("tab_size")
-                .and_then(|v| v.as_u64())
-                .unwrap_or(4).to_string(),
-        },
-        Setting {
-            title: "Auto Save".into(),
-            value: app.config.get("auto_save")
-                .and_then(|v| v.as_bool())
-                .unwrap_or(true).to_string(),
-        },
-        Setting {
-            title: "Time To Auto Save".into(),
-            value: app.config.get("auto_save_timer")
-                .and_then(|v| v.as_u64())
-                .unwrap_or(30_000).to_string(),
-        },
-    ];
+    let mut settings = vec![];
 
     for (key, value) in &app.config {
         settings.push(Setting {

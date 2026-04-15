@@ -70,7 +70,7 @@ pub fn draw_editor(f: &mut Frame, app: &App, area: Rect) {
         .unwrap_or_else(|| app.syntax_set.find_syntax_plain_text());
 
     let theme_name = app.config.get("theme")
-        .and_then(|v| v.get("highlight_theme"))
+        .and_then(|v| v.get("Highlighting Theme"))
         .and_then(|v| v.as_str())
         .unwrap_or("base16-ocean.dark");
 
