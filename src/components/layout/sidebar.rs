@@ -305,7 +305,7 @@ fn draw_settings_view(f: &mut Frame, app: &App, area: Rect) {
       value: String,
     }
 
-    let settings = vec![
+    let mut settings = vec![
         Setting {
           title: "Tab BG Color".into(),
           value: app.config.theme.tab_bg.clone(),
@@ -331,6 +331,12 @@ fn draw_settings_view(f: &mut Frame, app: &App, area: Rect) {
           value: app.config.auto_save_timer.to_string(),
         },
     ];
+    for (key, value) in &app.config.extra {
+        settings.push(Setting {
+            title: key.clone(),       // The name of the setting/plugin
+            value: value.to_string(), // The value from JSON
+        });
+    }
 
     let settings_block = Block::default()
         .title(" Settings ")
