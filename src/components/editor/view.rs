@@ -67,7 +67,13 @@ pub fn draw_editor(f: &mut Frame, app: &App, area: Rect) {
         .syntax_set
         .find_syntax_by_extension(ext)
         .unwrap_or_else(|| app.syntax_set.find_syntax_plain_text());
-    let theme = &app.theme_set.themes[&app.config.theme.highlight_theme];
+
+    let theme_name = app.config.get("theme")
+        .and_then(|v| v.get("highlight_theme"))
+        .and_then(|v| v.as_str())
+        .unwrap_or("base16-ocean.dark");
+
+    let theme = &app.theme_set.themes[theme_name];
     let mut h = syntect::easy::HighlightLines::new(syntax, theme);
 
     if editor.cursor_y < height {

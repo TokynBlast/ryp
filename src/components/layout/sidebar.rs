@@ -307,31 +307,46 @@ fn draw_settings_view(f: &mut Frame, app: &App, area: Rect) {
 
     let mut settings = vec![
         Setting {
-          title: "Tab BG Color".into(),
-          value: app.config.theme.tab_bg.clone(),
+            title: "Tab BG Color".into(),
+            value: app.config.get("theme")
+                .and_then(|v| v.get("tab_bg"))
+                .and_then(|v| v.as_str())
+                .unwrap_or("#333333").to_string(),
         },
         Setting {
-          title: "Active Tab BG Color".into(),
-          value: app.config.theme.active_tab_bg.clone(),
+            title: "Active Tab BG Color".into(),
+            value: app.config.get("theme")
+                .and_then(|v| v.get("active_tab_bg"))
+                .and_then(|v| v.as_str())
+                .unwrap_or("#2E7D32").to_string(),
         },
         Setting {
-          title: "Highlighting Theme".into(),
-          value: app.config.theme.highlight_theme.clone(),
+            title: "Highlighting Theme".into(),
+            value: app.config.get("theme")
+                .and_then(|v| v.get("highlight_theme"))
+                .and_then(|v| v.as_str())
+                .unwrap_or("base16-ocean.dark").to_string(),
         },
         Setting {
-          title: "Tab Size".into(),
-          value: app.config.tab_size.to_string(),
+            title: "Tab Size".into(),
+            value: app.config.get("tab_size")
+                .and_then(|v| v.as_u64())
+                .unwrap_or(4).to_string(),
         },
         Setting {
-          title: "Auto Save".into(),
-          value: app.config.auto_save.to_string(),
+            title: "Auto Save".into(),
+            value: app.config.get("auto_save")
+                .and_then(|v| v.as_bool())
+                .unwrap_or(true).to_string(),
         },
         Setting {
-          title: "Time To Auto Save".into(),
-          value: app.config.auto_save_timer.to_string(),
+            title: "Time To Auto Save".into(),
+            value: app.config.get("auto_save_timer")
+                .and_then(|v| v.as_u64())
+                .unwrap_or(30_000).to_string(),
         },
     ];
-    for (key, value) in &app.config.extra {
+    for (key, value) in &app.config {
         settings.push(Setting {
             title: key.clone(),       // The name of the setting/plugin
             value: value.to_string(), // The value from JSON
