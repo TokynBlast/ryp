@@ -48,9 +48,6 @@ pub fn load_plugins() -> Result<()> {
     let open_fn = lua.create_function(|_, path: String| {
         lua_io::open_file(path)
     })?;
-
-    let globals = lua.globals();
-    globals.set("InstallQuery", query_installed_fn)?;
     globals.set("open", open_fn)?;
 
     // TODO: Load each into their own thread
