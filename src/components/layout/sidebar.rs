@@ -348,7 +348,7 @@ fn draw_settings_view(f: &mut Frame, app: &App, area: Rect) {
     let inner = settings_block.inner(area);
 
     // compute visible area and scrolling using inner size
-    let height = inner.height as usize;
+    let height = inner.height as usize + app.settings_scroll;
     let item_count = settings.len();
     let scroll_y = if app.settings_scroll >= height / 2 {
         app.settings_scroll - height / 2
