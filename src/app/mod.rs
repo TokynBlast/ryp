@@ -498,6 +498,8 @@ impl App {
                                 self.git_selected.saturating_sub(1);
                         }
                         SidebarCategory::Settings => {
+                            self.settings_scroll =
+                                self.settings_scroll.saturating_sub(3);
                             self.settings_selected =
                                 self.settings_selected.saturating_sub(1);
                         },
@@ -520,9 +522,10 @@ impl App {
                             }
                         }
                         SidebarCategory::Settings => {
-                          if self.settings_selected < self.settings_selected.saturating_sub(1) {
-                              self.settings_selected += 1;
-                          }
+                            if self.settings_selected < 7 {
+                                self.settings_scroll += 3;
+                                self.settings_selected += 1;
+                            }
                         },
                     },
                     Action::InsertNewline | Action::ModalConfirmForceNewTab => {
@@ -561,7 +564,7 @@ impl App {
                                 }
                             }
                             SidebarCategory::Settings => {
-                                if self.settings_selected < self.config.num_of_item { // TODO: This is unsafe, we're doing magic numbers...
+                                if self.settings_selected < 7 { // TODO: This is unsafe, we're doing magic numbers...
                                     self.dispatch(Action::ChangeSettings);
                                 }
                             },

@@ -344,8 +344,8 @@ fn draw_settings_view(f: &mut Frame, app: &App, area: Rect) {
     // compute visible area and scrolling using inner size
     let height = inner.height as usize;
     let item_count = settings.len();
-    let scroll_y = if app.settings_selected >= height / 2 {
-        app.settings_selected - height / 2
+    let scroll_y = if app.settings_scroll >= height / 2 {
+        app.settings_scroll - height / 2
     } else {
         0
     };
@@ -372,7 +372,7 @@ fn draw_settings_view(f: &mut Frame, app: &App, area: Rect) {
         let block = Block::default()
             .title(format!(" {} ", setting.title))
             .borders(Borders::ALL)
-            .border_style(active_style);
+            .border_style(style);
 
         let p = Paragraph::new(setting.value.clone())
             .block(block)
@@ -382,6 +382,6 @@ fn draw_settings_view(f: &mut Frame, app: &App, area: Rect) {
 
     if is_focused {
         // Approximate position for cursor
-        f.set_cursor_position((area.x + 2, area.y + 2));
+        f.set_cursor_position((area.x + 2, area.y + 2 + app.settings_scroll as u16));
     }
 }
