@@ -40,6 +40,9 @@ pub fn load_plugins() -> Result<()> {
     // Printing shifts up the screen, which we *DON'T* want
     globals.set("print", Nil)?;
 
+    // Help to prevent version specific exploits
+    globals.set("_VERSION", "")?;
+
     if cfg!(debug_assertions) {
         // returns number of plugins installed
         let query_installed_fn = lua.create_function(|_, ()| {
