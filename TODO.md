@@ -11,6 +11,7 @@
 - vt100 support is incomplete
 - del does nothing
 - Make terminal not cover cursor or bottom info
+- Saving while in Git, saves the Git info to the actual file
 
 # QOL
 - Make themes lazy loaded
