@@ -32,24 +32,13 @@ fn query_installed() -> io::Result<usize> {
 
 pub fn load_plugins() -> Result<()> {
     let lua = Lua::new();
+
+    lua.load_std_libs(StdLib::ALL_SAFE)?;
+
     let globals = lua.globals();
 
     // Printing shifts up the screen, which we *DON'T* want
     globals.set("print", Nil)?;
-
-    // OS lib; Could be used for OS-specific exploits.
-    // We lock the developer into "If it can't run for all, it can't run for this."
-    globals.set("os", Nil)?;
-
-    // Allows external C code to be run
-    // Quite obvious, this prevents malicous code from being run
-    globals.set("package", Nil)?;
-
-    // Forces our safer IO
-    globals.set("io", Nil)?;
-
-    // Prevent anyone from being able to look at stack or variables
-    globals.set("debug", Nil)?;
 
     if cfg!(debug_assertions) {
         // returns number of plugins installed
