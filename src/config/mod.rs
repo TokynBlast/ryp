@@ -19,10 +19,10 @@ pub struct ThemeConfig {
 }
 
 impl Config {
-  pub fn len(&self) -> usize {
-      const BASE_SIZE: usize = 6;
-      BASE_SIZE + self.extra.len()
-  }
+    pub fn len(&self) -> usize {
+        const BASE_SIZE: usize = 6;
+        BASE_SIZE + self.extra.len()
+    }
 }
 
 impl Default for Config {
