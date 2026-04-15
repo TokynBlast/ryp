@@ -19,6 +19,7 @@
 - Better bindings (or make them more logical)
 - Update only changed cells
 - Resource limiting
+- Copy, cut, and paste (via typical bindings)
 
 # Internal
 - Add minimum cells size
