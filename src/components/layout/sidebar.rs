@@ -385,6 +385,7 @@ fn loop_setting_add(layer: &config::Config) -> Vec<Setting> {
   settings
 }
 
+#[inline]
 fn loop_setting_add_map(map: &serde_json::Map<String, Value>) -> Vec<Setting> {
   let mut settings = vec![];
   for (key, value) in map {
