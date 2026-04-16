@@ -140,7 +140,7 @@ impl App {
                     *val = Value::String(val.to_string() + "a")
                 }
 
-                _ => println!("I don't know how to increment this!"),
+                _ => return,
             }
         }
     }
