@@ -14,11 +14,20 @@ pub fn apply_globals(lua: &mlua::Lua, tx: crossbeam::channel::Sender<PluginActio
         })?
     )?;
 
-    /*globals.set("settings.new",
-        lua.create_function(move|_, (name, default): (mlua::String, mlua::Value)| {
-            crate::plugin::lua_integrate::settings::add_setting(name, default, app.clone())
+    // TODO: This should get the config :)
+    globals.set("get_info",
+        lua.create_function(move |_, ()| {
+            let (tx_respond, rx_respond) = oneshot::channel::<String>();
+
+            // Send the request with the "return address"
+            tx.send(PluginAction::GetAppInfo { respond_to: tx_respond }).ok();
+
+            // Wait for the response (blocking the Lua script briefly)
+            let info = rx_respond.try_recv().map_err(|_| mlua::Error::RuntimeError("Fatal error in Rust!".into()))?;
+
+            Ok(info)
         })?
-    )?;*/
+    )?;
 
     // TODO: Hook this up to real cursor
     globals.set("cursor_x", 0)?;
