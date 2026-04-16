@@ -367,6 +367,7 @@ struct Setting {
   value: String,
 }
 
+#[inline]
 fn loop_setting_add(layer: &config::Config) -> Vec<Setting> {
   let mut settings = vec![];
   for (key, value) in layer {
