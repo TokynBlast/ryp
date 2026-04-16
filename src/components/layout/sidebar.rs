@@ -362,8 +362,12 @@ fn draw_settings_view(f: &mut Frame, app: &App, area: Rect) {
     }
 
     if is_focused {
-        // Approximate position for cursor
-        f.set_cursor_position((area.x + 2, area.y + 2 + app.settings_scroll as u16));
+        // Cursor logic: Place it relative to the selected item's chunk if visible
+        if app.settings_selected >= start_index && app.settings_selected < end_index {
+            let chunk_idx = app.settings_selected - start_index;
+            let target_chunk = chunks[chunk_idx];
+            f.set_cursor_position((target_chunk.x + 2, target_chunk.y + 1));
+        }
     }
 }
 
