@@ -1,5 +1,4 @@
 use mlua::{Lua, Result, StdLib};
-use std::sync::Arc;
 
 pub fn load_plugins() -> Result<()> {
     let lua = Lua::new();
