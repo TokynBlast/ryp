@@ -76,7 +76,6 @@ impl UserData for OpenFile {
 }
 
 pub fn open_file<P: AsRef<Path>>(path: P) -> Result<OpenFile> {
-    
     let f = File::open(path).map_err(Error::external)?;
     Ok(OpenFile(Arc::new(Mutex::new(Some(f)))))
 }
