@@ -3,6 +3,8 @@ use crate::plugin::action::PluginAction;
 
 pub fn apply_globals(lua: &mlua::Lua, tx: crossbeam::channel::Sender<PluginAction>) -> Result<(), mlua::Error> {
     let globals = lua.globals();
+    let settings_table = lua.create_table()?;
+
     // Opens a file, for functions to perform on
     globals.set("open",
         lua.create_function(|_, path: String| {
@@ -19,6 +21,7 @@ pub fn apply_globals(lua: &mlua::Lua, tx: crossbeam::channel::Sender<PluginActio
     // TODO: Hook this up to real cursor
     globals.set("cursor_x", 0)?;
     globals.set("cursor_y", 0)?;
+    globals.set("settings", settings_table)?;
 
     Ok(())
 }
