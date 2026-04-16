@@ -1,8 +1,7 @@
 use mlua;
 use crate::plugin::action::PluginAction;
 
-
-pub fn apply_globals(lua: &mlua::Lua) -> Result<(), Box<dyn std::error::Error>> {
+pub fn apply_globals(lua: &mlua::Lua, tx: crossbeam::channel::Sender<PluginAction>) -> Result<(), mlua::Error> {
     let globals = lua.globals();
     // Opens a file, for functions to perform on
     globals.set("open",
