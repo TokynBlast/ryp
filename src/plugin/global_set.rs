@@ -8,7 +8,9 @@ pub fn apply_globals(lua: &mlua::Lua, tx: crossbeam::channel::Sender<PluginActio
     // Opens a file, for functions to perform on
     globals.set("open",
         lua.create_function(|_, path: String| {
-            lua_io::open_file(path)
+            crate::plugin::lua_io::open_file(path)
+        })?
+    )?;
         })?
     )?;
 
