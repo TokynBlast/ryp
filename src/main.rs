@@ -34,7 +34,8 @@ fn main() -> Result<(), Box<dyn Error>> {
     // Create app and run it
     let mut app = App::new(rx);
 
-    let _ = crate::plugin::plugin_main::load_plugins();
+    // Load in the lua plugins
+    let _ = crate::plugin::plugin_main::load_plugins(tx);
 
     // Check if an argument is passed
     let args: Vec<String> = std::env::args().collect();

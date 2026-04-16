@@ -1,7 +1,7 @@
 use mlua::{Lua, Result, StdLib};
 use crate::plugin::action::PluginAction;
 
-pub fn load_plugins() -> Result<()> {
+pub fn load_plugins(tx: crossbeam::channel::Sender<PluginAction>) -> Result<()> {
     let lua = Lua::new();
 
     crate::plugin::policy::apply_restrictions(&lua).expect("Something went wrong with applying resrtictions to plugin Lua.");
