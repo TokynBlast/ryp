@@ -10,6 +10,7 @@ use app::App;
 use std::error::Error;
 use std::path::{Path, PathBuf};
 use std::{env, fs};
+use crossbeam;
 
 fn main() -> Result<(), Box<dyn Error>> {
     let path = if cfg!(windows) {
