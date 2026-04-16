@@ -340,9 +340,11 @@ fn draw_settings_view(f: &mut Frame, app: &App, area: Rect) {
         .constraints(constraints)
         .split(inner);
 
-    // render each setting into its chunk (safe indexing)
-    for (i, setting) in settings.iter().enumerate() {
-        let is_selected = is_focused && app.settings_selected == i;
+    // Render only the visible settings
+    for (i, setting) in visible_settings.iter().enumerate() {
+        // Account for the scroll offset
+        let is_selected = is_focused && app.settings_selected == (i + start_index);
+
         let style = if is_selected {
             Style::default().bg(Color::Rgb(60, 60, 60)).fg(Color::White)
         } else {
