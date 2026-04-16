@@ -289,6 +289,7 @@ fn draw_git_view(f: &mut Frame, app: &App, area: Rect) {
     }
 }
 
+//TODO: Make it so that we do less throwing away work, such as the flattened settings
 fn draw_settings_view(f: &mut Frame, app: &App, area: Rect) {
     let is_focused = app.workspace.as_ref().map_or(false, |w| w.focused);
     let active_style = if is_focused {
