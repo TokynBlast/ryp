@@ -301,19 +301,9 @@ fn draw_settings_view(f: &mut Frame, app: &App, area: Rect) {
             .add_modifier(Modifier::BOLD)
     };
 
-    struct Setting {
-      title: String,
-      value: String,
-    }
+    let mut settings: Vec<Setting> = vec![];
 
-    let mut settings = vec![];
-
-    for (key, value) in &app.config {
-        settings.push(Setting {
-            title: key.clone(),       // The name of the setting/plugin
-            value: value.to_string(), // The value from JSON
-        });
-    }
+    settings.append(&mut loop_setting_add(&app.config));
 
     let settings_block = Block::default()
         .title(" Settings ")
