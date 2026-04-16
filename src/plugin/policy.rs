@@ -1,4 +1,25 @@
-use mlua::{Lua, Result, Value::Nil, Value, Table, Error};
+use mlua::{Lua, Result, Value::Nil, Value, Table, Error, Variadic};
+
+/// Redirects Lua `print()` function to
+fn debug_print(_lua: &Lua, args: Variadic<Value>) -> Result<()> {
+    // Convert all arguments to strings and join them with tabs (standard print behavior)
+    let output = args
+        .iter()
+        .map(|v| match v {
+            Value::String(s) => s.to_string_lossy(),
+            Value::Nil => "nil".to_string(),
+            Value::Boolean(b) => b.to_string(),
+            Value::Integer(i) => i.to_string(),
+            Value::Number(n) => n.to_string(),
+            _ => format!("{:?}", v), // Fallback for tables, functions, etc.
+        })
+        .collect::<Vec<_>>()
+        .join("\t");
+
+    todo!("Add the debug console");
+
+    Ok(())
+}
 
 pub fn apply_restrictions(lua: &Lua) -> Result<()> {
     let globals = lua.globals();
