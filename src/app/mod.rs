@@ -14,7 +14,7 @@ use std::path::PathBuf;
 use std::sync::{Arc, Mutex};
 use std::thread;
 use aho_corasick::AhoCorasick;
-use serde_json::Value;
+use serde_json::{json, Value};
 
 mod ui;
 
