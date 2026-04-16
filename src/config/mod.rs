@@ -1,10 +1,10 @@
 use serde_json::{json, Value};
-use std::collections::BTreeMap;
+use indexmap::{IndexMap};
 
-pub type Config = BTreeMap<String, Value>;
+pub type Config = IndexMap<String, Value>;
 
 pub fn default() -> Config {
-    let mut c = BTreeMap::new();
+    let mut c = IndexMap::new();
 
     c.insert("Tab Size".to_string(), json!(4));
 
