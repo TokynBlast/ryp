@@ -328,12 +328,11 @@ fn draw_settings_view(f: &mut Frame, app: &App, area: Rect) {
         0
     };
 
-    // build one chunk per visible row (cap at item_count)
-    let mut constraints = Vec::with_capacity(item_count);
-
-    for _ in 0..item_count {
-        constraints.push(Constraint::Length(3));
-    }
+    // Create chunks ONLY for the visible items
+    let constraints: Vec<Constraint> = visible_settings
+        .iter()
+        .map(|_| Constraint::Length(3))
+        .collect();
 
     let chunks = Layout::default()
         .direction(Direction::Vertical)
