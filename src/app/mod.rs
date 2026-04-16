@@ -49,6 +49,7 @@ pub struct App {
     pub settings_scroll: usize,
     pub terminal: crate::core::terminal::Terminal,
     pub terminal_visible: bool,
+    pub debug_console_visible: bool,
     pub dirty: bool,
     pub whitespace_cache: Arc<Mutex<Vec<usize>>>,
     pub highlight_cache: Arc<Mutex<Vec<Vec<(Style, String)>>>>,
@@ -82,6 +83,7 @@ impl App {
             settings_scroll: 0,                                                 // Scroll on settings
             terminal: crate::core::terminal::Terminal::new(PathBuf::from(".")), // The terminal; Defaults to current path
             terminal_visible: false,                                            // Sets whether the terminal is currently visible or not
+            debug_console_visible: false,
             dirty: true,                                                        // Whether there have been changes or not to the file(s)
             whitespace_cache: Arc::new(Mutex::new(Vec::new())),                 // Cache for where whitespace is, used in searching (performance increase)
             highlight_cache: Arc::new(Mutex::new(Vec::new())),                  // Cache for highlighting (performance increase)
