@@ -13,7 +13,6 @@ use std::path::PathBuf;
 use std::sync::{Arc, Mutex};
 use std::thread;
 use aho_corasick::AhoCorasick;
-use crate::plugin::plugin;
 use serde_json::Value;
 
 mod ui;
@@ -211,7 +210,6 @@ impl App {
 
     pub fn run(&mut self, term: &mut ratatui::DefaultTerminal) -> std::io::Result<()> {
         while !self.should_quit {
-            let _ = plugin::load_plugins();
             let had_update = self.terminal.update();
             if had_update {
                 self.dirty = true;

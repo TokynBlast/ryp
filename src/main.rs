@@ -31,6 +31,8 @@ fn main() -> Result<(), Box<dyn Error>> {
     // Create app and run it
     let mut app = App::new();
 
+    let _ = crate::plugin::plugin_main::load_plugins();
+
     // Check if an argument is passed
     let args: Vec<String> = std::env::args().collect();
     let target = if args.len() > 1 {
