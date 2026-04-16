@@ -22,7 +22,7 @@ pub fn default() -> Config {
 }
 
 // Like len, but also includes nests, ignoring actual nest
-pub fn nested_len(config: &BTreeMap<String, Value>) -> usize {
+pub fn nested_len(config: &Config) -> usize {
     let mut total = 0;
     for value in config.values() {
         total += count_values(value);
