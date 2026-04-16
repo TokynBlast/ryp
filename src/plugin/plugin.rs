@@ -4,7 +4,7 @@ use crate::plugin::lua_io;
 pub fn load_plugins() -> Result<()> {
     let lua = Lua::new();
 
-    crate::plugin::restrictions::apply_restrictions(&lua).expect("Something went wrong with applying resrtictions to plugin Lua.");
+    crate::plugin::policy::apply_restrictions(&lua).expect("Something went wrong with applying resrtictions to plugin Lua.");
 
     lua.load_std_libs(StdLib::ALL_SAFE)?;
 
