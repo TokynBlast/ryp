@@ -370,3 +370,44 @@ fn draw_settings_view(f: &mut Frame, app: &App, area: Rect) {
         f.set_cursor_position((area.x + 2, area.y + 2 + app.settings_scroll as u16));
     }
 }
+
+struct Setting {
+  title: String,
+  value: String,
+}
+
+fn loop_setting_add(layer: &config::Config) -> Vec<Setting> {
+  let mut settings = vec![];
+  for (key, value) in layer {
+      match value {
+          Value::Object(map) => {
+              settings.append(&mut loop_setting_add_map(map));
+          }
+          _ => {
+              settings.push(Setting {
+                  title: key.clone(),
+                  value: value.to_string(),
+              });
+          }
+      }
+  }
+  settings
+}
+
+fn loop_setting_add_map(map: &serde_json::Map<String, Value>) -> Vec<Setting> {
+  let mut settings = vec![];
+  for (key, value) in map {
+      match value {
+          Value::Object(nested) => {
+              settings.append(&mut loop_setting_add_map(nested));
+          }
+          _ => {
+              settings.push(Setting {
+                  title: key.clone(),
+                  value: value.to_string(),
+              });
+          }
+      }
+  }
+  settings
+}
