@@ -12,8 +12,7 @@ pub fn load_plugins(tx: crossbeam::channel::Sender<PluginAction>) -> Result<()> 
 
     // TODO: Make 3 worker threads, then make Lua give tasks
     lua.load(r#"
-        --print("This still needs to be done")
-
+        settings.add("Ryp Is Awesome", true)
     "#).exec()?;
     Ok(())
 }
