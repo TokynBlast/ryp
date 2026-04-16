@@ -308,15 +308,21 @@ fn draw_settings_view(f: &mut Frame, app: &App, area: Rect) {
         .borders(Borders::ALL)
         .border_style(active_style);
 
-    // render the block
-    f.render_widget(settings_block.clone(), area);
-
     let inner = settings_block.inner(area);
 
     // compute visible area and scrolling using inner size
     let height = inner.height as usize + app.settings_scroll;
-    let item_count = settings.len();
-    let scroll_y = if app.settings_scroll >= height / 2 {
+    f.render_widget(settings_block, area);
+
+    // Calculate how many items can actually fit in the inner area
+    // Each setting is 3 lines high
+    let visible_count = (inner.height / 3) as usize;
+
+    // Determine the window of items to show based on scroll
+    let start_index = app.settings_scroll;
+    let end_index = (start_index + visible_count).min(settings.len());
+    let visible_settings = &settings[start_index..end_index];
+
         app.settings_scroll - height / 2
     } else {
         0
