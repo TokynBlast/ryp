@@ -116,8 +116,30 @@ impl App {
     }
 
     pub fn change_settings(&mut self) {
-        // Inside our own set settings
-        todo!("Implement settings setting");
+        if let Some((_, val)) = self.config.get_index_mut(self.settings_selected) {
+            match val {
+                //TODO: Make it a box, that is on or off, like an HTML checkbox
+                Value::Bool(b) => *val = Value::Bool(!*b),
+                // TODO: Make it a continuous typing input,
+                //       and escape on enter press, or esc.
+                //
+                //TODO: Also allow for up and down arrow movement
+                //      to change and affect the number
+                //      (Left and right should move cursor)
+                Value::Number(n) => {
+                    if let Some(i) = n.as_i64() {
+                        *val = serde_json::json!(i + 1);
+                    }
+                },
+                // TODO: Make it a continuous typing input,
+                //       and escape on enter press, or esc
+                Value::String(s) => {
+                    *val = Value::String(val.to_string() + "a")
+                }
+
+                _ => println!("I don't know how to increment this!"),
+            }
+        }
     }
 
     pub fn open_file(&mut self, path: &Path, force_new_tab: bool) {
