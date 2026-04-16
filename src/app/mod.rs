@@ -60,7 +60,7 @@ impl App {
         Self {
             editors: vec![],                                                    // All editors open
             active_tab: 0,                                                      // Current active tab
-            config: crate::config::default(),                                          // Current configuration
+            config: crate::config::default(),                                   // Current configuration
             modal: None,                                                        // ???
             should_quit: false,                                                 // Whether Ryp should quit or not
             syntax_set: SyntaxSet::load_defaults_newlines(),                    // ???
@@ -75,17 +75,17 @@ impl App {
             search_num_occurrences: 0,                                          // Times a query has occured
             search_advanced: vec![],                                            // Advanced features, like *.mi, etc.
             git_manager: crate::core::git::GitManager::new(),                   // manager for git
-            git_changes: vec![],                                                // ???
+            git_changes: vec![],                                                // Changes in Git
             git_scroll: 0,                                                      // Y index on git tab scroll
             git_selected: 0,                                                    // Git diff file selected
             settings_selected: 0,                                               // Setting selected
             settings_scroll: 0,                                                 // Scroll on settings
-            terminal: crate::core::terminal::Terminal::new(PathBuf::from(".")), // The terminal; Defaults to current path
+            terminal: crate::core::terminal::Terminal::new(PathBuf::from(".")),// The terminal; Defaults to current path
             terminal_visible: false,                                            // Sets whether the terminal is currently visible or not
-            debug_console_visible: false,
+            debug_console_visible: false,                                       // Whether plugin debug console is visible or not
             dirty: true,                                                        // Whether there have been changes or not to the file(s)
             whitespace_cache: Arc::new(Mutex::new(Vec::new())),                 // Cache for where whitespace is, used in searching (performance increase)
-            highlight_cache: Arc::new(Mutex::new(Vec::new())),                  // Cache for highlighting (performance increase)
+            highlight_cache: Arc::new(Mutex::new(Vec::new())),                 // Cache for highlighting (performance increase)
         }
     }
 
