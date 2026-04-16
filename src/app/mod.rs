@@ -115,6 +115,7 @@ impl App {
         }
     }
 
+    // This is just an example, and meant to show it works, since actual logic will be much more complex...
     pub fn change_settings(&mut self) {
         if let Some((_, val)) = self.config.get_index_mut(self.settings_selected) {
             match val {
