@@ -11,6 +11,23 @@ pub fn apply_globals(lua: &mlua::Lua, tx: crossbeam::channel::Sender<PluginActio
             crate::plugin::lua_io::open_file(path)
         })?
     )?;
+
+    // We clone the sender for each function
+    let tx_add:
+        crossbeam_channel::Sender<PluginAction> = tx.clone();
+
+    settings_table.set("add",
+        lua.create_function(move |_, (name, value): (String, mlua::Value)| {
+            let _ = tx_add.send(PluginAction::SetSetting { name, value });
+            Ok(())
+        })?
+    )?;
+
+    let tx_insert = tx.clone();
+    globals.set("insert_text",
+        lua.create_function(move |_, (text, x, y): (String, usize, usize)| {
+            let _ = tx_insert.send(PluginAction::InsertText { text, x, y });
+            Ok(())
         })?
     )?;
 
