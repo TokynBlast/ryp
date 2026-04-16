@@ -239,6 +239,7 @@ impl App {
                 self.dirty = false;
             }
 
+            // Once typing, we assume more typing will occur, so we drop blocking
             let timeout = if self.dirty {
                 Duration::from_millis(0)
             } else {
