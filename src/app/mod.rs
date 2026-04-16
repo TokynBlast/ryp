@@ -213,6 +213,23 @@ impl App {
 
     pub fn run(&mut self, term: &mut ratatui::DefaultTerminal) -> std::io::Result<()> {
         while !self.should_quit {
+            while let Ok(action) = self.rx.try_recv() {
+                self.dirty = true; // Mark dirty because state changed
+                match action {
+                    PluginAction::SetSetting { name, value } => {
+                        self.config.insert(name, json!(value));
+                    }
+                    PluginAction::InsertText { text, x, y } => {
+                        todo!("Implement InsertText");
+                    }
+                    PluginAction::GetAppInfo {respond_to} => {
+                        let info = format!("Active Tab: {}, Editors: {}", self.active_tab, self.editors.len());
+                        let _ = respond_to.send(info); // Send it back to Lua!
+                    }
+                    // Add more "Actions" as you implement them!
+                }
+            }
+
             let had_update = self.terminal.update();
             if had_update {
                 self.dirty = true;
