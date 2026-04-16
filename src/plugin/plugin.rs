@@ -22,7 +22,7 @@ pub fn load_plugins() -> Result<()> {
 
     // TODO: Make 3 worker threads, then make Lua give tasks
     lua.load(r#"
-        print("This still needs to be done")
+        --print("This still needs to be done")
     "#).exec()?;
     Ok(())
 }
