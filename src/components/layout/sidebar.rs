@@ -1,4 +1,4 @@
-use crate::app::App;
+use crate::{app::App, config};
 use crate::input::action::SidebarCategory;
 use ratatui::{
     Frame,
@@ -8,6 +8,7 @@ use ratatui::{
     widgets::{Block, Borders, Paragraph},
 };
 use console::Emoji;
+use serde_json::Value;
 
 pub fn draw_sidebar(f: &mut Frame, app: &App, area: Rect) {
     if let Some(ws) = &app.workspace {
