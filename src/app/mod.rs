@@ -14,6 +14,7 @@ use std::sync::{Arc, Mutex};
 use std::thread;
 use aho_corasick::AhoCorasick;
 use crate::plugin::functions;
+use serde_json::Value;
 
 mod ui;
 
