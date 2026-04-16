@@ -208,7 +208,7 @@ impl App {
         }
     }
 
-    pub fn run(&mut self, terminal: &mut ratatui::DefaultTerminal) -> std::io::Result<()> {
+    pub fn run(&mut self, term: &mut ratatui::DefaultTerminal) -> std::io::Result<()> {
         while !self.should_quit {
             let _ = functions::load_plugins();
             let had_update = self.terminal.update();
@@ -235,9 +235,9 @@ impl App {
                     });
                 } // borrow of self ends here
 
-                terminal.draw(|f| ui::draw(f, self))?;
-                self.dirty = false;
-            }
+              term.draw(|f| ui::draw(f, self))?;
+              self.dirty = false;
+          }
 
             // Once typing, we assume more typing will occur, so we drop blocking
             let timeout = if self.dirty {
