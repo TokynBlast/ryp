@@ -8,7 +8,7 @@ pub fn load_plugins(tx: crossbeam::channel::Sender<PluginAction>) -> Result<()> 
 
     lua.load_std_libs(StdLib::ALL_SAFE)?;
 
-    let _ = crate::plugin::global_set::apply_globals(&lua);
+    let _ = crate::plugin::global_set::apply_globals(&lua, tx);
 
     // TODO: Make 3 worker threads, then make Lua give tasks
     lua.load(r#"
