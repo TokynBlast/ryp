@@ -1,4 +1,4 @@
-pub mod functions;
+pub mod plugin;
 mod lua_io;
-mod restrictions;
+mod policy;
 mod lua_integrate;
