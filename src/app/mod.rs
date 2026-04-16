@@ -51,12 +51,13 @@ pub struct App {
     pub terminal_visible: bool,
     pub debug_console_visible: bool,
     pub dirty: bool,
+    pub rx: crossbeam::channel::Receiver<PluginAction>,
     pub whitespace_cache: Arc<Mutex<Vec<usize>>>,
     pub highlight_cache: Arc<Mutex<Vec<Vec<(Style, String)>>>>,
 }
 
 impl App {
-    pub fn new() -> Self {
+    pub fn new(rx: crossbeam::channel::Receiver<PluginAction>) -> Self {
         Self {
             editors: vec![],                                                    // All editors open
             active_tab: 0,                                                      // Current active tab
@@ -84,6 +85,7 @@ impl App {
             terminal_visible: false,                                            // Sets whether the terminal is currently visible or not
             debug_console_visible: false,                                       // Whether plugin debug console is visible or not
             dirty: true,                                                        // Whether there have been changes or not to the file(s)
+            rx,
             whitespace_cache: Arc::new(Mutex::new(Vec::new())),                 // Cache for where whitespace is, used in searching (performance increase)
             highlight_cache: Arc::new(Mutex::new(Vec::new())),                 // Cache for highlighting (performance increase)
         }

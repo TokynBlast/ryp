@@ -29,8 +29,10 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     let mut terminal = ratatui::init();
 
+    let (tx, rx) = crossbeam::channel::unbounded();
+
     // Create app and run it
-    let mut app = App::new();
+    let mut app = App::new(rx);
 
     let _ = crate::plugin::plugin_main::load_plugins();
 
