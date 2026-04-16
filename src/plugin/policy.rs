@@ -30,7 +30,9 @@ pub fn apply_restrictions(lua: &Lua) -> Result<()> {
     globals.set("debug", Nil)?;
 
     // Printing shifts up the screen, which we *DON'T* want
-    globals.set("print", Nil)?;
+    // Instead, we offer printing, but contained :)
+    let debug_print_fn = lua.create_function(debug_print)?;
+    globals.set("print", debug_print_fn)?;
 
     // Help to prevent version specific exploits
     globals.set("_VERSION", Nil)?;
