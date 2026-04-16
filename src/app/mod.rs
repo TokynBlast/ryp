@@ -64,7 +64,6 @@ impl App {
             modal: None,                                                        // ???
             should_quit: false,                                                 // Whether Ryp should quit or not
             syntax_set: SyntaxSet::load_defaults_newlines(),                    // ???
-            // TODO: Make this lazy loading...
             theme_set: ThemeSet::load_defaults(),                               // The current theme
             workspace: None,                                                    // Filetree, and other stuff
             sidebar_category: SidebarCategory::FileTree,                        // Current sidebar piece
