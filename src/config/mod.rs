@@ -8,15 +8,15 @@ pub fn default() -> Config {
 
     c.insert("Tab Size".to_string(), json!(4));
 
+    c.insert("Auto Save".to_string(), json!(false));
+    c.insert("Time To Auto Save".to_string(), json!(30_000));
+
     // Theme nest
     c.insert("theme".to_string(), json!({
         "Tab BG Color": "#333333",
         "Active Tab BG Color": "#2E7D32",
         "Highlighting Theme": "base16-ocean.dark"
     }));
-
-    c.insert("Auto Save".to_string(), json!(true));
-    c.insert("Time To Auto Save".to_string(), json!(30_000));
 
     c
 }
