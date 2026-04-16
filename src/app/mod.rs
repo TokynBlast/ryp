@@ -2,6 +2,7 @@ use crate::config::Config;
 use crate::core::editor::Editor;
 use crate::input::action::SidebarCategory;
 use crate::windows::modal::{Modal, ModalType};
+use crate::plugin::action::PluginAction;
 use crossterm::event::{self, Event};
 use std::collections::HashSet;
 use std::time::Duration;

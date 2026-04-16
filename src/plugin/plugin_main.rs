@@ -1,4 +1,5 @@
 use mlua::{Lua, Result, StdLib};
+use crate::plugin::action::PluginAction;
 
 pub fn load_plugins() -> Result<()> {
     let lua = Lua::new();

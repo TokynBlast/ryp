@@ -1,5 +1,6 @@
 use mlua;
-use crate::plugin::{lua_integrate::*, lua_io};
+use crate::plugin::action::PluginAction;
+
 
 pub fn apply_globals(lua: &mlua::Lua) -> Result<(), Box<dyn std::error::Error>> {
     let globals = lua.globals();
