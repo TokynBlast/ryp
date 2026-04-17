@@ -85,7 +85,7 @@ impl App {
             terminal_visible: false,                                            // Sets whether the terminal is currently visible or not
             debug_console_visible: false,                                       // Whether plugin debug console is visible or not
             dirty: true,                                                        // Whether there have been changes or not to the file(s)
-            rx,
+            rx,                                                                 // Crossbeam send and receive
             whitespace_cache: Arc::new(Mutex::new(Vec::new())),                 // Cache for where whitespace is, used in searching (performance increase)
             highlight_cache: Arc::new(Mutex::new(Vec::new())),                 // Cache for highlighting (performance increase)
         }
