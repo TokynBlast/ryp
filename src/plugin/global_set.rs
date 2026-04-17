@@ -17,7 +17,7 @@ pub fn apply_globals(lua: &mlua::Lua, tx: crossbeam::channel::Sender<PluginActio
 
     settings_table.set("add",
         lua.create_function(move |_, (name, value): (String, mlua::Value)| {
-            let _ = tx_add.send(PluginAction::SetSetting { name, value });
+            let _ = tx_add.send(PluginAction::MakeSetting { name, value });
             Ok(())
         })?
     )?;

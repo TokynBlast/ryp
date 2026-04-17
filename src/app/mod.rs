@@ -216,7 +216,7 @@ impl App {
             while let Ok(action) = self.rx.try_recv() {
                 self.dirty = true; // Mark dirty because state changed
                 match action {
-                    PluginAction::SetSetting { name, value } => {
+                    PluginAction::MakeSetting { name, value } => {
                         self.config.insert(name, json!(value));
                     }
                     PluginAction::InsertText { text, x, y } => {
