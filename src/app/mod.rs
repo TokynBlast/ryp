@@ -239,6 +239,10 @@ impl App {
                     PluginAction::DebugLog { message } => {
                         self.debug_logs.push(message);
                     }
+
+                    PluginAction::SetSetting { name, value } => {
+                        self.config.insert(name, json!(value));
+                    }
                 }
             }
 
