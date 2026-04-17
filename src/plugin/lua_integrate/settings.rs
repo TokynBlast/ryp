@@ -35,8 +35,16 @@ fn get_setting_value(lua: &mlua::Lua, tx: &crossbeam::channel::Sender<PluginActi
 }
 
 #[inline]
-fn set_setting_value() {
-  todo!("Add value setting for Lua implemented settings");
+fn set_setting_value(lua: &mlua::Lua, tx: &crossbeam::channel::Sender<PluginAction>, settings_table: &mlua::Table) -> Result<(), mlua::Error> {
+    let tx_set = tx.clone();
+
+    settings_table.set("set",
+        lua.create_function(move |_, (name, value): (String, mlua::Value)| {
+            let _ = tx_set.send(PluginAction::SetSetting { name, value });
+            Ok(())
+        })?
+    )?;
+    Ok(())
 }
 
 #[inline]
