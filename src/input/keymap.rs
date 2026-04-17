@@ -74,6 +74,7 @@ pub fn map_key(key: KeyEvent, in_modal: bool, is_sidebar_focused: bool) -> Optio
                     's' | 'S' => Some(Action::Save),
                     't' | 'T' => Some(Action::ToggleTerminal),
                     'g' | 'G' => Some(Action::RefreshGit),
+                    'e' | 'E' => Some(Action::ToggleDebugConsole),
                     _ => None,
                 }
             } else {
