@@ -8,8 +8,9 @@ fn add_setting(lua: &mlua::Lua, tx: &crossbeam::channel::Sender<PluginAction>, s
     let tx_add = tx.clone();
 
     settings_table.set("add",
-        lua.create_function(move |_, (name, value): (String, mlua::Value)| {
-            let _ = tx_add.send(PluginAction::MakeSetting { name, value });
+        lua.create_function(move |lua, (name, value): (String, mlua::Value)| {
+            let json_value: serde_json::Value = lua.from_value(value)?;
+            let _ = tx_add.send(PluginAction::MakeSetting { name, value: json_value }).ok();
             Ok(())
         })?
     )?;
@@ -42,8 +43,9 @@ fn set_setting_value(lua: &mlua::Lua, tx: &crossbeam::channel::Sender<PluginActi
     let tx_set = tx.clone();
 
     settings_table.set("set",
-        lua.create_function(move |_, (name, value): (String, mlua::Value)| {
-            let _ = tx_set.send(PluginAction::SetSetting { name, value });
+        lua.create_function(move |lua, (name, value): (String, mlua::Value)| {
+            let json_value: serde_json::Value = lua.from_value(value)?;
+            let _ = tx_set.send(PluginAction::SetSetting { name, value: json_value });
             Ok(())
         })?
     )?;
