@@ -222,11 +222,13 @@ impl App {
                     PluginAction::InsertText { text, x, y } => {
                         todo!("Implement InsertText");
                     }
-                    PluginAction::GetAppInfo {respond_to} => {
-                        let info = format!("Active Tab: {}, Editors: {}", self.active_tab, self.editors.len());
-                        let _ = respond_to.send(info); // Send it back to Lua!
+                    PluginAction::GetAppInfo { name, tx_respond } => {
+                        let response = self.config.get(&name)
+                        .map(|v| v.to_string())
+                        .unwrap_or_else(|| "null".to_string());
+
+                        let _ = tx_respond.send(response);
                     }
-                    // Add more "Actions" as you implement them!
                 }
             }
 
