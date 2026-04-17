@@ -141,7 +141,7 @@ fn draw_terminal(f: &mut ratatui::Frame, app: &App, area: ratatui::layout::Rect)
 
 fn draw_debug(f: &mut ratatui::Frame, app: &App, area: ratatui::layout::Rect) {
   use ratatui::layout::{Constraint, Direction, Layout};
-  use ratatui::style::{Color, Modifier, Style};
+  use ratatui::style::{Color, Style};
   use ratatui::widgets::{Block, Borders, Clear, Paragraph, Wrap};
   use ratatui::text::{Line, Span};
 
