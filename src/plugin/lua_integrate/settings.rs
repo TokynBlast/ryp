@@ -2,6 +2,7 @@ use mlua;
 use crate::plugin::{action::PluginAction};
 
 #[inline]
+fn add_setting(name: mlua::String, default_value: mlua::Value) -> Result<(), mlua::Error>  {
   todo!("Both add default value, which can be any type,\nand implement actually adding it to the list of settings");
 }
 
