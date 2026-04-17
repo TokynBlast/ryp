@@ -1,4 +1,5 @@
-use mlua::{Lua, Result, Value::Nil, Value, Table, Error, Variadic};
+use mlua::{Error, Lua, Result, Table, Value::{self, Nil}};
+use crate::plugin::action::PluginAction;
 
 /// Redirects Lua `print()` function to
 /// This is apart of the policy, since print must go to the debug console, and going elsewhere is not accepted.
