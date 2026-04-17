@@ -1,5 +1,6 @@
 use mlua;
 use crate::plugin::{action::PluginAction};
+use mlua::LuaSerdeExt;
 
 #[inline]
 fn add_setting(lua: &mlua::Lua, tx: &crossbeam::channel::Sender<PluginAction>, settings_table: &mlua::Table) -> Result<(), mlua::Error>  {
