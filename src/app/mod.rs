@@ -599,7 +599,7 @@ impl App {
                             }
                         }
                         SidebarCategory::Settings => {
-                            if self.settings_selected < crate::config::nested_len(&self.config).saturating_sub(1) {
+                            if self.settings_selected < self.config.len().saturating_sub(1) {
                                 self.settings_selected += 1;
 
                                 // If the selection goes below the visible area, scroll down
@@ -647,7 +647,7 @@ impl App {
                                 }
                             }
                             SidebarCategory::Settings => {
-                                if self.settings_selected < crate::config::nested_len(&self.config).saturating_sub(1) {
+                                if self.settings_selected < self.config.len() {
                                     self.dispatch(Action::ChangeSettings);
                                 }
                             },
