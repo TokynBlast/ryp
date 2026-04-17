@@ -23,6 +23,21 @@ pub fn apply_globals(lua: &mlua::Lua, tx: crossbeam::channel::Sender<PluginActio
         })?
     )?;
 
+    let tx_get = tx.clone();
+    settings_table.set("get",
+        lua.create_function(move |_, name: String| {
+            let name_on_error: String = name.clone();
+
+            let (tx_respond, rx_respond) = oneshot::channel::<String>();
+            // Send request for value
+            let _ = tx_get.send(PluginAction::GetSettingValue { name, tx_respond });
+            // Wait for value
+            let info = rx_respond.try_recv().map_err(|_| mlua::Error::RuntimeError(format!("Fatal error: could not get value {}", name_on_error).into()))?;
+
+            Ok(info)
+        })?
+    )?;
+
     let tx_insert = tx.clone();
     globals.set("insert_text",
         lua.create_function(move |_, (text, x, y): (String, usize, usize)| {
