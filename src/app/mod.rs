@@ -226,7 +226,7 @@ impl App {
                     }
 
                     PluginAction::InsertText { text, x, y } => {
-                        todo!("Implement InsertText");
+                        todo!("Implement InsertText\nUse self.active_tab in `src/app/mod.rs`");
                     }
 
                     PluginAction::GetSettingValue { name, tx_respond } => {
