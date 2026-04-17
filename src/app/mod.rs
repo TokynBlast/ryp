@@ -217,6 +217,7 @@ impl App {
 
     pub fn run(&mut self, term: &mut ratatui::DefaultTerminal) -> std::io::Result<()> {
         while !self.should_quit {
+            self.host_terminal_height = term.size().unwrap().height as usize;
             while let Ok(action) = self.rx.try_recv() {
                 self.dirty = true; // Mark dirty because state changed
                 match action {
@@ -604,7 +605,7 @@ impl App {
 
                                 // If the selection goes below the visible area, scroll down
                                 // TODO: Implement visible area, 3 is just a stable size for when really small...
-                                let visible_height = 3;
+                                let visible_height = self.host_terminal_height;
                                 if self.settings_selected >= self.settings_scroll + visible_height {
                                     self.settings_scroll += 1;
                                 }
