@@ -1,4 +1,4 @@
-use mlua::{Error, Lua, Result, Table, Value::{self, Nil}};
+use mlua::{Lua, Result, Value::{self, Nil}};
 use crate::plugin::action::PluginAction;
 
 pub fn apply_restrictions(lua: &Lua, tx: crossbeam::channel::Sender<crate::plugin::action::PluginAction>) -> Result<()> {
