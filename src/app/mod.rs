@@ -223,9 +223,11 @@ impl App {
                     PluginAction::MakeSetting { name, value } => {
                         self.config.insert(name, json!(value));
                     }
+
                     PluginAction::InsertText { text, x, y } => {
                         todo!("Implement InsertText");
                     }
+
                     PluginAction::GetSettingValue { name, tx_respond } => {
                         let response = self.config.get(&name)
                         .map(|v| v.to_string())
@@ -233,6 +235,7 @@ impl App {
 
                         let _ = tx_respond.send(response);
                     }
+
                     PluginAction::DebugLog { message } => {
                         self.debug_logs.push(message);
                     }
