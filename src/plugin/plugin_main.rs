@@ -53,7 +53,6 @@ fn spawn_lua_worker(script: String, action_tx: crossbeam::channel::Sender<Plugin
 }
 
 pub fn load_plugins(tx: crossbeam::channel::Sender<PluginAction>) -> Result<()> {
-
     // TODO: Make 3 worker threads, then make Lua give tasks
     let plugin = r#"
     print("haiiii")
