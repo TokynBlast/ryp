@@ -52,8 +52,9 @@ fn set_setting_value(lua: &mlua::Lua, tx: &crossbeam::channel::Sender<PluginActi
 pub fn integrate_settings(lua: &mlua::Lua, tx: crossbeam::channel::Sender<PluginAction>) -> Result<(), mlua::Error> {
     let settings_table = lua.create_table()?;
     let globals = lua.globals();
-    get_setting_value(lua, &tx, &settings_table)?;
     add_setting(lua, &tx, &settings_table)?;
+    get_setting_value(lua, &tx, &settings_table)?;
+    set_setting_value(lua, &tx, &settings_table)?;
     globals.set("settings", settings_table)?;
     Ok(())
 }
