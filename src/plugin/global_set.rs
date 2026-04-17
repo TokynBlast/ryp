@@ -13,8 +13,7 @@ pub fn apply_globals(lua: &mlua::Lua, tx: crossbeam::channel::Sender<PluginActio
     )?;
 
     // We clone the sender for each function
-    let tx_add:
-        crossbeam_channel::Sender<PluginAction> = tx.clone();
+    let tx_add = tx.clone();
 
     settings_table.set("add",
         lua.create_function(move |_, (name, value): (String, mlua::Value)| {
