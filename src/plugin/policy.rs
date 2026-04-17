@@ -6,7 +6,6 @@ pub fn apply_restrictions(lua: &Lua, tx: &crossbeam::channel::Sender<crate::plug
 
     // Included in ALL_SAFE; This is something unsafe for us
     globals.set("package", Nil)?;
-
     globals.set("debug", Nil)?;
     globals.set("load", Nil)?;
     globals.set("dofile", Nil)?;
