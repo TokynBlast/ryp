@@ -90,6 +90,8 @@ impl App {
             rx,                                                                 // Crossbeam send and receive
             whitespace_cache: Arc::new(Mutex::new(Vec::new())),                 // Cache for where whitespace is, used in searching (performance increase)
             highlight_cache: Arc::new(Mutex::new(Vec::new())),                 // Cache for highlighting (performance increase)
+            host_terminal_height: 0,
+            debug_logs: vec![],
         }
     }
 
