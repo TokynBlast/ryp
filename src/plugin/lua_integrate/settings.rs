@@ -27,6 +27,7 @@ fn get_setting_value(lua: &mlua::Lua, tx: &crossbeam::channel::Sender<PluginActi
 
             // Send request for value
             let _ = tx_get.send(PluginAction::GetSettingValue { name, tx_respond });
+
             // Wait for value
             let info = rx_respond.try_recv().map_err(|_| mlua::Error::RuntimeError(format!("Fatal error: could not get value {}", name_on_error).into()))?;
 
