@@ -31,7 +31,7 @@ fn get_setting_value(lua: &mlua::Lua, tx: &crossbeam::channel::Sender<PluginActi
             // Wait for value
             let info = rx_respond.try_recv().map_err(|_| mlua::Error::RuntimeError(format!("Fatal error: could not get value {}", name_on_error).into()))?;
 
-            Ok(info)
+            lua.to_value(&info)
         })?
     )?;
     Ok(())
