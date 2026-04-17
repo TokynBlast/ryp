@@ -62,7 +62,7 @@ impl App {
             editors: vec![],                                                    // All editors open
             active_tab: 0,                                                      // Current active tab
             config: crate::config::default(),                                   // Current configuration
-            modal: None,                                                        // ???
+            modal: None,                                                        // Selection windows (confirm leave, new file, etc.)
             should_quit: false,                                                 // Whether Ryp should quit or not
             syntax_set: SyntaxSet::load_defaults_newlines(),                    // ???
             theme_set: ThemeSet::load_defaults(),                               // The current theme
