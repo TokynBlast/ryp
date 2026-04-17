@@ -168,7 +168,7 @@ fn draw_debug(f: &mut ratatui::Frame, app: &App, area: ratatui::layout::Rect) {
       .split(popup_layout[1])[1];
 
   let block = Block::default()
-      .title(" Debug Console (ESC to Hide) ")
+      .title(" Debug Console (Ctrl + E / ESC) ")
       .borders(Borders::ALL)
       .border_style(Style::default().fg(Color::Magenta)); // Magenta for that 'dev' vibe
 
