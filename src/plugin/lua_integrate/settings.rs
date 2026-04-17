@@ -24,10 +24,10 @@ fn get_setting_value(lua: &mlua::Lua, tx: &crossbeam::channel::Sender<PluginActi
         lua.create_function(move |lua, name: String| {
             let name_on_error: String = name.clone();
 
-            let (tx_respond, rx_respond) = oneshot::channel::<serde_json::Value>();
+            let (resp_tx, resp_rx) = crossbeam::channel::bounded(1);
 
             // Send request for value
-            let _ = tx_get.send(PluginAction::GetSettingValue { name, tx_respond });
+            let _ = tx_get.send(PluginAction::GetSettingValue { name, tx_respond: resp_tx });
 
             // Wait for value
             let info = rx_respond.try_recv().map_err(|_| mlua::Error::RuntimeError(format!("Could not get value '{}': ", name_on_error).into()))?;
