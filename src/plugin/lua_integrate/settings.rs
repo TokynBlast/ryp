@@ -23,7 +23,8 @@ fn get_setting_value(lua: &mlua::Lua, tx: &crossbeam::channel::Sender<PluginActi
         lua.create_function(move |lua, name: String| {
             let name_on_error: String = name.clone();
 
-            let (tx_respond, rx_respond) = oneshot::channel::<String>();
+            let (tx_respond, rx_respond) = oneshot::channel::<serde_json::Value>();
+
             // Send request for value
             let _ = tx_get.send(PluginAction::GetSettingValue { name, tx_respond });
             // Wait for value
