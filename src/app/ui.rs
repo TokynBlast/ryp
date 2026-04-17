@@ -170,7 +170,8 @@ fn draw_debug(f: &mut ratatui::Frame, app: &App, area: ratatui::layout::Rect) {
   let block = Block::default()
       .title(" Debug Console (Ctrl + E / ESC) ")
       .borders(Borders::ALL)
-      .border_style(Style::default().fg(Color::Magenta)); // Magenta for that 'dev' vibe
+      // TODO: Make it so that it uses a configurable color
+      .border_style(Style::default().fg(Color::Magenta));
 
   // Build the log content from app.debug_logs
   let mut content: Vec<Line> = Vec::new();
