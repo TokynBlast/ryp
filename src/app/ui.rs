@@ -176,7 +176,6 @@ fn draw_debug(f: &mut ratatui::Frame, app: &App, area: ratatui::layout::Rect) {
   let mut content: Vec<Line> = Vec::new();
 
   for log in &app.debug_logs {
-      // We can add a little timestamp or prefix if we want
       content.push(Line::from(vec![
           // Both because it looks cool, and to see where each log starts :)
           Span::styled(" λ ", Style::default().fg(Color::Gray)),
