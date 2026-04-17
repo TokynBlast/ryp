@@ -1,25 +1,8 @@
 use mlua::{Lua, Result, Value::Nil, Value, Table, Error, Variadic};
 
 /// Redirects Lua `print()` function to
-fn debug_print(_lua: &Lua, args: Variadic<Value>) -> Result<()> {
-    // Convert all arguments to strings and join them with tabs (standard print behavior)
-    let output = args
-        .iter()
-        .map(|v| match v {
-            Value::String(s) => s.to_string_lossy(),
-            Value::Nil => "nil".to_string(),
-            Value::Boolean(b) => b.to_string(),
-            Value::Integer(i) => i.to_string(),
-            Value::Number(n) => n.to_string(),
-            _ => format!("{:?}", v), // Fallback for tables, functions, etc.
-        })
-        .collect::<Vec<_>>()
-        .join("\t");
+/// This is apart of the policy, since print must go to the debug console, and going elsewhere is not accepted.
 
-    todo!("Add the debug console");
-
-    Ok(())
-}
 
 pub fn apply_restrictions(lua: &Lua) -> Result<()> {
     let globals = lua.globals();
@@ -31,7 +14,31 @@ pub fn apply_restrictions(lua: &Lua) -> Result<()> {
 
     // Printing shifts up the screen, which we *DON'T* want
     // Instead, we offer printing, but contained :)
-    let debug_print_fn = lua.create_function(debug_print)?;
+    let tx_print = tx.clone();
+
+    // Redirects Lua `print()` function to a debug console
+    // This is apart of the policy, since print must go to the debug console, and going elsewhere is not accepted.
+    let debug_print_fn = lua.create_function(move |_, args: mlua::Variadic<mlua::Value>| {
+        let msg = args
+            .iter()
+            .map(|v| match v {
+                // .ok() converts Result to Option, allowing unwrap_or to take a &str
+                Value::String(s) => s.to_str().ok().as_deref().unwrap_or("").to_string(),
+                Value::Nil => "nil".to_string(),
+                Value::Boolean(b) => b.to_string(),
+                Value::Integer(i) => i.to_string(),
+                Value::Number(n) => n.to_string(),
+                any => format!("{:?}", any),
+            })
+            .collect::<Vec<_>>()
+            .join(" ");
+
+        // Match your existing variant: DebugLog { message: String }
+        let _ = tx_print.send(PluginAction::DebugLog { message: msg });
+
+        Ok(())
+    })?;
+
     globals.set("print", debug_print_fn)?;
 
     // Help to prevent version specific exploits

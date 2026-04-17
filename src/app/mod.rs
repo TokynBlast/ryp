@@ -233,6 +233,9 @@ impl App {
 
                         let _ = tx_respond.send(response);
                     }
+                    PluginAction::DebugLog { message } => {
+                        self.debug_logs.push(message);
+                    }
                 }
             }
 
@@ -515,6 +518,12 @@ impl App {
             Action::TerminalInput(key) => {
                 self.terminal.handle_key(key);
                 return;
+            }
+            Action::ToggleDebugConsole => {
+              self.debug_console_visible = !self.debug_console_visible;
+              if self.debug_console_visible {
+                self.dirty = true;
+              }
             }
             _ => {}
         }

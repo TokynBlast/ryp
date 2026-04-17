@@ -49,4 +49,5 @@ pub enum Action {
     ToggleTerminal,
     TerminalInput(crossterm::event::KeyEvent),
     ChangeSettings,
+    ToggleDebugConsole,
 }
