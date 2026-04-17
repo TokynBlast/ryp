@@ -1,4 +1,5 @@
 use mlua;
+use crate::plugin::{action::PluginAction};
 
 #[inline]
   todo!("Both add default value, which can be any type,\nand implement actually adding it to the list of settings");
