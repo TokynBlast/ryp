@@ -19,7 +19,7 @@ fn add_setting(lua: &mlua::Lua, tx: &crossbeam::channel::Sender<PluginAction>, s
 fn get_setting_value(lua: &mlua::Lua, tx: &crossbeam::channel::Sender<PluginAction>, settings_table: &mlua::Table) -> Result<(), mlua::Error>  {
     let tx_get = tx.clone();
     settings_table.set("get",
-        lua.create_function(move |_, name: String| {
+        lua.create_function(move |lua, name: String| {
             let name_on_error: String = name.clone();
 
             let (tx_respond, rx_respond) = oneshot::channel::<String>();
