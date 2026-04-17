@@ -4,7 +4,7 @@ use mlua::{Lua, Result, Value::Nil, Value, Table, Error, Variadic};
 /// This is apart of the policy, since print must go to the debug console, and going elsewhere is not accepted.
 
 
-pub fn apply_restrictions(lua: &Lua) -> Result<()> {
+pub fn apply_restrictions(lua: &Lua, tx: &crossbeam::channel::Sender<crate::plugin::action::PluginAction>) -> Result<()> {
     let globals = lua.globals();
 
     // Included in ALL_SAFE; This is something unsafe for us
