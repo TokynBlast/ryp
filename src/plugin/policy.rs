@@ -1,10 +1,6 @@
 use mlua::{Error, Lua, Result, Table, Value::{self, Nil}};
 use crate::plugin::action::PluginAction;
 
-/// Redirects Lua `print()` function to
-/// This is apart of the policy, since print must go to the debug console, and going elsewhere is not accepted.
-
-
 pub fn apply_restrictions(lua: &Lua, tx: &crossbeam::channel::Sender<crate::plugin::action::PluginAction>) -> Result<()> {
     let globals = lua.globals();
 
