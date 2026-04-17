@@ -142,7 +142,7 @@ impl App {
                 // TODO: Make it a continuous typing input,
                 //       and escape on enter press, or esc
                 Value::String(s) => {
-                    *val = Value::String(val.to_string() + "a")
+                    *val = Value::String(s.to_string() + "a")
                 }
 
                 _ => return,
