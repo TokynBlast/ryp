@@ -222,7 +222,7 @@ impl App {
                     PluginAction::InsertText { text, x, y } => {
                         todo!("Implement InsertText");
                     }
-                    PluginAction::GetAppInfo { name, tx_respond } => {
+                    PluginAction::GetSettingValue { name, tx_respond } => {
                         let response = self.config.get(&name)
                         .map(|v| v.to_string())
                         .unwrap_or_else(|| "null".to_string());
