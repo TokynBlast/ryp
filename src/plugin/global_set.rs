@@ -3,37 +3,11 @@ use crate::plugin::action::PluginAction;
 
 pub fn apply_globals(lua: &mlua::Lua, tx: crossbeam::channel::Sender<PluginAction>) -> Result<(), mlua::Error> {
     let globals = lua.globals();
-    let settings_table = lua.create_table()?;
 
     // Opens a file, for functions to perform on
     globals.set("open",
         lua.create_function(|_, path: String| {
             crate::plugin::lua_io::open_file(path)
-        })?
-    )?;
-
-    // We clone the sender for each function
-    let tx_add = tx.clone();
-
-    settings_table.set("add",
-        lua.create_function(move |_, (name, value): (String, mlua::Value)| {
-            let _ = tx_add.send(PluginAction::MakeSetting { name, value });
-            Ok(())
-        })?
-    )?;
-
-    let tx_get = tx.clone();
-    settings_table.set("get",
-        lua.create_function(move |_, name: String| {
-            let name_on_error: String = name.clone();
-
-            let (tx_respond, rx_respond) = oneshot::channel::<String>();
-            // Send request for value
-            let _ = tx_get.send(PluginAction::GetSettingValue { name, tx_respond });
-            // Wait for value
-            let info = rx_respond.try_recv().map_err(|_| mlua::Error::RuntimeError(format!("Fatal error: could not get value {}", name_on_error).into()))?;
-
-            Ok(info)
         })?
     )?;
 
@@ -45,10 +19,11 @@ pub fn apply_globals(lua: &mlua::Lua, tx: crossbeam::channel::Sender<PluginActio
         })?
     )?;
 
+    crate::plugin::lua_integrate::settings::integrate_settings(lua, tx)?;
+
     // TODO: Hook this up to real cursor
     globals.set("cursor_x", 0)?;
     globals.set("cursor_y", 0)?;
-    globals.set("settings", settings_table)?;
 
     Ok(())
 }
