@@ -1,7 +1,7 @@
 pub enum PluginAction {
-  MakeSetting { name: String, value: mlua::Value },
+  MakeSetting { name: String, value: serde_json::Value },
   InsertText { text: String, x: usize, y: usize },
   GetSettingValue { name: String, tx_respond: oneshot::Sender<serde_json::Value> },
   DebugLog { message: String },
-  SetSetting { name: String, value: mlua::Value },
+  SetSetting { name: String, value: serde_json::Value },
 }
