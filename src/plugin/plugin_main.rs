@@ -4,7 +4,7 @@ use crate::plugin::action::PluginAction;
 pub fn load_plugins(tx: crossbeam::channel::Sender<PluginAction>) -> Result<()> {
     let lua = Lua::new();
 
-    crate::plugin::policy::apply_restrictions(&lua).expect("Something went wrong with applying resrtictions to plugin Lua.");
+    crate::plugin::policy::apply_restrictions(&lua, &tx).expect("Something went wrong with applying resrtictions to plugin Lua.");
 
     lua.load_std_libs(StdLib::ALL_SAFE)?;
 
