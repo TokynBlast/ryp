@@ -1,7 +1,7 @@
 use mlua::{Error, Lua, Result, Table, Value::{self, Nil}};
 use crate::plugin::action::PluginAction;
 
-pub fn apply_restrictions(lua: &Lua, tx: &crossbeam::channel::Sender<crate::plugin::action::PluginAction>) -> Result<()> {
+pub fn apply_restrictions(lua: &Lua, tx: crossbeam::channel::Sender<crate::plugin::action::PluginAction>) -> Result<()> {
     let globals = lua.globals();
 
     // Included in ALL_SAFE; This is something unsafe for us
