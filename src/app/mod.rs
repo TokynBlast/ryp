@@ -230,9 +230,9 @@ impl App {
                     }
 
                     PluginAction::GetSettingValue { name, tx_respond } => {
-                      let response = self.config.get(&name)
-                          .cloned()
-                          .unwrap_or(serde_json::Value::Null);
+                        let response = self.config.get(&name)
+                            .cloned()
+                            .unwrap_or(serde_json::Value::Null);
 
                         let _ = tx_respond.send(response);
                     }
