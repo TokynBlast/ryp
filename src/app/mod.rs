@@ -54,6 +54,8 @@ pub struct App {
     pub rx: crossbeam::channel::Receiver<PluginAction>,
     pub whitespace_cache: Arc<Mutex<Vec<usize>>>,
     pub highlight_cache: Arc<Mutex<Vec<Vec<(Style, String)>>>>,
+    pub host_terminal_height: usize,
+    pub debug_logs: Vec<String>,
 }
 
 impl App {
