@@ -10,6 +10,7 @@ pub fn apply_restrictions(lua: &Lua, tx: crossbeam::channel::Sender<crate::plugi
     globals.set("load", Nil)?;
     globals.set("dofile", Nil)?;
     globals.set("collectgarbage", Nil)?;
+    globals.set("_VERSION", Nil)?;
 
     // Printing shifts up the screen, which we *DON'T* want
     // Instead, we offer printing, but contained :)
@@ -39,9 +40,6 @@ pub fn apply_restrictions(lua: &Lua, tx: crossbeam::channel::Sender<crate::plugi
     })?;
 
     globals.set("print", debug_print_fn)?;
-
-    // Help to prevent version specific exploits
-    globals.set("_VERSION", Nil)?;
 
     Ok(())
 }
