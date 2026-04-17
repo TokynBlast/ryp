@@ -234,7 +234,7 @@ impl App {
                           .cloned()
                           .unwrap_or(serde_json::Value::Null);
 
-                        let _ = tx_respond.send(response.clone());
+                        let _ = tx_respond.send(response);
                     }
 
                     PluginAction::DebugLog { message } => {
