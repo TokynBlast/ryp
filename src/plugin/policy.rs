@@ -8,6 +8,9 @@ pub fn apply_restrictions(lua: &Lua, tx: &crossbeam::channel::Sender<crate::plug
     globals.set("package", Nil)?;
 
     globals.set("debug", Nil)?;
+    globals.set("load", Nil)?;
+    globals.set("dofile", Nil)?;
+    globals.set("collectgarbage", Nil)?;
 
     // Printing shifts up the screen, which we *DON'T* want
     // Instead, we offer printing, but contained :)
