@@ -1,7 +1,7 @@
 use crossterm::event::{KeyCode, KeyEvent, KeyModifiers};
 use portable_pty::{CommandBuilder, PtySize, native_pty_system};
 use std::io::{Read, Write};
-use std::sync::mpsc;
+use crossbeam;
 use std::thread;
 
 #[derive(Clone)]
@@ -27,8 +27,8 @@ enum ParseState {
 }
 
 pub struct Terminal {
-  pub tx: mpsc::Sender<Vec<u8>>,
-  rx: mpsc::Receiver<Vec<u8>>,
+  pub tx: crossbeam::channel::Sender<Vec<u8>>,
+  rx: crossbeam::channel::Receiver<Vec<u8>>,
   pub grid: TerminalGrid,
   parse_state: ParseState,
   pub csi_params: String,
@@ -65,8 +65,8 @@ impl Terminal {
             .expect("Failed to clone PTY reader");
         let mut writer = pair.master.take_writer().expect("Failed to get PTY writer");
 
-        let (tx_in, rx_in) = mpsc::channel::<Vec<u8>>();
-        let (tx_out, rx_out) = mpsc::channel::<Vec<u8>>();
+        let (tx_in, rx_in) = crossbeam::channel::unbounded::<Vec<u8>>();
+        let (tx_out, rx_out) = crossbeam::channel::unbounded::<Vec<u8>>();
 
         // Read thread (PTY -> App)
         thread::spawn(move || {
