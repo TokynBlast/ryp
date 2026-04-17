@@ -302,7 +302,8 @@ fn draw_settings_view(f: &mut Frame, app: &App, area: Rect) {
             .add_modifier(Modifier::BOLD)
     };
 
-    let mut settings: Vec<Setting> = loop_setting_add(&app.config);
+    // TODO: Make this not use the function meant for legacy config storage...
+    let settings: Vec<Setting> = loop_setting_add(&app.config);
 
     let settings_block = Block::default()
         .title(" Settings ")
