@@ -134,3 +134,61 @@ fn draw_terminal(f: &mut ratatui::Frame, app: &App, area: ratatui::layout::Rect)
     f.render_widget(Clear, area);
     f.render_widget(Paragraph::new(content).block(block), area);
 }
+
+fn draw_debug(f: &mut ratatui::Frame, app: &App, area: ratatui::layout::Rect) {
+  use ratatui::layout::{Constraint, Direction, Layout};
+  use ratatui::style::{Color, Modifier, Style};
+  use ratatui::widgets::{Block, Borders, Clear, Paragraph, Wrap};
+  use ratatui::text::{Line, Span};
+
+  // Keep it centered but maybe a bit bigger for logs
+  let vertical_margin = area.height.saturating_sub(20) / 2;
+  let horizontal_margin = area.width.saturating_sub(100) / 2;
+
+  let popup_layout = Layout::default()
+      .direction(Direction::Vertical)
+      .constraints([
+          Constraint::Length(vertical_margin),
+          Constraint::Min(0),
+          Constraint::Length(vertical_margin),
+      ])
+      .split(area);
+
+  let center_area = Layout::default()
+      .direction(Direction::Horizontal)
+      .constraints([
+          Constraint::Length(horizontal_margin),
+          Constraint::Min(0),
+          Constraint::Length(horizontal_margin),
+      ])
+      .split(popup_layout[1])[1];
+
+  let block = Block::default()
+      .title(" Debug Console (ESC to Hide) ")
+      .borders(Borders::ALL)
+      .border_style(Style::default().fg(Color::Magenta)); // Magenta for that 'dev' vibe
+
+  // Build the log content from app.debug_logs
+  let mut content: Vec<Line> = Vec::new();
+
+  for log in &app.debug_logs {
+      // We can add a little timestamp or prefix if we want
+      content.push(Line::from(vec![
+          Span::raw(log),
+      ]));
+  }
+
+
+  // Auto-scroll logic: only show the last 'n' lines that fit in the area
+  let visible_lines = center_area.height.saturating_sub(2) as usize;
+  let start_index = content.len().saturating_sub(visible_lines);
+  let display_content = content[start_index..].to_vec();
+
+  f.render_widget(Clear, center_area);
+  f.render_widget(
+      Paragraph::new(display_content)
+          .block(block)
+          .wrap(Wrap { trim: true }),
+      center_area
+  );
+}
