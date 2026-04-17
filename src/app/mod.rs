@@ -606,7 +606,7 @@ impl App {
                                 // If the selection goes below the visible area, scroll down
                                 // TODO: Implement visible area, 3 is just a stable size for when really small...
                                 let visible_height = self.host_terminal_height;
-                                if self.settings_selected >= self.settings_scroll + visible_height {
+                                if self.settings_selected >= self.settings_scroll + visible_height as usize {
                                     self.settings_scroll += 1;
                                 }
                             }
