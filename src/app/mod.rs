@@ -128,7 +128,7 @@ impl App {
         if let Some((_, val)) = self.config.get_index_mut(self.settings_selected) {
             match val {
                 //TODO: Make it a box, that is on or off, like an HTML checkbox
-                Value::Bool(b) => *val = Value::Bool(!*b),
+                Value::Bool(b) => *b = !*b,
                 // TODO: Make it a continuous typing input,
                 //       and escape on enter press, or esc.
                 //
