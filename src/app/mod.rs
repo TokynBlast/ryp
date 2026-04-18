@@ -11,7 +11,8 @@ use syntect::highlighting::Style;
 use syntect::parsing::SyntaxSet;
 use std::path::Path;
 use std::path::PathBuf;
-use std::sync::{Arc, Mutex};
+use parking_lot::Mutex;
+use triomphe::Arc;
 use std::thread;
 use aho_corasick::AhoCorasick;
 use serde_json::{json, Value};
@@ -229,12 +230,12 @@ impl App {
                         todo!("Implement InsertText\nUse self.active_tab in `src/app/mod.rs`");
                     }
 
-                    PluginAction::GetSettingValue { name, tx_respond } => {
-                        let response = self.config.get(&name)
-                            .cloned()
-                            .unwrap_or(serde_json::Value::Null);
+                    PluginAction::GetSettingValue { name, responder } => {
+                        let val = self.config.get(&name).cloned().unwrap_or(serde_json::Value::Null);
 
-                        let _ = tx_respond.send(response);
+                        let mut lock = responder.value.lock();
+                        *lock = Some(val);
+                        responder.signal.notify_one(); // Wake up Lua!
                     }
 
                     PluginAction::DebugLog { message } => {
@@ -265,9 +266,8 @@ impl App {
                             .filter(|(_, line)| line.chars().any(|c| c == ' ' || c == '\t'))
                             .map(|(i, _)| i)
                             .collect();
-                        if let Ok(mut cache) = cache.lock() {
-                            *cache = result;
-                        }
+                        let mut cache = cache.lock();
+                        *cache = result;
                     });
                 } // borrow of self ends here
 

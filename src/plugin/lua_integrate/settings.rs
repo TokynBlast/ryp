@@ -1,6 +1,8 @@
 use mlua;
 use crate::plugin::{action::PluginAction};
 use mlua::LuaSerdeExt;
+use triomphe::Arc;
+use parking_lot::{Mutex, Condvar};
 
 #[inline]
 fn add_setting(lua: &mlua::Lua, tx: &crossbeam::channel::Sender<PluginAction>, settings_table: &mlua::Table) -> Result<(), mlua::Error>  {

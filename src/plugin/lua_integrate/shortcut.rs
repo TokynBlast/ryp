@@ -1,6 +1,7 @@
 use mlua::{Lua, Value, Function, RegistryKey, Result, Error};
 use crossterm::event::{KeyCode, KeyModifiers};
-use std::sync::{Arc, Mutex};
+use parking_lot::Mutex;
+use triomphe::Arc;
 
 struct Shortcut {
     keys: Vec<KeyCode>,
@@ -116,7 +117,7 @@ fn string_to_keycode(s: &str) -> Option<KeyCode> {
 fn setup(lua: &Lua, mgr: Arc<Mutex<Manager>>) -> Result<()> {
     let mgr_clone = mgr.clone();
     let reg = lua.create_function(move |_, (keys, mods, func): (Value, Value, Function)| {
-        let mut m = mgr_clone.lock().unwrap();
+        let mut m = mgr_clone.lock();
         m.register_from_lua(keys, mods, func)?;
         Ok(())
     })?;

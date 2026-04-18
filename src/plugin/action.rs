@@ -1,7 +1,15 @@
+use parking_lot::{Mutex, Condvar};
+use triomphe::Arc;
+
+pub struct Responder {
+    pub value: Mutex<Option<serde_json::Value>>,
+    pub signal: Condvar,
+}
+
 pub enum PluginAction {
   MakeSetting { name: String, value: serde_json::Value },
   InsertText { text: String, x: usize, y: usize },
-  GetSettingValue { name: String, tx_respond: crossbeam::channel::Sender<serde_json::Value> },
+  GetSettingValue { name: String, responder: Arc<Responder> },
   DebugLog { message: String },
   SetSetting { name: String, value: serde_json::Value },
 }

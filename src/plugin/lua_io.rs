@@ -2,7 +2,7 @@ use mlua::{UserData, UserDataMethods, Result, Error};
 use std::fs::File;
 use std::io::{Read, Seek, SeekFrom, BufReader, BufRead};
 use parking_lot::Mutex;
-use std::sync::Arc;
+use triomphe::Arc;
 use std::path::Path;
 
 #[derive(Clone)]
