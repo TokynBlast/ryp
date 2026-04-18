@@ -8,7 +8,7 @@ pub struct Responder {
 
 pub enum PluginAction {
   MakeSetting { name: String, value: serde_json::Value },
-  InsertText { text: String, x: usize, y: usize },
+  InsertText { text: char },
   GetSettingValue { name: String, responder: Arc<Responder> },
   DebugLog { message: String },
   SetSetting { name: String, value: serde_json::Value },
