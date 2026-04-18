@@ -54,7 +54,7 @@ pub fn draw_editor(f: &mut Frame, app: &App, area: Rect) {
     let margin = (height / 3).max(1);
 
     // Retrieve and update scroll_y using Cell to keep it across frames
-    let current_scroll = editor.scroll_y.get();
+    let current_scroll = editor.scroll_y.load();
     let mut scroll_y = current_scroll;
 
     let ext = editor
@@ -92,7 +92,7 @@ pub fn draw_editor(f: &mut Frame, app: &App, area: Rect) {
 
     // Clamp to make sure we don't scroll past the content
     scroll_y = scroll_y.min(editor.lines.len().saturating_sub(1));
-    editor.scroll_y.set(scroll_y);
+    editor.scroll_y.store(scroll_y);
 
     let mut lines = vec![];
     for line in editor.lines.iter().take(scroll_y) {

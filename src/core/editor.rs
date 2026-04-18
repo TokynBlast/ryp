@@ -1,15 +1,15 @@
-use std::cell::Cell;
 use std::fs;
 use std::path::PathBuf;
 use std::path::Path;
+
 
 pub struct Editor {
     pub lines: Vec<String>,
     pub cursor_x: usize,
     pub cursor_y: usize,
     pub target_x: usize,
-    pub scroll_y: Cell<usize>,
-    pub scroll_x: Cell<usize>,
+    pub scroll_y: crossbeam::atomic::AtomicCell<usize>,
+    pub scroll_x: crossbeam::atomic::AtomicCell<usize>,
     pub selection_start: Option<(usize, usize)>, // (start_x, start_y)
     pub filepath: Option<PathBuf>,
     pub dirty: bool,
@@ -24,8 +24,8 @@ impl Editor {
             cursor_x: 0,
             cursor_y: 0,
             target_x: 0,
-            scroll_y: Cell::new(0),
-            scroll_x: Cell::new(0),
+            scroll_y: crossbeam::atomic::AtomicCell::new(0),
+            scroll_x: crossbeam::atomic::AtomicCell::new(0),
             selection_start: None,
             filepath: None,
             dirty: false,
