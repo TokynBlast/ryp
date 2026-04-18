@@ -260,6 +260,7 @@ impl App {
                     let lines: Vec<String> = self.current_editor()
                         .map(|e| e.lines.clone())
                         .unwrap_or_default();
+                    // TODO: Make this a crossbeam, rather than a thread
                     thread::spawn(move || {
                         let result: Vec<usize> = lines.iter()
                             .enumerate()
