@@ -20,22 +20,33 @@ fn add_setting(lua: &mlua::Lua, tx: &crossbeam::channel::Sender<PluginAction>, s
 }
 
 #[inline]
-fn get_setting_value(lua: &mlua::Lua, tx: &crossbeam::channel::Sender<PluginAction>, settings_table: &mlua::Table) -> Result<(), mlua::Error>  {
+fn get_setting_value(lua: &mlua::Lua, tx: &crossbeam::channel::Sender<PluginAction>, settings_table: &mlua::Table) -> Result<(), mlua::Error> {
     let tx_get = tx.clone();
+
     settings_table.set("get",
-        lua.create_function(move |lua, name: String| {
-            let name_on_error: String = name.clone();
+        lua.create_function(move |lua_ctx, name: String| {
+            // 1. Create the high-speed responder
+            let responder = Arc::new(crate::plugin::action::Responder {
+                value: Mutex::new(None),
+                signal: Condvar::new(),
+            });
 
-            let (resp_tx, resp_rx) = crossbeam::channel::bounded(1);
+            // 2. Send the Arc to the App
+            tx_get.send(PluginAction::GetSettingValue {
+                name: name.clone(),
+                responder: responder.clone()
+            }).ok();
 
-            // Send request for value
-            let _ = tx_get.send(PluginAction::GetSettingValue { name, tx_respond: resp_tx });
+            // 3. LOCK and WAIT
+            let mut lock = responder.value.lock();
+            if lock.is_none() {
+                // This parks the thread until App calls .notify_one()
+                responder.signal.wait(&mut lock);
+            }
 
-            // Wait for value
-            let info = resp_rx.recv()
-                .map_err(|_| mlua::Error::RuntimeError(format!("App died while getting {}", name_on_error)))?;
-
-            lua.to_value(&info)
+            // 4. Take the value and convert to Lua
+            let info = lock.take().unwrap_or(serde_json::Value::Null);
+            lua_ctx.to_value(&info)
         })?
     )?;
     Ok(())
