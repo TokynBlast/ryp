@@ -1,7 +1,8 @@
 use mlua::{UserData, UserDataMethods, Result, Error};
 use std::fs::File;
 use std::io::{Read, Seek, SeekFrom, BufReader, BufRead};
-use std::sync::{Arc, Mutex};
+use parking_lot::Mutex;
+use std::sync::Arc;
 use std::path::Path;
 
 #[derive(Clone)]
@@ -11,8 +12,9 @@ impl UserData for OpenFile {
     fn add_methods<M: UserDataMethods<Self>>(methods: &mut M) {
         // read n bytes (if n == 0 -> read_all)
         methods.add_method("read", |_, this, n: Option<usize>| {
-            let mut guard = this.0.lock().unwrap();
+            let mut guard = this.0.lock();
             let f = guard.as_mut().ok_or_else(|| Error::external("file closed"))?;
+
             if let Some(n) = n {
                 let mut buf = vec![0u8; n];
                 let read = f.read(&mut buf).map_err(Error::external)?;
@@ -28,7 +30,7 @@ impl UserData for OpenFile {
 
         // read_to_end returns bytes as Lua string
         methods.add_method("read_to_end", |_, this, _: ()| {
-            let mut guard = this.0.lock().unwrap();
+            let mut guard = this.0.lock();
             let f = guard.as_mut().ok_or_else(|| Error::external("file closed"))?;
             let mut buf = Vec::new();
             f.read_to_end(&mut buf).map_err(Error::external)?;
@@ -38,9 +40,9 @@ impl UserData for OpenFile {
 
         // read_line: read a single line (like BufRead::read_line)
         methods.add_method("read_line", |_, this, _: ()| {
-            let mut guard = this.0.lock().unwrap();
+            let mut guard = this.0.lock();
             let f = guard.as_mut().ok_or_else(|| Error::external("file closed"))?;
-            // Use a temporary BufReader starting at current position
+
             let mut reader = BufReader::new(f.try_clone().map_err(Error::external)?);
             let mut line = String::new();
             reader.read_line(&mut line).map_err(Error::external)?;
@@ -50,25 +52,22 @@ impl UserData for OpenFile {
             Ok(line)
         });
 
-        // seek: set position
         methods.add_method("seek", |_, this, pos: u64| {
-            let mut guard = this.0.lock().unwrap();
+            let mut guard = this.0.lock();
             let f = guard.as_mut().ok_or_else(|| Error::external("file closed"))?;
             f.seek(SeekFrom::Start(pos)).map_err(Error::external)?;
             Ok(())
         });
 
-        // tell: get current position
         methods.add_method("tell", |_, this, _: ()| {
-            let mut guard = this.0.lock().unwrap();
+            let mut guard = this.0.lock();
             let f = guard.as_mut().ok_or_else(|| Error::external("file closed"))?;
             let p = f.seek(SeekFrom::Current(0)).map_err(Error::external)?;
             Ok(p)
         });
 
-        // close: drop the file
         methods.add_method("close", |_, this, _: ()| {
-            let mut guard = this.0.lock().unwrap();
+            let mut guard = this.0.lock();
             *guard = None;
             Ok(())
         });
