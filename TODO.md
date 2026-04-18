@@ -23,3 +23,4 @@
 # Internal
 - Add minimum cells size
 - Test caches as arc-swap
+- Implement file names and other likely to be small strings via CompactStr
