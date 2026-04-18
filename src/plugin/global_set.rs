@@ -13,8 +13,8 @@ pub fn apply_globals(lua: &mlua::Lua, tx: crossbeam::channel::Sender<PluginActio
 
     let tx_insert = tx.clone();
     globals.set("insert_text",
-        lua.create_function(move |_, (text, x, y): (String, usize, usize)| {
-            let _ = tx_insert.send(PluginAction::InsertText { text, x, y });
+        lua.create_function(move |_, text: char| {
+            let _ = tx_insert.send(PluginAction::InsertText { text });
             Ok(())
         })?
     )?;

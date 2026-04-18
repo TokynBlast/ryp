@@ -226,7 +226,8 @@ impl App {
                         self.config.insert(name, json!(value));
                     }
 
-                    PluginAction::InsertText { text, x, y } => {
+                    PluginAction::InsertText { text } => {
+                        self.current_editor_mut().unwrap().insert_char(text);
                         todo!("Implement InsertText\nUse self.active_tab in `src/app/mod.rs`");
                     }
 
