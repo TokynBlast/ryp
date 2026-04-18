@@ -12,7 +12,6 @@
 - Saving while in Git, saves the Git info to the actual file
 
 # QOL
-- Make themes lazy loaded
 - Implement Luna terminal
 - Implement larger terminal (full terminal?)
 - Better documentation
@@ -23,3 +22,4 @@
 
 # Internal
 - Add minimum cells size
+- Test caches as arc-swap
