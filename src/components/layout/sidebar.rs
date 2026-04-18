@@ -378,40 +378,14 @@ struct Setting {
   value: String,
 }
 
-#[inline]
+#[inline(always)]
 fn loop_setting_add(layer: &config::Config) -> Vec<Setting> {
-  let mut settings = vec![];
-  for (key, value) in layer {
-      match value {
-          Value::Object(map) => {
-              settings.append(&mut loop_setting_add_map(map));
-          }
-          _ => {
-              settings.push(Setting {
-                  title: key.clone(),
-                  value: value.to_string(),
-              });
-          }
-      }
-  }
-  settings
-}
-
-#[inline]
-fn loop_setting_add_map(map: &serde_json::Map<String, Value>) -> Vec<Setting> {
-  let mut settings = vec![];
-  for (key, value) in map {
-      match value {
-          Value::Object(nested) => {
-              settings.append(&mut loop_setting_add_map(nested));
-          }
-          _ => {
-              settings.push(Setting {
-                  title: key.clone(),
-                  value: value.to_string(),
-              });
-          }
-      }
-  }
-  settings
+    let mut settings = vec![];
+    for (key, value) in layer {
+        settings.push(Setting {
+            title: key.clone(),
+            value: value.to_string(),
+        });
+    }
+    settings
 }
