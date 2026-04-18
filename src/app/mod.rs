@@ -4,7 +4,7 @@ use crate::input::action::SidebarCategory;
 use crate::windows::modal::{Modal, ModalType};
 use crate::plugin::action::PluginAction;
 use crossterm::event::{self, Event};
-use std::collections::HashSet;
+use hashbrown::HashSet;
 use std::time::Duration;
 use syntect::highlighting::ThemeSet;
 use syntect::highlighting::Style;
