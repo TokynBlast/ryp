@@ -1,4 +1,5 @@
 use crate::app::App;
+use compact_str::CompactString;
 use ratatui::{
     Frame,
     layout::{Constraint, Direction, Layout},
@@ -71,6 +72,10 @@ pub fn draw(f: &mut Frame, app: &App) {
         crate::components::modals::view::draw_modal(f, app, size);
     }
 
+    if app.debug_console_visible {
+        draw_debug(f, app, size);
+    }
+
     if app.terminal_visible {
         draw_terminal(f, app, size);
     }
@@ -114,12 +119,12 @@ fn draw_terminal(f: &mut ratatui::Frame, app: &App, area: ratatui::layout::Rect)
 
     // then the active grid
     for (r, row) in app.terminal.grid.cells.iter().enumerate() {
-        let line: String = row.iter().map(|c| c.c).collect();
+        let line: CompactString = row.iter().map(|c| c.c).collect();
 
         if r == app.terminal.grid.cursor_row {
             // split at cursor position and insert cursor
-            let before = line.chars().take(app.terminal.grid.cursor_col).collect::<String>();
-            let after = line.chars().skip(app.terminal.grid.cursor_col + 1).collect::<String>();
+            let before = line.chars().take(app.terminal.grid.cursor_col).collect::<CompactString>();
+            let after = line.chars().skip(app.terminal.grid.cursor_col + 1).collect::<CompactString>();
             let spans = vec![
                 ratatui::text::Span::raw(before),
                 ratatui::text::Span::styled("_", Style::default().bg(Color::White).fg(Color::Black)),
@@ -127,10 +132,70 @@ fn draw_terminal(f: &mut ratatui::Frame, app: &App, area: ratatui::layout::Rect)
             ];
             content.push(ratatui::text::Line::from(spans));
         } else {
-            content.push(ratatui::text::Line::from(line));
+            content.push(ratatui::text::Line::from(line.to_string()));
         }
     }
 
     f.render_widget(Clear, area);
     f.render_widget(Paragraph::new(content).block(block), area);
+}
+
+fn draw_debug(f: &mut ratatui::Frame, app: &App, area: ratatui::layout::Rect) {
+  use ratatui::layout::{Constraint, Direction, Layout};
+  use ratatui::style::{Color, Style};
+  use ratatui::widgets::{Block, Borders, Clear, Paragraph, Wrap};
+  use ratatui::text::{Line, Span};
+
+  // Keep it centered but maybe a bit bigger for logs
+  let vertical_margin = area.height.saturating_sub(20) / 2;
+  let horizontal_margin = area.width.saturating_sub(100) / 2;
+
+  let popup_layout = Layout::default()
+      .direction(Direction::Vertical)
+      .constraints([
+          Constraint::Length(vertical_margin),
+          Constraint::Min(0),
+          Constraint::Length(vertical_margin),
+      ])
+      .split(area);
+
+  let center_area = Layout::default()
+      .direction(Direction::Horizontal)
+      .constraints([
+          Constraint::Length(horizontal_margin),
+          Constraint::Min(0),
+          Constraint::Length(horizontal_margin),
+      ])
+      .split(popup_layout[1])[1];
+
+  let block = Block::default()
+      .title(" Debug Console (Ctrl + E / ESC) ")
+      .borders(Borders::ALL)
+      // TODO: Make it so that it uses a configurable color
+      .border_style(Style::default().fg(Color::Magenta));
+
+  // Build the log content from app.debug_logs
+  let mut content: Vec<Line> = Vec::new();
+
+  for log in &app.debug_logs {
+      content.push(Line::from(vec![
+          // Both because it looks cool, and to see where each log starts :)
+          Span::styled(" λ ", Style::default().fg(Color::Gray)),
+          Span::raw(log),
+      ]));
+  }
+
+
+  // Auto-scroll logic: only show the last 'n' lines that fit in the area
+  let visible_lines = center_area.height.saturating_sub(2) as usize;
+  let start_index = content.len().saturating_sub(visible_lines);
+  let display_content = content[start_index..].to_vec();
+
+  f.render_widget(Clear, center_area);
+  f.render_widget(
+      Paragraph::new(display_content)
+          .block(block)
+          .wrap(Wrap { trim: true }),
+      center_area
+  );
 }

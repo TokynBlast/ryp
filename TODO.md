@@ -1,9 +1,7 @@
 # Tools
 - MarkDown preview viewer
-- Settings tab
 - Ctrl+Arrow fast move
 - Auto file reload on changes
-- Improve search algoritm
 - Lua plugins
 
 # Bugs
@@ -14,15 +12,16 @@
 - Saving while in Git, saves the Git info to the actual file
 
 # QOL
-- Make themes lazy loaded
 - Implement Luna terminal
 - Implement larger terminal (full terminal?)
 - Better documentation
 - Better bindings (or make them more logical)
 - Update only changed cells
 - Resource limiting
+- Copy, cut, and paste (via typical bindings)
 
 # Internal
-- Use vt100 over PortablePTY
 - Add minimum cells size
-- Make searching use SeekStorm
+- Test caches as arc-swap
+- Test arc-swap on caches (MAY BE INCREDIBLY UNSTABLE; WILL NOT USE IF RESULTS CAUSE PROBLEMS)
+- Test rayon on constant cache rebuild

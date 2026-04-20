@@ -1,4 +1,4 @@
-use crate::app::App;
+use crate::{app::App, config};
 use crate::input::action::SidebarCategory;
 use ratatui::{
     Frame,
@@ -8,6 +8,7 @@ use ratatui::{
     widgets::{Block, Borders, Paragraph},
 };
 use console::Emoji;
+use compact_str::CompactString;
 
 pub fn draw_sidebar(f: &mut Frame, app: &App, area: Rect) {
     if let Some(ws) = &app.workspace {
@@ -261,7 +262,7 @@ fn draw_git_view(f: &mut Frame, app: &App, area: Rect) {
         let path = &change.path;
         let components: Vec<&str> = path.split('/').collect();
         let display_path = if components.len() > 3 {
-            format!("{}/.../{}/{}", components[0], components[components.len()-2], components[components.len()-1])
+            CompactString::from(format!("{}/.../{}/{}", components[0], components[components.len()-2], components[components.len()-1]))
         } else {
             path.clone()
         };
@@ -288,6 +289,7 @@ fn draw_git_view(f: &mut Frame, app: &App, area: Rect) {
     }
 }
 
+//TODO: Make it so that we do less throwing away work, such as the flattened settings
 fn draw_settings_view(f: &mut Frame, app: &App, area: Rect) {
     let is_focused = app.workspace.as_ref().map_or(false, |w| w.focused);
     let active_style = if is_focused {
@@ -300,75 +302,50 @@ fn draw_settings_view(f: &mut Frame, app: &App, area: Rect) {
             .add_modifier(Modifier::BOLD)
     };
 
-    struct Setting {
-      title: String,
-      value: String,
-    }
-
-    let mut settings = vec![
-        Setting {
-          title: "Tab BG Color".into(),
-          value: app.config.theme.tab_bg.clone(),
-        },
-        Setting {
-          title: "Active Tab BG Color".into(),
-          value: app.config.theme.active_tab_bg.clone(),
-        },
-        Setting {
-          title: "Highlighting Theme".into(),
-          value: app.config.theme.highlight_theme.clone(),
-        },
-        Setting {
-          title: "Tab Size".into(),
-          value: app.config.tab_size.to_string(),
-        },
-        Setting {
-          title: "Auto Save".into(),
-          value: app.config.auto_save.to_string(),
-        },
-        Setting {
-          title: "Time To Auto Save".into(),
-          value: app.config.auto_save_timer.to_string(),
-        },
-    ];
-    for (key, value) in &app.config.extra {
-        settings.push(Setting {
-            title: key.clone(),       // The name of the setting/plugin
-            value: value.to_string(), // The value from JSON
-        });
-    }
+    // TODO: Make this not use the function meant for legacy config storage...
+    let settings: Vec<Setting> = loop_setting_add(&app.config);
 
     let settings_block = Block::default()
         .title(" Settings ")
         .borders(Borders::ALL)
         .border_style(active_style);
 
-    // render the block
-    f.render_widget(settings_block.clone(), area);
     let inner = settings_block.inner(area);
+    f.render_widget(settings_block, area);
+
+    // Calculate how many items can actually fit in the inner area
+    // Each setting is 3 lines high
+    let visible_count = (inner.height / 3) as usize;
+
+    // Determine the window of items to show based on scroll
+    let start_index = app.settings_scroll;
+    let end_index = (start_index + visible_count).min(settings.len());
+    let visible_settings = &settings[start_index..end_index];
 
     // compute visible area and scrolling using inner size
     let height = inner.height as usize + app.settings_scroll;
-    let item_count = settings.len();
     let scroll_y = if app.settings_scroll >= height / 2 {
         app.settings_scroll - height / 2
     } else {
         0
     };
 
-    // build one chunk per visible row (cap at item_count)
-    let mut constraints = Vec::with_capacity(item_count);
-    for _ in 0..item_count {
-        constraints.push(Constraint::Length(3)); // or 1/2 depending desired row height
-    }
+    // Create chunks ONLY for the visible items
+    let constraints: Vec<Constraint> = visible_settings
+        .iter()
+        .map(|_| Constraint::Length(3))
+        .collect();
+
     let chunks = Layout::default()
         .direction(Direction::Vertical)
         .constraints(constraints)
         .split(inner);
 
-    // render each setting into its chunk (safe indexing)
-    for (i, setting) in settings.iter().enumerate() {
-        let is_selected = is_focused && app.settings_selected == i;
+    // Render only the visible settings
+    for (i, setting) in visible_settings.iter().enumerate() {
+        // Account for the scroll offset
+        let is_selected = is_focused && app.settings_selected == (i + start_index);
+
         let style = if is_selected {
             Style::default().bg(Color::Rgb(60, 60, 60)).fg(Color::White)
         } else {
@@ -387,7 +364,28 @@ fn draw_settings_view(f: &mut Frame, app: &App, area: Rect) {
     }
 
     if is_focused {
-        // Approximate position for cursor
-        f.set_cursor_position((area.x + 2, area.y + 2 + app.settings_scroll as u16));
+        // Cursor logic: Place it relative to the selected item's chunk if visible
+        if app.settings_selected >= start_index && app.settings_selected < end_index {
+            let chunk_idx = app.settings_selected - start_index;
+            let target_chunk = chunks[chunk_idx];
+            f.set_cursor_position((target_chunk.x + 2, target_chunk.y + 1));
+        }
     }
+}
+
+struct Setting {
+  title: String,
+  value: String,
+}
+
+#[inline(always)]
+fn loop_setting_add(layer: &config::Config) -> Vec<Setting> {
+    let mut settings = vec![];
+    for (key, value) in layer {
+        settings.push(Setting {
+            title: key.clone(),
+            value: value.to_string(),
+        });
+    }
+    settings
 }

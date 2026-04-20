@@ -1,31 +1,32 @@
-use std::cell::Cell;
 use std::fs;
 use std::path::PathBuf;
 use std::path::Path;
+use compact_str::CompactString;
+
 
 pub struct Editor {
-    pub lines: Vec<String>,
+    pub lines: Vec<CompactString>,
     pub cursor_x: usize,
     pub cursor_y: usize,
     pub target_x: usize,
-    pub scroll_y: Cell<usize>,
-    pub scroll_x: Cell<usize>,
+    pub scroll_y: crossbeam::atomic::AtomicCell<usize>,
+    pub scroll_x: crossbeam::atomic::AtomicCell<usize>,
     pub selection_start: Option<(usize, usize)>, // (start_x, start_y)
     pub filepath: Option<PathBuf>,
     pub dirty: bool,
     pub is_diff: bool,
-    pub highlight_cache: Vec<Vec<(syntect::highlighting::Style, String)>>,
+    pub highlight_cache: Vec<Vec<(syntect::highlighting::Style, CompactString)>>,
 }
 
 impl Editor {
     pub fn new() -> Self {
         Self {
-            lines: vec![String::new()],
+            lines: vec![CompactString::default()],
             cursor_x: 0,
             cursor_y: 0,
             target_x: 0,
-            scroll_y: Cell::new(0),
-            scroll_x: Cell::new(0),
+            scroll_y: crossbeam::atomic::AtomicCell::new(0),
+            scroll_x: crossbeam::atomic::AtomicCell::new(0),
             selection_start: None,
             filepath: None,
             dirty: false,
@@ -48,16 +49,16 @@ impl Editor {
           h.highlight_line(&line_with_nl, syntax_set)
               .unwrap_or_default()
               .into_iter()
-              .map(|(s, t)| (s, t.trim_end_matches('\n').to_string()))
+              .map(|(s, t)| (s, CompactString::from(t.trim_end_matches('\n'))))
               .collect()
       }).collect();
     }
 
     pub fn load_file(&mut self, path: &Path) -> bool {
         if let Ok(content) = fs::read_to_string(path) {
-            self.lines = content.lines().map(|s| s.to_string()).collect();
+            self.lines = content.lines().map(|s| CompactString::from(s)).collect();
             if self.lines.is_empty() {
-                self.lines.push(String::new());
+                self.lines.push(CompactString::default());
             }
             self.filepath = Some(path.to_path_buf());
             self.dirty = false;
@@ -68,10 +69,10 @@ impl Editor {
         }
     }
 
-    pub fn load_diff(&mut self, path: &Path, content: Vec<String>) {
+    pub fn load_diff(&mut self, path: &Path, content: Vec<CompactString>) {
         self.lines = content;
         if self.lines.is_empty() {
-            self.lines.push(String::new());
+            self.lines.push(CompactString::default());
         }
         self.filepath = Some(path.to_path_buf());
         self.dirty = false;
@@ -161,7 +162,7 @@ impl Editor {
                 self.lines[sy].replace_range(bs..be, "");
             } else {
                 let bs = Self::char_to_byte_idx(&self.lines[sy], sx);
-                let mut new_start = self.lines[sy][..bs].to_string();
+                let mut new_start = CompactString::from(self.lines[sy][..bs].to_string());
 
                 let be = Self::char_to_byte_idx(&self.lines[ey], ex);
                 let new_end = self.lines[ey][be..].to_string();

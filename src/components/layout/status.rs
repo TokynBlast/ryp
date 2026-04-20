@@ -10,10 +10,13 @@ pub fn draw_status_bar(f: &mut Frame, app: &App, area: Rect) {
     let text = match app.current_editor() {
         Some(editor) => {
             let lang = if let Some(path) = &editor.filepath {
+                //TODO: Add hpp files
                 if path.extension().and_then(|e| e.to_str()) == Some("cpp") {
                     "C++ (cpp)"
                 } else if path.extension().and_then(|e| e.to_str()) == Some("rs") {
                     "Rust (rs)"
+                } else if path.extension().and_then(|e| e.to_str()) == Some("lua") {
+                    "Lua (lua)"
                 } else {
                     "Plain Text"
                 }
@@ -26,10 +29,10 @@ pub fn draw_status_bar(f: &mut Frame, app: &App, area: Rect) {
                 lang,
                 editor.lines.len(),
                 editor.cursor_x + 1,
-                app.config.tab_size
+                app.config.get("Tab Size").and_then(|v| v.as_u64()).unwrap_or(4)
             )
         }
-        None => format!(" No files open | Tab Size: {} ", app.config.tab_size),
+        None => format!(" No files open | Tab Size: {} ", app.config.get("Tab Size").and_then(|v| v.as_u64()).unwrap_or(4)),
     };
 
     let p = Paragraph::new(text).style(Style::default().bg(Color::Blue).fg(Color::White));

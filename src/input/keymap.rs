@@ -48,6 +48,7 @@ pub fn map_key(key: KeyEvent, in_modal: bool, is_sidebar_focused: bool) -> Optio
         KeyCode::F(5) => Some(Action::ToggleTerminal),
         KeyCode::F(6) => Some(Action::PrevTab),
         KeyCode::F(7) => Some(Action::NextTab),
+        KeyCode::F(12) => Some(Action::ToggleDebugConsole),
 
         // Navigation binds
         KeyCode::Up => Some(Action::MoveUp(shift)),
@@ -73,6 +74,7 @@ pub fn map_key(key: KeyEvent, in_modal: bool, is_sidebar_focused: bool) -> Optio
                     's' | 'S' => Some(Action::Save),
                     't' | 'T' => Some(Action::ToggleTerminal),
                     'g' | 'G' => Some(Action::RefreshGit),
+                    'e' | 'E' => Some(Action::ToggleDebugConsole),
                     _ => None,
                 }
             } else {

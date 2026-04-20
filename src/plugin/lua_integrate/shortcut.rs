@@ -1,6 +1,10 @@
 use mlua::{Lua, Value, Function, RegistryKey, Result, Error};
 use crossterm::event::{KeyCode, KeyModifiers};
-use std::sync::{Arc, Mutex};
+use parking_lot::Mutex;
+use triomphe::Arc;
+
+// TODO: This needs to simply tap into the editor, rather than being seperate...
+//       Rather than _ do nothing, we send the stuff to here, where it sits, then it gets cleared later :3
 
 struct Shortcut {
     keys: Vec<KeyCode>,
@@ -40,7 +44,7 @@ impl Manager {
             if mods == sc.mods && self.seq_buf.ends_with(&sc.keys) {
                 // call Lua handler
                 let f: Function = self.lua.registry_value(&sc.handler)?;
-                f.call::<(), ()>(())?; // no args; adapt if you want to pass info
+                f.call::<()>(())?;
             }
         }
         Ok(())
@@ -116,7 +120,7 @@ fn string_to_keycode(s: &str) -> Option<KeyCode> {
 fn setup(lua: &Lua, mgr: Arc<Mutex<Manager>>) -> Result<()> {
     let mgr_clone = mgr.clone();
     let reg = lua.create_function(move |_, (keys, mods, func): (Value, Value, Function)| {
-        let mut m = mgr_clone.lock().unwrap();
+        let mut m = mgr_clone.lock();
         m.register_from_lua(keys, mods, func)?;
         Ok(())
     })?;

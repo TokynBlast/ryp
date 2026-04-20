@@ -59,7 +59,7 @@ pub fn draw_modal(f: &mut Frame, app: &App, area: Rect) {
                 .title(" Search (F2) ")
                 .borders(Borders::ALL)
                 .style(Style::default().bg(Color::Rgb(50, 50, 50)));
-            let p = Paragraph::new(modal.input.clone())
+            let p = Paragraph::new(String::from(modal.input.clone()))
                 .block(block)
                 .alignment(modal.modal_type.alignment());
             f.render_widget(p, modal_area);

@@ -1,42 +1,22 @@
-use serde::{Deserialize, Serialize};
-use std::collections::BTreeMap;
-use serde_json::Value;
+use serde_json::{json, Value};
+use indexmap::{IndexMap};
 
-#[derive(Serialize, Deserialize, Clone)]
-pub struct Config {
-    pub tab_size: usize,
-    pub theme: ThemeConfig,
-    pub auto_save: bool,
-    pub auto_save_timer: usize,
-    pub extra: BTreeMap<String, Value>,
-}
+pub type Config = IndexMap<String, Value>;
 
-#[derive(Serialize, Deserialize, Clone)]
-pub struct ThemeConfig {
-    pub tab_bg: String,
-    pub active_tab_bg: String,
-    pub highlight_theme: String,
-}
+pub fn default() -> Config {
+    let default_json = json!({
+        "Tab Size": 4,
+        "Auto Save": false,
+        "Time To Auto Save": 30_000,
+        "Tab BG Color": "#333333",
+        "Active Tab BG Color": "#2E7D32",
+        "Highlighting Theme": "base16-ocean.dark"
+    });
 
-impl Config {
-  pub fn len(&self) -> usize {
-      const BASE_SIZE: usize = 6;
-      BASE_SIZE + self.extra.len()
-  }
-}
-
-impl Default for Config {
-    fn default() -> Self {
-        Self {
-            tab_size: 4,
-            theme: ThemeConfig {
-                tab_bg: "#333333".to_string(),                 // Dark grey
-                active_tab_bg: "#2E7D32".to_string(),          // Green
-                highlight_theme: "base16-ocean.dark".to_string(),// Easy to read
-            },
-            auto_save: true,
-            auto_save_timer: 30_000, // every 5 minutes, miliseconds
-            extra: BTreeMap::new(),
-        }
-    }
+    // Convert the JSON into an object for IndexMap
+    default_json.as_object()
+        .unwrap()
+        .clone()
+        .into_iter()
+        .collect()
 }
