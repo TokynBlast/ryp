@@ -3,6 +3,9 @@ use crossterm::event::{KeyCode, KeyModifiers};
 use parking_lot::Mutex;
 use triomphe::Arc;
 
+// TODO: This needs to simply tap into the editor, rather than being seperate...
+//       Rather than _ do nothing, we send the stuff to here, where it sits, then it gets cleared later :3
+
 struct Shortcut {
     keys: Vec<KeyCode>,
     mods: KeyModifiers,
