@@ -3,6 +3,7 @@ use portable_pty::{CommandBuilder, PtySize, native_pty_system};
 use std::io::{Read, Write};
 use crossbeam;
 use std::thread;
+use compact_str::CompactString;
 
 #[derive(Clone)]
 pub struct TermCell {
@@ -31,7 +32,7 @@ pub struct Terminal {
   rx: crossbeam::channel::Receiver<Vec<u8>>,
   pub grid: TerminalGrid,
   parse_state: ParseState,
-  pub csi_params: String,
+  pub csi_params: CompactString,
 }
 
 impl Terminal {
@@ -111,7 +112,7 @@ impl Terminal {
                 scrollback: Vec::new(),
             },
             parse_state: ParseState::Normal,
-            csi_params: String::new(),
+            csi_params: CompactString::default(),
         }
     }
 
@@ -121,7 +122,7 @@ impl Terminal {
             any_new_data = true;
 
             // Handle some ANSI codes manually before stripping the rest
-            let s = String::from_utf8_lossy(&data);
+            let s = CompactString::from_utf8_lossy(&data);
 
             for c in s.chars() {
                 match self.parse_state {

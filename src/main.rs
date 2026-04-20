@@ -38,7 +38,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     let _ = crate::plugin::plugin_main::load_plugins(tx);
 
     // Check if an argument is passed
-    let args: Vec<String> = std::env::args().collect();
+    let args: Vec<String> = std::env::args().collect(); // Would benifit slightly from compact strings
     let target = if args.len() > 1 {
         Path::new(&args[1]).canonicalize().unwrap_or(PathBuf::from(&args[1]))
     } else {

@@ -16,13 +16,14 @@ use triomphe::Arc;
 use std::thread;
 use aho_corasick::AhoCorasick;
 use serde_json::{json, Value};
+use compact_str::CompactString;
 
 mod ui;
 
 pub struct SearchResult {
     pub filepath: PathBuf,
     pub line_number: usize,
-    pub content: String,
+    pub content: CompactString,
 }
 
 pub struct App {
@@ -35,13 +36,13 @@ pub struct App {
     pub theme_set: ThemeSet,
     pub workspace: Option<crate::core::tree::FileTree>,
     pub sidebar_category: SidebarCategory,
-    pub search_query: String,
+    pub search_query: CompactString,
     pub search_results: Vec<SearchResult>,
     pub search_selected: usize,
     pub search_scroll: usize,
     pub search_num_files: usize,
     pub search_num_occurrences: usize,
-    pub search_advanced: Vec<String>,
+    pub search_advanced: Vec<CompactString>,
     pub git_manager: crate::core::git::GitManager,
     pub git_changes: Vec<crate::core::git::GitFileChange>,
     pub git_scroll: usize,
@@ -54,9 +55,9 @@ pub struct App {
     pub dirty: bool,
     pub rx: crossbeam::channel::Receiver<PluginAction>,
     pub whitespace_cache: Arc<Mutex<Vec<usize>>>,
-    pub highlight_cache: Arc<Mutex<Vec<Vec<(Style, String)>>>>,
+    pub highlight_cache: Arc<Mutex<Vec<Vec<(Style, CompactString)>>>>,
     pub host_terminal_height: u16,
-    pub debug_logs: Vec<String>,
+    pub debug_logs: Vec<CompactString>,
 }
 
 impl App {
@@ -71,7 +72,7 @@ impl App {
             theme_set: ThemeSet::load_defaults(),                               // The current theme
             workspace: None,                                                    // Filetree, and other stuff
             sidebar_category: SidebarCategory::FileTree,                        // Current sidebar piece
-            search_query: String::new(),                                        // Actual query to look for
+            search_query: CompactString::default(),                                        // Actual query to look for
             search_results: vec![],                                             // All results of search
             search_selected: 0,                                                 // Selected result in searches
             search_scroll: 0,                                                   // Y index on scroll
@@ -113,7 +114,7 @@ impl App {
     pub fn open_diff(&mut self, change_idx: usize) {
         if let Some(change) = self.git_changes.get(change_idx).cloned() {
             let mut editor = Editor::new();
-            let mut lines = vec![format!("DIFF: {}", change.path), String::new()];
+            let mut lines  = vec![CompactString::from(format!("DIFF: {}", change.path)), CompactString::default()];
             for dl in change.diff {
                 lines.push(dl.content);
             }
@@ -240,7 +241,7 @@ impl App {
                     }
 
                     PluginAction::DebugLog { message } => {
-                        self.debug_logs.push(message);
+                        self.debug_logs.push(message.into());
                     }
 
                     PluginAction::SetSetting { name, value } => {
@@ -258,7 +259,7 @@ impl App {
                 // do the cache spawn first, completely separately
                 {
                     let cache = Arc::clone(&self.whitespace_cache);
-                    let lines: Vec<String> = self.current_editor()
+                    let lines: Vec<CompactString> = self.current_editor()
                         .map(|e| e.lines.clone())
                         .unwrap_or_default();
                     // TODO: Make this a crossbeam, rather than a thread
@@ -500,7 +501,7 @@ impl App {
                 return;
             }
             Action::SearchFiles(query) => {
-                self.search_query = query;
+                self.search_query = query.into();
                 self.perform_search();
                 return;
             }
@@ -837,7 +838,7 @@ impl App {
                 let x_offset = if i == 0 { start_x } else { 0 };
 
                 if x_offset < line.len() {
-                    if let Some(match_x) = line[x_offset..].find(&search_term) {
+                    if let Some(match_x) = line[x_offset..].find(&search_term.to_string()) {
                         editor.cursor_y = y;
                         editor.cursor_x = x_offset + match_x;
                         return;
@@ -867,7 +868,7 @@ impl App {
                     let mut new_line = line[..editor.cursor_x].to_string();
                     new_line.push_str(&replace_term);
                     new_line.push_str(&line[editor.cursor_x + search_term.len()..]);
-                    editor.lines[editor.cursor_y] = new_line;
+                    editor.lines[editor.cursor_y] = CompactString::from_string_buffer(new_line);
                 }
             }
         }
@@ -903,7 +904,7 @@ impl App {
                 };
                 let full_path = root.join(path_str);
                 if full_path.exists() {
-                    modal.error_message = Some("File already exists!".to_string());
+                    modal.error_message = Some(CompactString::from("File already exists!"));
                 } else {
                     modal.error_message = None;
                 }
@@ -942,7 +943,7 @@ impl App {
                             results.push(SearchResult {
                                 filepath: entry.path().to_path_buf(),
                                 line_number: i + 1,
-                                content: line.trim().to_string(),
+                                content: CompactString::from(line.trim()),
                             });
                             file_had_match = true;
                         }

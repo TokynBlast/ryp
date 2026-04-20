@@ -1,3 +1,4 @@
+use compact_str::CompactString;
 use ratatui::layout::Alignment;
 
 pub enum ModalLayout {
@@ -37,11 +38,11 @@ impl ModalType {
 
 pub struct Modal {
     pub modal_type: ModalType,
-    pub input: String,
-    pub replace_input: String,
+    pub input: CompactString,
+    pub replace_input: CompactString,
     pub focus_replace: bool,
     pub active_button: usize,
-    pub error_message: Option<String>,
+    pub error_message: Option<CompactString>,
 }
 
 impl Modal {
@@ -55,8 +56,8 @@ impl Modal {
         };
         Self {
             modal_type,
-            input: String::new(),
-            replace_input: String::new(),
+            input: CompactString::default(),
+            replace_input: CompactString::default(),
             focus_replace: false,
             active_button,
             error_message: None,

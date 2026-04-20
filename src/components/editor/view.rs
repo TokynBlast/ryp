@@ -136,7 +136,7 @@ pub fn draw_editor(f: &mut Frame, app: &App, area: Rect) {
         let mut search_matches = vec![];
         if let Some(ref st) = search_term {
             if !st.is_empty() {
-                for (byte_idx, _) in line.match_indices(st) {
+                for (byte_idx, _) in line.match_indices(st.as_str()) {
                     let c_start = line[0..byte_idx].chars().count();
                     for c_off in 0..st.chars().count() {
                         search_matches.push(c_start + c_off);

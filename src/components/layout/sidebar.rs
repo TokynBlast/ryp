@@ -8,7 +8,7 @@ use ratatui::{
     widgets::{Block, Borders, Paragraph},
 };
 use console::Emoji;
-use serde_json::Value;
+use compact_str::CompactString;
 
 pub fn draw_sidebar(f: &mut Frame, app: &App, area: Rect) {
     if let Some(ws) = &app.workspace {
@@ -262,7 +262,7 @@ fn draw_git_view(f: &mut Frame, app: &App, area: Rect) {
         let path = &change.path;
         let components: Vec<&str> = path.split('/').collect();
         let display_path = if components.len() > 3 {
-            format!("{}/.../{}/{}", components[0], components[components.len()-2], components[components.len()-1])
+            CompactString::from(format!("{}/.../{}/{}", components[0], components[components.len()-2], components[components.len()-1]))
         } else {
             path.clone()
         };

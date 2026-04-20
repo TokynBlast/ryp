@@ -41,7 +41,7 @@ pub enum Action {
     NextSidebarCategory,
     PrevSidebarCategory,
     FocusFile(std::path::PathBuf, Option<usize>),
-    SearchFiles(String),
+    SearchFiles(compact_str::CompactString),
     OpenNewFileModal,
     Save,
     RefreshGit,
