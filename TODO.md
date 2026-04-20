@@ -23,4 +23,5 @@
 # Internal
 - Add minimum cells size
 - Test caches as arc-swap
-- Implement file names and other likely to be small strings via CompactStr
+- Test arc-swap on caches (MAY BE INCREDIBLY UNSTABLE; WILL NOT USE IF RESULTS CAUSE PROBLEMS)
+- Test rayon on constant cache rebuild
