@@ -9,25 +9,16 @@ Everything
 There's so many changes.
 Not a lot of people will be used to these changes.
 
+### Making a Plugin
+There are two funcitons you should make.
+`init()`, and `run()`.
+The init function is the very first thing run.<br>
+Depending on your priveleges, it will change what you're allowed to do.<br>
+See [this](### Priveleges) for more info.
+
 ### Redirect of `print()`
 Print no longer prints at the cursor.<br>
-Instead, it prints to a debug console.
-
-### Importance of nil
-While the nil type still plays a part; nil is no longer a returned type.<br>
-At least...<br>
-Not by default.
-Take the following code:
-
-```
-my_table = {
-  obj1 = "Hello"
-  obj2 = ", World!"
-}
-print(my_table.obj3)
-```
-
-This will error, instead of printing object 3.
+Instead, it prints to a debug console. The debug console can be opened via F12.
 
 ### Type passing as Firt Class
 Now, you can pass variable types as actual values!<br>
@@ -39,3 +30,8 @@ function some_func(type_passed)
   end
 end
 ```
+
+### Priveleges
+The user is the ultimate priority fro Ryp.<br>
+They are able to limit what you can, and cannot do.<br>
+We provide a handy command to check your own priveleges, so you know what you can and cannot do before even starting.<br>
