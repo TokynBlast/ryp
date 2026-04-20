@@ -1,11 +1,11 @@
 ## What Is Ryp
 
-Ryp is a highly customizable text editor, all within the terminal!<br>
-It's lightweight, and feature rich!<br>
-Including things, like a git viewer, plugins, replace, and so much more.<br>
+Ryp is a highly customizable text editor, with the user in mind, running in the temrinal!<br>
+It's lightweight, feature rich, safe, and extensible!<br>
+Including things such as a git viewer, plugins, search and replace, plus so much more.<br>
 
 ## Features
-There are multiple features, such as...
+Some of the features include...
 - git
 - search
 - replace
@@ -15,7 +15,8 @@ There are multiple features, such as...
 - text editing
 - syntax highlighting
 
-And many more planned features, such as Lua plugins, config files, resource limiting, and much more!
+Plus, there are tons of planned features, such as config files, resource limiting, capability setting, and so much more!
 
 ### Contributions
-Feel free to contribuite by making an issue report, or making changes and a pull request.
+Feel free to contribuite by making an issue report, or making changes and a pull request.<br>
+NOTE: An issue report can contain suggestions, and is not exclusivley bugs.
