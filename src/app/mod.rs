@@ -16,7 +16,7 @@ use triomphe::Arc;
 use aho_corasick::AhoCorasick;
 use serde_json::{json, Value};
 use compact_str::CompactString;
-use rayon;
+use rayon::{self, prelude::*};
 
 mod ui;
 
