@@ -255,6 +255,13 @@ impl App {
                 self.dirty = true;
             }
 
+            // Once typing, we assume more typing will occur, so we drop blocking
+            let timeout = if self.dirty {
+                Duration::from_millis(0)
+            } else {
+                Duration::from_millis(100)
+            };
+
             if self.dirty {
                 // do the cache spawn first, completely separately
                 {
@@ -277,13 +284,6 @@ impl App {
                 term.draw(|f| ui::draw(f, self))?;
                 self.dirty = false;
             }
-
-            // Once typing, we assume more typing will occur, so we drop blocking
-            let timeout = if self.dirty {
-                Duration::from_millis(0)
-            } else {
-                Duration::from_millis(100)
-            };
 
             if crossterm::event::poll(timeout)? {
                 if let Event::Key(key) = event::read()? {
