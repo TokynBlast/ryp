@@ -39,7 +39,7 @@ fn spawn_lua_worker(script: String, action_tx: crossbeam::channel::Sender<Plugin
             if let Err(e) = chunk.exec() {
                 // Send the error back to your debug_logs!
                 let _ = action_tx.send(PluginAction::DebugLog {
-                    message: format!("Lua Runtime Error: {}", e)
+                    message:  e.to_string(),
                 });
                 // Avoid infinite high-speed error loops
                 thread::sleep(std::time::Duration::from_secs(1));
