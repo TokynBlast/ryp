@@ -31,7 +31,7 @@ pub fn apply_restrictions(lua: &Lua, tx: crossbeam::channel::Sender<crate::plugi
     };
 
     // TODO: Make it so that it uses either what was in the file, or the default, and if anything changed, write to the config
-    let plugin_config = PathBuf::from(defaults["limited io loactions"][0].to_string());
+    let plugin_config = PathBuf::from(defaults["limited io locations"][0].to_string());
     let _ = plugin_config.join(PathBuf::from("config"));
 
     // This is globbed together, to avoid naming confusion...
