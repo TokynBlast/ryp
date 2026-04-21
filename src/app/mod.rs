@@ -17,6 +17,7 @@ use std::thread;
 use aho_corasick::AhoCorasick;
 use serde_json::{json, Value};
 use compact_str::CompactString;
+use rayon;
 
 mod ui;
 
@@ -259,17 +260,17 @@ impl App {
                 // do the cache spawn first, completely separately
                 {
                     let cache = Arc::clone(&self.whitespace_cache);
-                    let lines: Vec<CompactString> = self.current_editor()
+                    let lines: triomphe::Arc<Vec<CompactString>> = self.current_editor()
                         .map(|e| e.lines.clone())
-                        .unwrap_or_default();
+                        .unwrap_or_default().into();
                     // TODO: Make this a crossbeam, rather than a thread
-                    thread::spawn(move || {
+                    rayon::spawn(move || {
                         let result: Vec<usize> = lines.iter()
                             .enumerate()
                             .filter(|(_, line)| line.chars().any(|c| c == ' ' || c == '\t'))
                             .map(|(i, _)| i)
                             .collect();
-                        let mut cache = cache.lock();
+                        let mut cache = cache.write();
                         *cache = result;
                     });
                 } // borrow of self ends here
