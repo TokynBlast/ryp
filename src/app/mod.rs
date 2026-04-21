@@ -13,7 +13,6 @@ use std::path::Path;
 use std::path::PathBuf;
 use parking_lot::RwLock;
 use triomphe::Arc;
-use std::thread;
 use aho_corasick::AhoCorasick;
 use serde_json::{json, Value};
 use compact_str::CompactString;
