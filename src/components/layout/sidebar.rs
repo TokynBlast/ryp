@@ -36,9 +36,9 @@ fn draw_activity_bar(f: &mut Frame, app: &App, area: Rect) {
 
     let categories = [
         (SidebarCategory::FileTree, " 󰉓 "), // File icon
-        (SidebarCategory::Search, " 󰍉 "),  // Search icon
-        (SidebarCategory::Git, " 󰊢 "),     // Git icon
-        (SidebarCategory::Settings, " ⚙ "),     // Git icon
+        (SidebarCategory::Search, " 󰍉 "),   // Search icon
+        (SidebarCategory::Git, " 󰊢 "),      // Git icon
+        (SidebarCategory::Settings, " ⚙ "), // Gear icon
     ];
 
     let mut lines = vec![];
