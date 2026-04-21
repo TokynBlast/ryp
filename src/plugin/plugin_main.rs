@@ -45,8 +45,7 @@ fn spawn_lua_worker(script: String, action_tx: crossbeam::channel::Sender<Plugin
                 thread::sleep(std::time::Duration::from_secs(1));
             }
 
-            // If it's a background task, maybe sleep a bit?
-            //thread::sleep(std::time::Duration::from_millis(100));
+            thread::sleep(std::time::Duration::from_millis(100));
         }
     });
     Ok(())
