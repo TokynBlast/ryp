@@ -11,12 +11,12 @@ use syntect::highlighting::Style;
 use syntect::parsing::SyntaxSet;
 use std::path::Path;
 use std::path::PathBuf;
-use parking_lot::Mutex;
+use parking_lot::RwLock;
 use triomphe::Arc;
-use std::thread;
 use aho_corasick::AhoCorasick;
 use serde_json::{json, Value};
 use compact_str::CompactString;
+use rayon;
 
 mod ui;
 
@@ -54,8 +54,8 @@ pub struct App {
     pub debug_console_visible: bool,
     pub dirty: bool,
     pub rx: crossbeam::channel::Receiver<PluginAction>,
-    pub whitespace_cache: Arc<Mutex<Vec<usize>>>,
-    pub highlight_cache: Arc<Mutex<Vec<Vec<(Style, CompactString)>>>>,
+    pub whitespace_cache: Arc<RwLock<Vec<usize>>>,
+    pub highlight_cache: Arc<RwLock<Vec<Vec<(Style, CompactString)>>>>,
     pub host_terminal_height: u16,
     pub debug_logs: Vec<CompactString>,
 }
@@ -90,8 +90,8 @@ impl App {
             debug_console_visible: false,                                       // Whether plugin debug console is visible or not
             dirty: true,                                                        // Whether there have been changes or not to the file(s)
             rx,                                                                 // Crossbeam send and receive
-            whitespace_cache: Arc::new(Mutex::new(Vec::new())),                 // Cache for where whitespace is, used in searching (performance increase)
-            highlight_cache: Arc::new(Mutex::new(Vec::new())),                 // Cache for highlighting (performance increase)
+            whitespace_cache: Arc::new(RwLock::new(Vec::new())),                // Cache for where whitespace is, used in searching (performance increase)
+            highlight_cache: Arc::new(RwLock::new(Vec::new())),                  // Cache for highlighting (performance increase)
             host_terminal_height: 0,
             debug_logs: vec![],
         }
@@ -259,24 +259,24 @@ impl App {
                 // do the cache spawn first, completely separately
                 {
                     let cache = Arc::clone(&self.whitespace_cache);
-                    let lines: Vec<CompactString> = self.current_editor()
+                    let lines: triomphe::Arc<Vec<CompactString>> = self.current_editor()
                         .map(|e| e.lines.clone())
-                        .unwrap_or_default();
+                        .unwrap_or_default().into();
                     // TODO: Make this a crossbeam, rather than a thread
-                    thread::spawn(move || {
+                    rayon::spawn(move || {
                         let result: Vec<usize> = lines.iter()
                             .enumerate()
                             .filter(|(_, line)| line.chars().any(|c| c == ' ' || c == '\t'))
                             .map(|(i, _)| i)
                             .collect();
-                        let mut cache = cache.lock();
+                        let mut cache = cache.write();
                         *cache = result;
                     });
                 } // borrow of self ends here
 
-              term.draw(|f| ui::draw(f, self))?;
-              self.dirty = false;
-          }
+                term.draw(|f| ui::draw(f, self))?;
+                self.dirty = false;
+            }
 
             // Once typing, we assume more typing will occur, so we drop blocking
             let timeout = if self.dirty {
