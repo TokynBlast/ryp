@@ -39,6 +39,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     let mut app = App::new(rx);
 
     // Load in the lua plugins
+    // TODO: Only load this if there are active plugins to load :)
     let _ = crate::plugin::plugin_main::load_plugins(tx);
 
     // Check if an argument is passed
