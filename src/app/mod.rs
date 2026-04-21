@@ -271,7 +271,7 @@ impl App {
                         .unwrap_or_default().into();
                     // TODO: Make this a crossbeam, rather than a thread
                     rayon::spawn(move || {
-                        let result: Vec<usize> = lines.iter()
+                        let result: Vec<usize> = lines.par_iter()
                             .enumerate()
                             .filter(|(_, line)| line.chars().any(|c| c == ' ' || c == '\t'))
                             .map(|(i, _)| i)
