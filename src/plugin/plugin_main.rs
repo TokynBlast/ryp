@@ -1,3 +1,4 @@
+use compact_str::CompactString;
 use mlua::{Lua, Result, StdLib};
 use crate::plugin::action::PluginAction;
 use std::thread;
@@ -6,7 +7,7 @@ fn spawn_lua_worker(script: String, action_tx: crossbeam::channel::Sender<Plugin
     thread::spawn(move || {
         let lua = Lua::new();
 
-        crate::plugin::policy::apply_restrictions(&lua, action_tx.clone()).expect("Something went wrong with applying resrtictions to plugin Lua.");
+        crate::plugin::policy::apply_restrictions(&lua, action_tx.clone(), &CompactString::from("")).expect("Something went wrong with applying resrtictions to plugins.");
 
         lua.load_std_libs(StdLib::ALL_SAFE).expect("Critical: Could not load Lua libs");
 

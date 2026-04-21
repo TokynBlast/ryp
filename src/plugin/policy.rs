@@ -1,16 +1,45 @@
+use compact_str::CompactString;
 use mlua::{Lua, Result, Value::{self, Nil}};
 use crate::plugin::action::PluginAction;
-use serde_json::json;
+use serde_json::{self, json};
+use std::path::PathBuf;
+use std::fs;
 
-pub fn apply_restrictions(lua: &Lua, tx: crossbeam::channel::Sender<crate::plugin::action::PluginAction>) -> Result<()> {
-    let defaults = json!({
-      "networking": false,
-      "read stdout": false,
-      "io operations": true,
-      "limited io operations": true,
-      "unlimited io operations": false,
-      "limited io locations": ["~/.ryp/plugins/{plugin_name}", "%APPDATA%\\.ryp\\plugins\\{plugin_name}"] // We need to seperate windows, and implement actual name placing
+#[inline]
+pub fn apply_restrictions(lua: &Lua, tx: crossbeam::channel::Sender<crate::plugin::action::PluginAction>, plugin_name: &CompactString) -> Result<()> {
+    let mut defaults = json!({
+        "networking": false,
+        "read stdout": false,
+        "io operations": true,
+        "limited io operations": true,
+        "unlimited io operations": false,
+        "stdin access": false,
+        "stdout access": false,
+        "limited io locations": [],
+        "make threads": false,
     });
+
+    // If this fails, we can't allow IO, or we should crash :)
+    defaults["limited io locations"] = if cfg!(windows) {
+        let base = std::env::var("APPDATA");
+        let path = PathBuf::from(base.unwrap()).join(format!("ryp\\plugins\\{}", plugin_name));
+        json!([path])
+    } else {
+        let base = std::env::var("HOME");
+        let path = PathBuf::from(base.unwrap()).join(format!(".ryp/plugins/{}", plugin_name));
+        json!([path])
+    };
+
+    // TODO: Make it so that it uses either what was in the file, or the default, and if anything changed, write to the config
+    let plugin_config = PathBuf::from(defaults["limited io loactions"][0].to_string());
+    let _ = plugin_config.join(PathBuf::from("config"));
+
+    // This is globbed together, to avoid naming confusion...
+    //   There aren't many names we have available, before it becomes redundant and hard to maintain
+    let configuration =
+        serde_json::from_str::<serde_json::Value>(
+            &fs::read_to_string(plugin_config)?
+        ).unwrap();
 
     let globals = lua.globals();
 
@@ -26,26 +55,38 @@ pub fn apply_restrictions(lua: &Lua, tx: crossbeam::channel::Sender<crate::plugi
 
     // There are a couple from IO that we keep...
     // However, we drop nearly every single one
-    globals.set("io.close", Nil)?;
-    globals.set("io.tmpfile", Nil)?;
-    globals.set("io.stderr", Nil)?;
-    globals.set("io.flush", Nil)?;
-    globals.set("io.stdout", Nil)?;
-    globals.set("io.stdin", Nil)?;
-    globals.set("io.output", Nil)?;
-    globals.set("io.read", Nil)?;
-    globals.set("io.write", Nil)?;
-    globals.set("io.open", Nil)?;
-    globals.set("io.type", Nil)?;
-    globals.set("io.popen", Nil)?;
-    globals.set("io.lines", Nil)?;
+    if serde_json::Value::as_bool(&configuration["unlimited io operations"])
+        .expect("Could not determine whether or not to allow IO operations") {
+        globals.set("io.close", Nil)?;
+        globals.set("io.tmpfile", Nil)?;
+        globals.set("io.stderr", Nil)?;
+        globals.set("io.flush", Nil)?;
+        if serde_json::Value::as_bool(&configuration["stdout access"])
+            .expect("Could not determine whether or not to allow access to stdout") {
+            globals.set("io.stdout", Nil)?;
+        }
+        if serde_json::Value::as_bool(&configuration["stdin access"])
+            .expect("Could not determine whether or not to allow access to stdin") {
+            globals.set("io.stdin", Nil)?;
+        }
+        globals.set("io.output", Nil)?;
+        globals.set("io.read", Nil)?;
+        globals.set("io.write", Nil)?;
+        globals.set("io.open", Nil)?;
+        globals.set("io.type", Nil)?;
+        globals.set("io.popen", Nil)?;
+        globals.set("io.lines", Nil)?;
+    }
     globals.set("assert", Nil)?;
     globals.set("rawset", Nil)?;
     globals.set("getmetatable", Nil)?;
     globals.set("setmetatable", Nil)?;
     globals.set("arg", Nil)?;
 
-    globals.set("coroutine", Nil)?;
+    if serde_json::Value::as_bool(&configuration["make threads"])
+        .expect("Could not determine whether or not to allow making threads") {
+        globals.set("coroutine", Nil)?;
+    }
 
 
     // Consider: rawlen, rawequals
