@@ -7,10 +7,14 @@ pub mod windows;
 pub mod plugin;
 
 use app::App;
+use jemallocator::Jemalloc;
 use std::error::Error;
 use std::path::{Path, PathBuf};
 use std::{env, fs};
 use crossbeam;
+
+#[global_allocator]
+static GLOBAL: Jemalloc = Jemalloc;
 
 fn main() -> Result<(), Box<dyn Error>> {
     let path = if cfg!(windows) {
