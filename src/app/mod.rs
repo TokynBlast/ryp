@@ -275,9 +275,9 @@ impl App {
                     });
                 } // borrow of self ends here
 
-              term.draw(|f| ui::draw(f, self))?;
-              self.dirty = false;
-          }
+                term.draw(|f| ui::draw(f, self))?;
+                self.dirty = false;
+            }
 
             // Once typing, we assume more typing will occur, so we drop blocking
             let timeout = if self.dirty {
