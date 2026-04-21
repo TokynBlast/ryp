@@ -18,16 +18,10 @@ static GLOBAL: Jemalloc = Jemalloc;
 
 fn main() -> Result<(), Box<dyn Error>> {
     let path = if cfg!(windows) {
-        // Rust won't expand %APPDATA%, so we get the variable
-        let base = env::var("APPDATA")?;
-        PathBuf::from(base).join("ryp")
+        PathBuf::from(env::var("APPDATA")?).join("ryp")
     } else {
-        // Get /home/user from $HOME
-        let base = env::var("HOME")?;
-        PathBuf::from(base).join(".ryp")
+        PathBuf::from(env::var("HOME")?).join(".ryp")
     };
-
-    if !path.exists() {
         fs::create_dir_all(&path)?;
     }
 
