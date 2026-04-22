@@ -70,15 +70,10 @@ fn set_setting_value(lua: &mlua::Lua, tx: &crossbeam_channel::Sender<PluginActio
 pub fn integrate_settings(lua: &mlua::Lua, tx: crossbeam_channel::Sender<PluginAction>) -> Result<(), mlua::Error> {
     let settings_table = lua.create_table()?;
     // Keeps real settings table secure; Our proxy table is empty, so Lua calls __newindex
-    let settings_table_proxy = lua.create_table()?;
     let globals = lua.globals();
     add_setting(lua, &tx, &settings_table)?;
     get_setting_value(lua, &tx, &settings_table)?;
     set_setting_value(lua, &tx, &settings_table)?;
-    settings_table_proxy.set("__index", settings_table)?;
-    settings_table_proxy.set("__newindex", lua.create_function(|_, (_t, _k, _v): (mlua::Table, String, mlua::Value)| {
-        Err::<(), _>(mlua::Error::RuntimeError("You cannot change, or set the settings table. This is a security policy.".into()))
-    })?)?;
-    globals.set("settings", settings_table_proxy)?;
+    globals.set("settings", settings_table)?;
     Ok(())
 }
