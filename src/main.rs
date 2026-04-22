@@ -7,6 +7,7 @@ pub mod windows;
 pub mod plugin;
 
 use app::App;
+use compact_str::CompactString;
 use jemallocator::Jemalloc;
 use std::error::Error;
 use std::path::{Path, PathBuf};
