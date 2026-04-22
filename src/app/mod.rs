@@ -255,13 +255,6 @@ impl App {
                 self.dirty = true;
             }
 
-            // Once typing, we assume more typing will occur, so we drop blocking
-            let timeout = if self.dirty {
-                Duration::from_millis(0)
-            } else {
-                Duration::from_millis(100)
-            };
-
             if self.dirty {
                 // do the cache spawn first, completely separately
                 {
@@ -285,7 +278,7 @@ impl App {
                 self.dirty = false;
             }
 
-            if crossterm::event::poll(timeout)? {
+            if crossterm::event::poll(Duration::from_nanos(400))? {
                 if let Event::Key(key) = event::read()? {
                     self.handle_key(key);
                 }
