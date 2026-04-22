@@ -1,8 +1,6 @@
 use crossterm::event::{KeyCode, KeyEvent, KeyModifiers};
 use portable_pty::{CommandBuilder, PtySize, native_pty_system};
 use std::io::{Read, Write};
-use crossbeam;
-use std::thread;
 use compact_str::CompactString;
 
 #[derive(Clone)]
