@@ -1,81 +1,61 @@
-use compact_str::CompactString;
 use mlua::{Lua, Result, Value::{self, Nil}};
 use crate::plugin::action::PluginAction;
-use serde_json::{self, json};
-use std::path::PathBuf;
-use std::fs;
 
 #[inline]
-pub fn apply_restrictions(lua: &Lua, tx: crossbeam::channel::Sender<crate::plugin::action::PluginAction>, plugin_name: &CompactString) -> Result<()> {
-    let mut defaults = json!({
-        "networking": false,
-        "read stdout": false,
-        "io operations": true,
-        "limited io operations": true,
-        "unlimited io operations": false,
-        "stdin access": false,
-        "stdout access": false,
-        "limited io locations": [],
-        "make threads": false,
-    });
-
-    // If this fails, we can't allow IO, or we should crash :)
-    defaults["limited io locations"] = if cfg!(windows) {
-        let base = std::env::var("APPDATA");
-        let path = PathBuf::from(base.unwrap()).join(format!("ryp\\plugins\\{}", plugin_name));
-        json!([path])
-    } else {
-        let base = std::env::var("HOME");
-        let path = PathBuf::from(base.unwrap()).join(format!(".ryp/plugins/{}", plugin_name));
-        json!([path])
-    };
-
-    // TODO: Make it so that it uses either what was in the file, or the default, and if anything changed, write to the config
-    let plugin_config = PathBuf::from(defaults["limited io locations"][0].to_string());
-    let _ = plugin_config.join(PathBuf::from("config"));
-
-    // This is globbed together, to avoid naming confusion...
-    //   There aren't many names we have available, before it becomes redundant and hard to maintain
-    let configuration =
-        serde_json::from_str::<serde_json::Value>(
-            &fs::read_to_string(plugin_config)?
-        ).unwrap();
+pub fn apply_restrictions(lua: &Lua, tx: crossbeam_channel::Sender<crate::plugin::action::PluginAction>, policy: &serde_json::Value) -> Result<()> {
+    // "networking": false,
+    // "read stdout": false,
+    // "io operations": true,
+    // "limited io operations": true,
+    // "unlimited io operations": false,
+    // "stdin access": false,
+    // "stdout access": false,
+    // "limited io locations": [],
+    // "make threads": false,
+    // "forced garbage collection": false,
 
     let globals = lua.globals();
+
+    let not_allowed = |key: &str| -> bool {
+        policy.get(key)
+            .and_then(|v| v.as_bool())
+            .unwrap_or(false) // If it's missing, we assume it's not allowed, and that the plugin is from earlier versions
+    };
 
     // Included in ALL_SAFE; This is something unsafe for us
     globals.set("package", Nil)?;
     globals.set("debug", Nil)?;
     globals.set("loadfile", Nil)?;
-    globals.set("collectgarbage", Nil)?;
+    if not_allowed("forced garbage collection") {
+        globals.set("collectgarbage", Nil)?;
+    }
     globals.set("_VERSION", Nil)?;
-    globals.set("table", Nil)?;
     globals.set("require", Nil)?; // TODO: Make this so we can only load some lua files, excluding luac files
     globals.set("warn", Nil)?;
 
     // There are a couple from IO that we keep...
     // However, we drop nearly every single one
-    if serde_json::Value::as_bool(&configuration["unlimited io operations"])
-        .expect("Could not determine whether or not to allow IO operations") {
-        globals.set("io.close", Nil)?;
+    if not_allowed("unlimited io operations") {
         globals.set("io.tmpfile", Nil)?;
         globals.set("io.stderr", Nil)?;
         globals.set("io.flush", Nil)?;
-        if serde_json::Value::as_bool(&configuration["stdout access"])
-            .expect("Could not determine whether or not to allow access to stdout") {
+        if not_allowed("stdout access") {
             globals.set("io.stdout", Nil)?;
         }
-        if serde_json::Value::as_bool(&configuration["stdin access"])
-            .expect("Could not determine whether or not to allow access to stdin") {
+        if not_allowed("stdin access") {
             globals.set("io.stdin", Nil)?;
         }
         globals.set("io.output", Nil)?;
+
+        // These are replaced by our own
         globals.set("io.read", Nil)?;
         globals.set("io.write", Nil)?;
         globals.set("io.open", Nil)?;
+        globals.set("io.lines", Nil)?;
+        globals.set("io.close", Nil)?;
+
         globals.set("io.type", Nil)?;
         globals.set("io.popen", Nil)?;
-        globals.set("io.lines", Nil)?;
     }
     globals.set("assert", Nil)?;
     globals.set("rawset", Nil)?;
@@ -83,8 +63,7 @@ pub fn apply_restrictions(lua: &Lua, tx: crossbeam::channel::Sender<crate::plugi
     globals.set("setmetatable", Nil)?;
     globals.set("arg", Nil)?;
 
-    if serde_json::Value::as_bool(&configuration["make threads"])
-        .expect("Could not determine whether or not to allow making threads") {
+    if not_allowed("make threads") {
         globals.set("coroutine", Nil)?;
     }
 

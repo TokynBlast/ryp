@@ -22,19 +22,34 @@ fn main() -> Result<(), Box<dyn Error>> {
     } else {
         PathBuf::from(env::var("HOME")?).join(".ryp")
     };
+
+    let (tx, rx) = crossbeam_channel::unbounded();
+
+    if path.exists() {
+        if fs::read_dir(&path.join("plugins"))
+              .map(|mut entries| entries.next().is_some()) // Check if at least one file exists
+              .unwrap_or(false) {
+
+            // Load in the lua plugins
+            // We pass in the plugins, to minimize thrown away work, and minimize mistakes
+            let _ = crate::plugin::plugin_main::load_plugins(
+                  CompactString::from(
+                      path.join("plugins")
+                          .to_str()
+                          .expect("Could not complete path")
+                  ), tx);
+        } else {
+          //  drop(tx);
+        }
+    } else {
         fs::create_dir_all(&path)?;
+        drop(tx);
     }
 
     let mut terminal = ratatui::init();
 
-    let (tx, rx) = crossbeam_channel::unbounded();
-
     // Create app and run it
     let mut app = App::new(rx);
-
-    // Load in the lua plugins
-    // TODO: Only load this if there are active plugins to load :)
-    let _ = crate::plugin::plugin_main::load_plugins(tx);
 
     // Check if an argument is passed
     let args: Vec<String> = std::env::args().collect(); // Would benifit slightly from compact strings
