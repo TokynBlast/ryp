@@ -9,13 +9,15 @@ use std::time::Duration;
 use syntect::highlighting::ThemeSet;
 use syntect::highlighting::Style;
 use syntect::parsing::SyntaxSet;
-use std::path::{Path, PathBuf};
+use std::path::Path;
+use std::path::PathBuf;
 use parking_lot::RwLock;
 use triomphe::Arc;
 use aho_corasick::AhoCorasick;
 use serde_json::{json, Value};
 use compact_str::CompactString;
 use rayon::{self, prelude::*};
+use arc_swap::ArcSwap;
 
 mod ui;
 
@@ -53,7 +55,7 @@ pub struct App {
     pub debug_console_visible: bool,
     pub dirty: bool,
     pub rx: crossbeam_channel::Receiver<PluginAction>,
-    pub whitespace_cache: Arc<RwLock<Vec<usize>>>,
+    pub whitespace_cache: Arc<ArcSwap<Vec<usize>>>,
     pub highlight_cache: Arc<RwLock<Vec<Vec<(Style, CompactString)>>>>,
     pub host_terminal_height: u16,
     pub debug_logs: Vec<CompactString>,
@@ -89,7 +91,7 @@ impl App {
             debug_console_visible: false,                                       // Whether plugin debug console is visible or not
             dirty: true,                                                        // Whether there have been changes or not to the file(s)
             rx,                                                                 // Crossbeam send and receive
-            whitespace_cache: Arc::new(RwLock::new(Vec::new())),                // Cache for where whitespace is, used in searching (performance increase)
+            whitespace_cache: Arc::new(ArcSwap::new(Vec::new().into())),                // Cache for where whitespace is, used in searching (performance increase)
             highlight_cache: Arc::new(RwLock::new(Vec::new())),                  // Cache for highlighting (performance increase)
             host_terminal_height: 0,
             debug_logs: vec![],
@@ -261,15 +263,14 @@ impl App {
                     let lines: triomphe::Arc<Vec<CompactString>> = self.current_editor()
                         .map(|e| e.lines.clone())
                         .unwrap_or_default().into();
-                    // TODO: Make this a crossbeam, rather than a thread
                     rayon::spawn(move || {
                         let result: Vec<usize> = lines.par_iter()
                             .enumerate()
-                            .filter(|(_, line)| line.chars().any(|c| c == ' ' || c == '\t'))
+                            .filter(|(_, line)| line.as_bytes().iter().any(|&c| c == b' ' || c == b'\t' || c == b'\n'))
                             .map(|(i, _)| i)
                             .collect();
-                        let mut cache = cache.write();
-                        *cache = result;
+                        //let cache = cache.load();
+                        cache.store(std::sync::Arc::new(result));
                     });
                 } // borrow of self ends here
 
