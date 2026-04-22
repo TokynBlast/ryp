@@ -70,7 +70,7 @@ impl Terminal {
         let (tx_out, rx_out) = crossbeam::channel::unbounded::<Vec<u8>>();
 
         // Read thread (PTY -> App)
-        thread::spawn(move || {
+        rayon::spawn(move || {
             // help prevent fragmentation
             #[cfg(windows)]
             let mut buf = [0u8; 4096];
@@ -93,7 +93,7 @@ impl Terminal {
         });
 
         // Write thread (App -> PTY)
-        thread::spawn(move || {
+        rayon::spawn(move || {
             while let Ok(data) = rx_in.recv() {
                 let _ = writer.write_all(&data);
                 let _ = writer.flush();

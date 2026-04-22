@@ -1,11 +1,11 @@
 use compact_str::CompactString;
 use mlua::{Lua, Result, StdLib};
 use crate::plugin::action::PluginAction;
-use std::thread;
+use std::{fs, path::PathBuf, thread};
+use rayon;
 
 fn spawn_lua_worker(script: String, action_tx: crossbeam::channel::Sender<PluginAction>) -> Result<()> {
-    thread::spawn(move || {
-        let lua = Lua::new();
+    rayon::spawn(move || {
 
         crate::plugin::policy::apply_restrictions(&lua, action_tx.clone(), &CompactString::from("")).expect("Something went wrong with applying resrtictions to plugins.");
 
