@@ -5,7 +5,7 @@ use triomphe::Arc;
 use parking_lot::{Mutex, Condvar};
 
 #[inline]
-fn add_setting(lua: &mlua::Lua, tx: &crossbeam::channel::Sender<PluginAction>, settings_table: &mlua::Table) -> Result<(), mlua::Error>  {
+fn add_setting(lua: &mlua::Lua, tx: &crossbeam_channel::Sender<PluginAction>, settings_table: &mlua::Table) -> Result<(), mlua::Error>  {
     // We clone the sender for each function
     let tx_add = tx.clone();
 
@@ -20,7 +20,7 @@ fn add_setting(lua: &mlua::Lua, tx: &crossbeam::channel::Sender<PluginAction>, s
 }
 
 #[inline]
-fn get_setting_value(lua: &mlua::Lua, tx: &crossbeam::channel::Sender<PluginAction>, settings_table: &mlua::Table) -> Result<(), mlua::Error> {
+fn get_setting_value(lua: &mlua::Lua, tx: &crossbeam_channel::Sender<PluginAction>, settings_table: &mlua::Table) -> Result<(), mlua::Error> {
     let tx_get = tx.clone();
 
     settings_table.set("get",
@@ -53,7 +53,7 @@ fn get_setting_value(lua: &mlua::Lua, tx: &crossbeam::channel::Sender<PluginActi
 }
 
 #[inline]
-fn set_setting_value(lua: &mlua::Lua, tx: &crossbeam::channel::Sender<PluginAction>, settings_table: &mlua::Table) -> Result<(), mlua::Error> {
+fn set_setting_value(lua: &mlua::Lua, tx: &crossbeam_channel::Sender<PluginAction>, settings_table: &mlua::Table) -> Result<(), mlua::Error> {
     let tx_set = tx.clone();
 
     settings_table.set("set",
@@ -67,7 +67,7 @@ fn set_setting_value(lua: &mlua::Lua, tx: &crossbeam::channel::Sender<PluginActi
 }
 
 #[inline]
-pub fn integrate_settings(lua: &mlua::Lua, tx: crossbeam::channel::Sender<PluginAction>) -> Result<(), mlua::Error> {
+pub fn integrate_settings(lua: &mlua::Lua, tx: crossbeam_channel::Sender<PluginAction>) -> Result<(), mlua::Error> {
     let settings_table = lua.create_table()?;
     // Keeps real settings table secure; Our proxy table is empty, so Lua calls __newindex
     let settings_table_proxy = lua.create_table()?;

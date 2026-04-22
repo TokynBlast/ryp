@@ -53,7 +53,7 @@ pub struct App {
     pub terminal_visible: bool,
     pub debug_console_visible: bool,
     pub dirty: bool,
-    pub rx: crossbeam::channel::Receiver<PluginAction>,
+    pub rx: crossbeam_channel::Receiver<PluginAction>,
     pub whitespace_cache: Arc<RwLock<Vec<usize>>>,
     pub highlight_cache: Arc<RwLock<Vec<Vec<(Style, CompactString)>>>>,
     pub host_terminal_height: u16,
@@ -61,7 +61,7 @@ pub struct App {
 }
 
 impl App {
-    pub fn new(rx: crossbeam::channel::Receiver<PluginAction>) -> Self {
+    pub fn new(rx: crossbeam_channel::Receiver<PluginAction>) -> Self {
         Self {
             editors: vec![],                                                    // All editors open
             active_tab: 0,                                                      // Current active tab

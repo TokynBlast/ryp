@@ -12,7 +12,6 @@ use jemallocator::Jemalloc;
 use std::error::Error;
 use std::path::{Path, PathBuf};
 use std::{env, fs};
-use crossbeam;
 
 #[global_allocator]
 static GLOBAL: Jemalloc = Jemalloc;
@@ -28,7 +27,7 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     let mut terminal = ratatui::init();
 
-    let (tx, rx) = crossbeam::channel::unbounded();
+    let (tx, rx) = crossbeam_channel::unbounded();
 
     // Create app and run it
     let mut app = App::new(rx);

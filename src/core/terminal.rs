@@ -28,8 +28,8 @@ enum ParseState {
 }
 
 pub struct Terminal {
-  pub tx: crossbeam::channel::Sender<Vec<u8>>,
-  rx: crossbeam::channel::Receiver<Vec<u8>>,
+  pub tx: crossbeam_channel::Sender<Vec<u8>>,
+  rx: crossbeam_channel::Receiver<Vec<u8>>,
   pub grid: TerminalGrid,
   parse_state: ParseState,
   pub csi_params: CompactString,
@@ -66,8 +66,8 @@ impl Terminal {
             .expect("Failed to clone PTY reader");
         let mut writer = pair.master.take_writer().expect("Failed to get PTY writer");
 
-        let (tx_in, rx_in) = crossbeam::channel::unbounded::<Vec<u8>>();
-        let (tx_out, rx_out) = crossbeam::channel::unbounded::<Vec<u8>>();
+        let (tx_in, rx_in) = crossbeam_channel::unbounded::<Vec<u8>>();
+        let (tx_out, rx_out) = crossbeam_channel::unbounded::<Vec<u8>>();
 
         // Read thread (PTY -> App)
         rayon::spawn(move || {
