@@ -100,7 +100,6 @@ pub fn apply_restrictions(lua: &Lua, tx: crossbeam::channel::Sender<crate::plugi
 
     // Printing shifts up the screen, which we *DON'T* want
     // Instead, we offer printing, but contained :)
-    let tx_print = tx.clone();
 
     // Redirects Lua `print()` function to a debug console
     // This is apart of the policy, since print must go to the debug console, and going elsewhere is not accepted.
@@ -119,8 +118,7 @@ pub fn apply_restrictions(lua: &Lua, tx: crossbeam::channel::Sender<crate::plugi
             .collect::<Vec<_>>()
             .join(" ");
 
-        // Match your existing variant: DebugLog { message: String }
-        let _ = tx_print.send(PluginAction::DebugLog { message: msg });
+        let _ = tx.send(PluginAction::DebugLog { message: msg });
 
         Ok(())
     })?;
