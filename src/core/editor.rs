@@ -2,6 +2,7 @@ use std::fs;
 use std::path::PathBuf;
 use std::path::Path;
 use compact_str::CompactString;
+use std::sync::atomic::AtomicUsize;
 
 
 pub struct Editor {
