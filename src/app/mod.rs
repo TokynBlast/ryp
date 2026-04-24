@@ -221,15 +221,17 @@ impl App {
     pub fn run(&mut self, term: &mut ratatui::DefaultTerminal) -> std::io::Result<()> {
         while !self.should_quit {
             self.host_terminal_height = term.size().unwrap().height;
+            // modal.input?
             while let Ok(action) = self.rx.try_recv() {
-                self.dirty = true; // Mark dirty because state changed
                 match action {
                     PluginAction::MakeSetting { name, value } => {
                         self.config.insert(name, json!(value));
+                        self.dirty = true;
                     }
 
                     PluginAction::InsertText { text } => {
                         self.current_editor_mut().unwrap().insert_char(text);
+                        self.dirty = true;
                         todo!("Implement InsertText\nUse self.active_tab in `src/app/mod.rs`");
                     }
 
@@ -243,6 +245,9 @@ impl App {
 
                     PluginAction::DebugLog { message } => {
                         self.debug_logs.push(message.into());
+                        if self.debug_console_visible {
+                          self.dirty = true;
+                        }
                     }
 
                     PluginAction::SetSetting { name, value } => {
