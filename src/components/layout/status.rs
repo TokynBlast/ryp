@@ -57,6 +57,11 @@ pub fn draw_status_bar(f: &mut Frame, app: &App, area: Rect) {
                     Some("red") => "Red",
                     Some("json") => "JSON ",
                     Some("r") => "R ",
+                    Some("lhs") => "Haskel ",
+                    Some("xaml") => "XAML 󰙳",
+                    Some("yaml") => "YAML ",
+                    Some("kt") => "Kotlin ",
+                    Some("kts") => "Kotlin Script ",
                     Some("txt") => "Plain Text ",
                     _ => "Unknown",
                 }
