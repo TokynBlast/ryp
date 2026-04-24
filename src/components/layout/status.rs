@@ -55,6 +55,7 @@ pub fn draw_status_bar(f: &mut Frame, app: &App, area: Rect) {
                     Some("red") => "Red",
                     Some("json") => "json",
                     Some("txt") => "Plain Text",
+                    Some("r") => "R",
                     _ => "Unknown",
                 }
             } else {
