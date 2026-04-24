@@ -6,6 +6,8 @@ use ratatui::{
     Frame,
 };
 
+// May be useful in the future:
+// 🖸🖴🖵🖱🖰🖲🖶🖻🖺🖮🖫🖪🕯
 pub fn draw_status_bar(f: &mut Frame, app: &App, area: Rect) {
     let text = match app.current_editor() {
         Some(editor) => {
