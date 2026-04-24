@@ -11,12 +11,14 @@ pub fn draw_status_bar(f: &mut Frame, app: &App, area: Rect) {
         Some(editor) => {
               let lang = if let Some(path) = &editor.filepath {
                 match path.extension().and_then(|e| e.to_str()) {
-                    Some("cpp") | Some("hpp") => "C++ 󰙲",
+                    Some("cpp") => "C++ 󰙲",
+                    Some("hpp") => "C++ Header 󰙲",
                     Some("rs") => "Rust 󱘗",
                     Some("lua") => "Lua ",
                     Some("ll") => "LLVM ",
                     Some("asm") | Some("s") => "Assembly",
-                    Some("c") | Some("h")=> "C 󰙱",
+                    Some("c") => "C 󰙱",
+                    Some("h")=> "C Header 󰙱",
                     Some("js") => "JavaScript ",
                     Some("ml") | Some("mli") => "OCaml ",
                     Some("html") => "HTML ",
