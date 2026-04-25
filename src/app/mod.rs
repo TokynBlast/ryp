@@ -539,9 +539,6 @@ impl App {
             }
             Action::ToggleDebugConsole => {
               self.debug_console_visible = !self.debug_console_visible;
-              if self.debug_console_visible {
-                self.dirty = true;
-              }
             }
             _ => {}
         }
