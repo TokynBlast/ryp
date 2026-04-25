@@ -250,6 +250,7 @@ impl App {
                         if self.debug_console_visible {
                           self.dirty = true;
                         }
+                        if self.debug_logs.len() > 40 { self.debug_logs.clear(); }
                     }
 
                     PluginAction::SetSetting { name, value } => {
