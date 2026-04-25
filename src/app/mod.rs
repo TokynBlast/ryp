@@ -266,6 +266,11 @@ impl App {
             }
 
             if self.dirty {
+                // Since dirty is now only triggered on changes, including height,
+                // we set it here to give the most accurate info, with anything that
+                // might access it in the future :)
+                let height_size = term.size().unwrap();
+                (self.host_terminal_height, self.host_terminal_width) = (height_size.height, height_size.width);
                 // do the cache spawn first, completely separately
                 {
                     let cache = Arc::clone(&self.whitespace_cache);
