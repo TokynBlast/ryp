@@ -292,7 +292,7 @@ impl App {
                 self.dirty = false;
             }
 
-            if crossterm::event::poll(Duration::from_nanos(400))? {
+            if crossterm::event::poll(Duration::from_millis(400))? {
                 if let Event::Key(key) = event::read()? {
                     self.handle_key(key);
                 }
