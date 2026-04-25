@@ -58,6 +58,7 @@ pub struct App {
     pub whitespace_cache: Arc<ArcSwap<Vec<usize>>>,
     pub highlight_cache: Arc<RwLock<Vec<Vec<(Style, CompactString)>>>>,
     pub host_terminal_height: u16,
+    pub host_terminal_width: u16,
     pub debug_logs: Vec<CompactString>,
 }
 
@@ -94,6 +95,7 @@ impl App {
             whitespace_cache: Arc::new(ArcSwap::new(Vec::new().into())),                // Cache for where whitespace is, used in searching (performance increase)
             highlight_cache: Arc::new(RwLock::new(Vec::new())),                  // Cache for highlighting (performance increase)
             host_terminal_height: 0,
+            host_terminal_width: 0,
             debug_logs: vec![],
         }
     }
