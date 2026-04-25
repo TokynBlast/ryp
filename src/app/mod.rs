@@ -258,9 +258,10 @@ impl App {
                 }
             }
 
-            let had_update = self.terminal.update();
-            if had_update {
-                self.dirty = true;
+            if self.terminal_visible {
+                self.dirty = self.terminal.update();
+            } else {
+                self.dirty = term.autoresize().is_ok();
             }
 
             if self.dirty {
