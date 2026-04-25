@@ -222,7 +222,6 @@ impl App {
 
     pub fn run(&mut self, term: &mut ratatui::DefaultTerminal) -> std::io::Result<()> {
         while !self.should_quit {
-            self.host_terminal_height = term.size().unwrap().height;
             // modal.input?
             while let Ok(action) = self.rx.try_recv() {
                 match action {
