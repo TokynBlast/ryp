@@ -72,6 +72,7 @@ pub fn draw(f: &mut Frame, app: &App) {
         crate::components::modals::view::draw_modal(f, app, size);
     }
 
+    // Since only one can be visible at a time
     if app.terminal_visible {
         draw_terminal(f, app, size);
     } else if app.debug_console_visible {
