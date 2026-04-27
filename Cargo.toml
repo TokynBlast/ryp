@@ -18,7 +18,7 @@ strip-ansi-escapes = "0.2.1" # Not used; Consider removing?
 vt100="0.16.2"
 aho-corasick="1.1.4"
 console="0.16.3"
-mlua = { version = "0.11.6", features = ["lua55", "serialize", "serde"] }
+mlua = { version = "0.11.6", features = ["lua55", "serialize", "serde", "vendored"] }
 indexmap="2.14.0"
 oneshot="0.2.1"
 parking_lot="0.12.5"
