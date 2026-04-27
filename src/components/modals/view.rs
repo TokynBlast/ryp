@@ -59,7 +59,7 @@ pub fn draw_modal(f: &mut Frame, app: &App, area: Rect) {
                 .title(" Search (F2) ")
                 .borders(Borders::ALL)
                 .style(Style::default().bg(Color::Rgb(50, 50, 50)));
-            let p = Paragraph::new(modal.input.clone())
+            let p = Paragraph::new(String::from(modal.input.clone()))
                 .block(block)
                 .alignment(modal.modal_type.alignment());
             f.render_widget(p, modal_area);
@@ -95,6 +95,7 @@ pub fn draw_modal(f: &mut Frame, app: &App, area: Rect) {
                 ));
             }
         }
+        ModalType::ReplaceAll => todo!(),
         ModalType::QuitPrompt => {
             let block = Block::default()
                 .title(" Unsaved Changes ")
@@ -214,14 +215,19 @@ pub fn draw_modal(f: &mut Frame, app: &App, area: Rect) {
 
             let text = vec![
                 Line::from(" [ NAVIGATION ] "),
-                Line::from(" Arrows      : Move Cursor "),
-                Line::from(" Shift+Arrow : Visual Select "),
-                Line::from(" PgUp / PgDn : Fast Scroll "),
+                Line::from(" Arrows          : Move Cursor "),
+                Line::from(" Shift+Arrow     : Visual Select "),
+                Line::from(" PgUp / PgDn     : Fast Scroll "),
                 Line::from(" [ COMMANDS ] "),
-                Line::from(" F1 / Ctrl+K : Binds Help "),
-                Line::from(" F2 / Ctrl+F : Search "),
-                Line::from(" F3 / Ctrl+R : Replace "),
-                Line::from(" ESC         : Quit / Escape Mode "),
+                Line::from(" F1 / Ctrl+K     : Binds Help "),
+                Line::from(" F2 / Ctrl+F     : Search "),
+                Line::from(" F3 / Ctrl+R     : Replace "),
+                Line::from(" ESC             : Escape Mode "),
+                Line::from(" Ctrl+W / Ctrl+C : Quit / Close Tab "),
+                Line::from(" Ctrl+G          : Reload Git "),
+                Line::from(" Ctrl+A          : Previous Tab "),
+                Line::from(" Ctrl+D          : Next Tab "),
+                Line::from(" Crtl+T / F5     : Open / Close Builtin Terminal "),
                 Line::from(""),
                 Line::from(vec![Span::styled(
                     " Press ESC to close ",

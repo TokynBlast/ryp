@@ -1,25 +1,34 @@
-use serde::{Deserialize, Serialize};
+use serde_json::{json, Value};
+use indexmap::{IndexMap};
 
-#[derive(Serialize, Deserialize, Clone)]
-pub struct Config {
-    pub tab_size: usize,
-    pub theme: ThemeConfig,
-}
+pub type Config = IndexMap<String, Value>;
 
-#[derive(Serialize, Deserialize, Clone)]
-pub struct ThemeConfig {
-    pub tab_bg: String,
-    pub active_tab_bg: String,
-}
+pub fn default() -> Config {
+    let default_json = json!({
+        "Tab Size": 4,
+        "Auto Save": false,
+        "Time To Auto Save": 30_000,
+        "Tab BG Color": "#333333",
+        "Active Tab BG Color": "#2E7D32",
+        "Highlighting Theme": "base16-ocean.dark",
+        "Search": "Ctrl+F",
+        "Help": "Ctrl+K",
+        "Sidebar Toggle": "Ctrl+B",
+        "Previous Sidebar Tab": "Ctrl+A",
+        "Next Sidebar Tab": "Ctrl+D",
+        "Refresh Git": "Ctrl+G",
+        "Close Tab": "Ctrl+A",
+        "Quit": "Ctrl+W",
+        "New File": "Ctrl+N",
+        "Save File": "Ctrl+S",
+        "Open Terminal": "Ctrl+T",
+        "Open Debug Console": "Ctrl+E",
+    });
 
-impl Default for Config {
-    fn default() -> Self {
-        Self {
-            tab_size: 4,
-            theme: ThemeConfig {
-                tab_bg: "#333333".to_string(),        // Dark grey
-                active_tab_bg: "#2E7D32".to_string(), // Green
-            },
-        }
-    }
+    // Convert the JSON into an object for IndexMap
+    default_json.as_object()
+        .unwrap()
+        .clone()
+        .into_iter()
+        .collect()
 }

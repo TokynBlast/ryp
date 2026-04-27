@@ -2,23 +2,29 @@ use crate::config::Config;
 use crate::core::editor::Editor;
 use crate::input::action::SidebarCategory;
 use crate::windows::modal::{Modal, ModalType};
+use crate::plugin::action::PluginAction;
 use crossterm::event::{self, Event};
-use std::collections::HashSet;
+use hashbrown::HashSet;
 use std::time::Duration;
 use syntect::highlighting::ThemeSet;
 use syntect::highlighting::Style;
 use syntect::parsing::SyntaxSet;
 use std::path::Path;
 use std::path::PathBuf;
-use std::sync::{Arc, Mutex};
-use std::thread;
+use parking_lot::RwLock;
+use triomphe::Arc;
+use aho_corasick::AhoCorasick;
+use serde_json::{json, Value};
+use compact_str::CompactString;
+use rayon::{self, prelude::*};
+use arc_swap::ArcSwap;
 
 mod ui;
 
 pub struct SearchResult {
     pub filepath: PathBuf,
     pub line_number: usize,
-    pub content: String,
+    pub content: CompactString,
 }
 
 pub struct App {
@@ -31,50 +37,64 @@ pub struct App {
     pub theme_set: ThemeSet,
     pub workspace: Option<crate::core::tree::FileTree>,
     pub sidebar_category: SidebarCategory,
-    pub search_query: String,
+    pub search_query: CompactString,
     pub search_results: Vec<SearchResult>,
     pub search_selected: usize,
     pub search_scroll: usize,
     pub search_num_files: usize,
     pub search_num_occurrences: usize,
+    pub search_advanced: Vec<CompactString>,
     pub git_manager: crate::core::git::GitManager,
     pub git_changes: Vec<crate::core::git::GitFileChange>,
     pub git_scroll: usize,
     pub git_selected: usize,
+    pub settings_selected: usize,
+    pub settings_scroll: usize,
     pub terminal: crate::core::terminal::Terminal,
     pub terminal_visible: bool,
+    pub debug_console_visible: bool,
     pub dirty: bool,
-    pub whitespace_cache: Arc<Mutex<Vec<usize>>>,
-    pub highlight_cache: Arc<Mutex<Vec<Vec<(Style, String)>>>>,
+    pub rx: crossbeam_channel::Receiver<PluginAction>,
+    pub whitespace_cache: Arc<ArcSwap<Vec<usize>>>,
+    pub highlight_cache: Arc<RwLock<Vec<Vec<(Style, CompactString)>>>>,
+    pub host_terminal_height: u16,
+    pub debug_logs: Vec<CompactString>,
 }
 
 impl App {
-    pub fn new() -> Self {
+    pub fn new(rx: crossbeam_channel::Receiver<PluginAction>) -> Self {
         Self {
-            editors: vec![],
-            active_tab: 0,
-            config: Config::default(),
-            modal: None,
-            should_quit: false,
-            syntax_set: SyntaxSet::load_defaults_newlines(),
-            theme_set: ThemeSet::load_defaults(),
-            workspace: None,
-            sidebar_category: SidebarCategory::FileTree,
-            search_query: String::new(),
-            search_results: vec![],
-            search_selected: 0,
-            search_scroll: 0,
-            search_num_files: 0,
-            search_num_occurrences: 0,
-            git_manager: crate::core::git::GitManager::new(),
-            git_changes: vec![],
-            git_scroll: 0,
-            git_selected: 0,
-            terminal: crate::core::terminal::Terminal::new(PathBuf::from(".")),
-            terminal_visible: false,
-            dirty: true,
-            whitespace_cache: Arc::new(Mutex::new(Vec::new())),
-            highlight_cache: Arc::new(Mutex::new(Vec::new())),
+            editors: vec![],                                                    // All editors open
+            active_tab: 0,                                                      // Current active tab
+            config: crate::config::default(),                                   // Current configuration
+            modal: None,                                                        // Selection windows (confirm leave, new file, etc.)
+            should_quit: false,                                                 // Whether Ryp should quit or not
+            syntax_set: SyntaxSet::load_defaults_newlines(),                    // ???
+            theme_set: ThemeSet::load_defaults(),                               // The current theme
+            workspace: None,                                                    // Filetree, and other stuff
+            sidebar_category: SidebarCategory::FileTree,                        // Current sidebar piece
+            search_query: CompactString::default(),                                        // Actual query to look for
+            search_results: vec![],                                             // All results of search
+            search_selected: 0,                                                 // Selected result in searches
+            search_scroll: 0,                                                   // Y index on scroll
+            search_num_files: 0,                                                // Number of files searched for query
+            search_num_occurrences: 0,                                          // Times a query has occured
+            search_advanced: vec![],                                            // Advanced features, like *.mi, etc.
+            git_manager: crate::core::git::GitManager::new(),                   // manager for git
+            git_changes: vec![],                                                // Changes in Git
+            git_scroll: 0,                                                      // Y index on git tab scroll
+            git_selected: 0,                                                    // Git diff file selected
+            settings_selected: 0,                                               // Setting selected
+            settings_scroll: 0,                                                 // Scroll on settings
+            terminal: crate::core::terminal::Terminal::new(PathBuf::from(".")),// The terminal; Defaults to current path
+            terminal_visible: false,                                            // Sets whether the terminal is currently visible or not
+            debug_console_visible: false,                                       // Whether plugin debug console is visible or not
+            dirty: true,                                                        // Whether there have been changes or not to the file(s)
+            rx,                                                                 // Crossbeam send and receive
+            whitespace_cache: Arc::new(ArcSwap::new(Vec::new().into())),                // Cache for where whitespace is, used in searching (performance increase)
+            highlight_cache: Arc::new(RwLock::new(Vec::new())),                  // Cache for highlighting (performance increase)
+            host_terminal_height: 0,
+            debug_logs: vec![],
         }
     }
 
@@ -95,13 +115,41 @@ impl App {
     pub fn open_diff(&mut self, change_idx: usize) {
         if let Some(change) = self.git_changes.get(change_idx).cloned() {
             let mut editor = Editor::new();
-            let mut lines = vec![format!("DIFF: {}", change.path), String::new()];
+            let mut lines  = vec![CompactString::from(format!("DIFF: {}", change.path)), CompactString::default()];
             for dl in change.diff {
                 lines.push(dl.content);
             }
             editor.load_diff(Path::new(&change.path), lines);
             self.editors.push(editor);
             self.active_tab = self.editors.len() - 1;
+        }
+    }
+
+    // This is just an example, and meant to show it works, since actual logic will be much more complex...
+    pub fn change_settings(&mut self) {
+        if let Some((_, val)) = self.config.get_index_mut(self.settings_selected) {
+            match val {
+                //TODO: Make it a box, that is on or off, like an HTML checkbox
+                Value::Bool(b) => *b = !*b,
+                // TODO: Make it a continuous typing input,
+                //       and escape on enter press, or esc.
+                //
+                //TODO: Also allow for up and down arrow movement
+                //      to change and affect the number
+                //      (Left and right should move cursor)
+                Value::Number(n) => {
+                    if let Some(i) = n.as_i64() {
+                        *val = serde_json::json!(i + 1);
+                    }
+                },
+                // TODO: Make it a continuous typing input,
+                //       and escape on enter press, or esc
+                Value::String(s) => {
+                    *val = Value::String(s.to_string() + "a")
+                }
+
+                _ => return,
+            }
         }
     }
 
@@ -125,8 +173,15 @@ impl App {
         } else {
             let mut editor = Editor::new();
             if editor.load_file(path) {
-                let theme = &self.theme_set.themes["base16-ocean.dark"];
+                let theme_name = self.config.get("theme")
+                    .and_then(|v| v.get("Highlighting Theme"))
+                    .and_then(|v| v.as_str())
+                    .unwrap_or("base16-ocean.dark");
+
+                let theme = &self.theme_set.themes[theme_name];
+
                 editor.rebuild_highlight_cache(&self.syntax_set, theme);
+
                 let current_is_dirty = self.current_editor().map_or(false, |e| e.dirty);
                 if force_new_tab
                     || (self.editors.is_empty())
@@ -163,8 +218,39 @@ impl App {
         }
     }
 
-    pub fn run(&mut self, terminal: &mut ratatui::DefaultTerminal) -> std::io::Result<()> {
+    pub fn run(&mut self, term: &mut ratatui::DefaultTerminal) -> std::io::Result<()> {
         while !self.should_quit {
+            self.host_terminal_height = term.size().unwrap().height;
+            while let Ok(action) = self.rx.try_recv() {
+                self.dirty = true; // Mark dirty because state changed
+                match action {
+                    PluginAction::MakeSetting { name, value } => {
+                        self.config.insert(name, json!(value));
+                    }
+
+                    PluginAction::InsertText { text } => {
+                        self.current_editor_mut().unwrap().insert_char(text);
+                        todo!("Implement InsertText\nUse self.active_tab in `src/app/mod.rs`");
+                    }
+
+                    PluginAction::GetSettingValue { name, responder } => {
+                        let val = self.config.get(&name).cloned().unwrap_or(serde_json::Value::Null);
+
+                        let mut lock = responder.value.lock();
+                        *lock = Some(val);
+                        responder.signal.notify_one(); // Wake up Lua!
+                    }
+
+                    PluginAction::DebugLog { message } => {
+                        self.debug_logs.push(message.into());
+                    }
+
+                    PluginAction::SetSetting { name, value } => {
+                        self.config.insert(name, json!(value));
+                    }
+                }
+            }
+
             let had_update = self.terminal.update();
             if had_update {
                 self.dirty = true;
@@ -174,32 +260,25 @@ impl App {
                 // do the cache spawn first, completely separately
                 {
                     let cache = Arc::clone(&self.whitespace_cache);
-                    let lines: Vec<String> = self.current_editor()
+                    let lines: triomphe::Arc<Vec<CompactString>> = self.current_editor()
                         .map(|e| e.lines.clone())
-                        .unwrap_or_default();
-                    thread::spawn(move || {
-                        let result: Vec<usize> = lines.iter()
+                        .unwrap_or_default().into();
+                    rayon::spawn(move || {
+                        let result: Vec<usize> = lines.par_iter()
                             .enumerate()
-                            .filter(|(_, line)| line.chars().any(|c| c == ' ' || c == '\t'))
+                            .filter(|(_, line)| line.as_bytes().iter().any(|&c| c == b' ' || c == b'\t' || c == b'\n'))
                             .map(|(i, _)| i)
                             .collect();
-                        if let Ok(mut cache) = cache.lock() {
-                            *cache = result;
-                        }
+                        //let cache = cache.load();
+                        cache.store(std::sync::Arc::new(result));
                     });
                 } // borrow of self ends here
 
-                terminal.draw(|f| ui::draw(f, self))?;
+                term.draw(|f| ui::draw(f, self))?;
                 self.dirty = false;
             }
 
-            let timeout = if self.dirty {
-                Duration::from_millis(0)
-            } else {
-                Duration::from_millis(100)
-            };
-
-            if crossterm::event::poll(timeout)? {
+            if crossterm::event::poll(Duration::from_nanos(400))? {
                 if let Event::Key(key) = event::read()? {
                     self.handle_key(key);
                 }
@@ -297,6 +376,12 @@ impl App {
                     } else if modal.modal_type == ModalType::Replace {
                         self.replace_match();
                         self.find_next_match();
+                    } else if modal.modal_type == ModalType::ReplaceAll {
+                        // TODO: Implement loop stopping
+                        loop {
+                            self.replace_match();
+                            self.find_next_match();
+                        }
                     } else if modal.modal_type == ModalType::QuitPrompt {
                         match modal.active_button {
                             0 => self.should_quit = true, // Discard
@@ -367,7 +452,8 @@ impl App {
                 self.sidebar_category = match self.sidebar_category {
                     SidebarCategory::FileTree => SidebarCategory::Search,
                     SidebarCategory::Search => SidebarCategory::Git,
-                    SidebarCategory::Git => SidebarCategory::FileTree,
+                    SidebarCategory::Git => SidebarCategory::Settings,
+                    SidebarCategory::Settings => SidebarCategory::FileTree,
                 };
                 if self.sidebar_category == SidebarCategory::Git {
                     self.refresh_git();
@@ -380,9 +466,10 @@ impl App {
             }
             Action::PrevSidebarCategory => {
                 self.sidebar_category = match self.sidebar_category {
-                    SidebarCategory::FileTree => SidebarCategory::Git,
+                    SidebarCategory::FileTree => SidebarCategory::Settings,
                     SidebarCategory::Git => SidebarCategory::Search,
                     SidebarCategory::Search => SidebarCategory::FileTree,
+                    SidebarCategory::Settings => SidebarCategory::Git,
                 };
                 if self.sidebar_category == SidebarCategory::Git {
                     self.refresh_git();
@@ -407,7 +494,7 @@ impl App {
                 return;
             }
             Action::SearchFiles(query) => {
-                self.search_query = query;
+                self.search_query = query.into();
                 self.perform_search();
                 return;
             }
@@ -417,6 +504,10 @@ impl App {
             }
             Action::OpenDiff(idx) => {
                 self.open_diff(idx);
+                return;
+            }
+            Action::ChangeSettings => {
+                self.change_settings();
                 return;
             }
             Action::OpenNewFileModal => {
@@ -432,10 +523,16 @@ impl App {
                 self.terminal.handle_key(key);
                 return;
             }
+            Action::ToggleDebugConsole => {
+              self.debug_console_visible = !self.debug_console_visible;
+              if self.debug_console_visible {
+                self.dirty = true;
+              }
+            }
             _ => {}
         }
 
-        let tab_size = self.config.tab_size;
+        let tab_size = self.config.get("Tab Size").and_then(|v| v.as_u64()).unwrap_or(4);
 
         let is_tree_focused = self.workspace.as_ref().map_or(false, |w| w.focused);
         if is_tree_focused {
@@ -460,20 +557,26 @@ impl App {
                     }
                     Action::MoveUp(_) => match self.sidebar_category {
                         SidebarCategory::FileTree => {
-                            if ws.selected > 0 {
-                                ws.selected -= 1;
-                            }
+                            ws.selected = ws.selected.saturating_sub(1);
                         }
                         SidebarCategory::Search => {
-                            if self.search_selected > 0 {
-                                self.search_selected -= 1;
-                            }
+                            self.search_selected =
+                                self.search_selected.saturating_sub(1);
                         }
                         SidebarCategory::Git => {
-                            if self.git_selected > 0 {
-                                self.git_selected -= 1;
-                            }
+                            self.git_selected =
+                                self.git_selected.saturating_sub(1);
                         }
+                        SidebarCategory::Settings => {
+                            if self.settings_selected > 0 {
+                                self.settings_selected -= 1;
+
+                                // If the selection goes above the visible area, scroll up
+                                if self.settings_selected < self.settings_scroll {
+                                   self.settings_scroll = self.settings_selected;
+                                }
+                            }
+                        },
                     },
                     Action::MoveDown(_) => match self.sidebar_category {
                         SidebarCategory::FileTree => {
@@ -492,6 +595,18 @@ impl App {
                                 self.git_selected += 1;
                             }
                         }
+                        SidebarCategory::Settings => {
+                            if self.settings_selected < self.config.len().saturating_sub(1) {
+                                self.settings_selected += 1;
+
+                                // If the selection goes below the visible area, scroll down
+                                // TODO: Implement visible area, 3 is just a stable size for when really small...
+                                let visible_height = self.host_terminal_height;
+                                if self.settings_selected >= self.settings_scroll + visible_height as usize {
+                                    self.settings_scroll += 1;
+                                }
+                            }
+                        },
                     },
                     Action::InsertNewline | Action::ModalConfirmForceNewTab => {
                         match self.sidebar_category {
@@ -528,6 +643,11 @@ impl App {
                                     return;
                                 }
                             }
+                            SidebarCategory::Settings => {
+                                if self.settings_selected < self.config.len() {
+                                    self.dispatch(Action::ChangeSettings);
+                                }
+                            },
                         }
                     }
                     Action::SwitchFocus => {
@@ -610,8 +730,7 @@ impl App {
 
                 if any_dirty {
                     if self.editors.len() > 1 {
-                        self.modal =
-                            Some(crate::windows::modal::Modal::new(ModalType::ConfirmExit));
+                        self.modal = Some(crate::windows::modal::Modal::new(ModalType::ConfirmExit));
                     } else {
                         self.modal = Some(crate::windows::modal::Modal::new(ModalType::QuitPrompt));
                     }
@@ -712,7 +831,7 @@ impl App {
                 let x_offset = if i == 0 { start_x } else { 0 };
 
                 if x_offset < line.len() {
-                    if let Some(match_x) = line[x_offset..].find(&search_term) {
+                    if let Some(match_x) = line[x_offset..].find(&search_term.to_string()) {
                         editor.cursor_y = y;
                         editor.cursor_x = x_offset + match_x;
                         return;
@@ -724,7 +843,7 @@ impl App {
 
     fn replace_match(&mut self) {
         let (search_term, replace_term) = if let Some(modal) = &self.modal {
-            (modal.input.clone(), modal.input.clone()) // Assuming replace_input was meant if modal_type was Replace, but using input for now
+            (modal.input.clone(), modal.replace_input.clone())
         } else {
             return;
         };
@@ -742,7 +861,7 @@ impl App {
                     let mut new_line = line[..editor.cursor_x].to_string();
                     new_line.push_str(&replace_term);
                     new_line.push_str(&line[editor.cursor_x + search_term.len()..]);
-                    editor.lines[editor.cursor_y] = new_line;
+                    editor.lines[editor.cursor_y] = CompactString::from_string_buffer(new_line);
                 }
             }
         }
@@ -778,7 +897,7 @@ impl App {
                 };
                 let full_path = root.join(path_str);
                 if full_path.exists() {
-                    modal.error_message = Some("File already exists!".to_string());
+                    modal.error_message = Some(CompactString::from("File already exists!"));
                 } else {
                     modal.error_message = None;
                 }
@@ -791,6 +910,7 @@ impl App {
             self.search_results.clear();
             self.search_num_files = 0;
             self.search_num_occurrences = 0;
+            self.search_advanced.clear();
             return;
         }
 
@@ -801,21 +921,22 @@ impl App {
         };
 
         let mut results = vec![];
-        let query = self.search_query.to_lowercase();
         let mut files_found = HashSet::new();
 
         use ignore::WalkBuilder;
         let builder = WalkBuilder::new(ws_path);
+        let ac = AhoCorasick::new([&self.search_query]).unwrap();
+
         for entry in builder.build().filter_map(|e| e.ok()) {
             if entry.path().is_file() {
                 if let Ok(content) = std::fs::read_to_string(entry.path()) {
                     let mut file_had_match = false;
                     for (i, line) in content.lines().enumerate() {
-                        if line.to_lowercase().contains(&query) {
+                        if ac.is_match(line) {
                             results.push(SearchResult {
                                 filepath: entry.path().to_path_buf(),
                                 line_number: i + 1,
-                                content: line.trim().to_string(),
+                                content: CompactString::from(line.trim()),
                             });
                             file_had_match = true;
                         }

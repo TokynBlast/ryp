@@ -32,6 +32,10 @@ pub fn draw_editor(f: &mut Frame, app: &App, area: Rect) {
                     Span::styled(" Close / Quit: ", Style::default().fg(Color::DarkGray)),
                     Span::styled("Ctrl + W", Style::default().fg(Color::Cyan)),
                 ]),
+                Line::from(vec![
+                    Span::styled(" Help: ", Style::default().fg(Color::DarkGray)),
+                    Span::styled("Ctrl + K", Style::default().fg(Color::Cyan)),
+                ]),
             ];
 
             let p = Paragraph::new(msg)
@@ -50,8 +54,28 @@ pub fn draw_editor(f: &mut Frame, app: &App, area: Rect) {
     let margin = (height / 3).max(1);
 
     // Retrieve and update scroll_y using Cell to keep it across frames
-    let current_scroll = editor.scroll_y.get();
+    let current_scroll = editor.scroll_y.load(std::sync::atomic::Ordering::Relaxed);
     let mut scroll_y = current_scroll;
+
+    let ext = editor
+        .filepath
+        .as_ref()
+        .and_then(|p| p.extension())
+        .and_then(|e| e.to_str())
+        .unwrap_or("txt");
+
+    let syntax = app
+        .syntax_set
+        .find_syntax_by_extension(ext)
+        .unwrap_or_else(|| app.syntax_set.find_syntax_plain_text());
+
+    let theme_name = app.config.get("theme")
+        .and_then(|v| v.get("Highlighting Theme"))
+        .and_then(|v| v.as_str())
+        .unwrap_or("base16-ocean.dark");
+
+    let theme = &app.theme_set.themes[theme_name];
+    let mut h = syntect::easy::HighlightLines::new(syntax, theme);
 
     if editor.cursor_y < height {
         scroll_y = 0;
@@ -68,9 +92,13 @@ pub fn draw_editor(f: &mut Frame, app: &App, area: Rect) {
 
     // Clamp to make sure we don't scroll past the content
     scroll_y = scroll_y.min(editor.lines.len().saturating_sub(1));
-    editor.scroll_y.set(scroll_y);
+    editor.scroll_y.store(scroll_y, std::sync::atomic::Ordering::Relaxed);
 
     let mut lines = vec![];
+    for line in editor.lines.iter().take(scroll_y) {
+        let line_with_nl = format!("{}\n", line);
+        let _ = h.highlight_line(&line_with_nl, &app.syntax_set);
+    }
 
     let search_term = if let Some(modal) = &app.modal {
         if modal.modal_type == ModalType::Search || modal.modal_type == ModalType::Replace {
@@ -108,7 +136,7 @@ pub fn draw_editor(f: &mut Frame, app: &App, area: Rect) {
         let mut search_matches = vec![];
         if let Some(ref st) = search_term {
             if !st.is_empty() {
-                for (byte_idx, _) in line.match_indices(st) {
+                for (byte_idx, _) in line.match_indices(st.as_str()) {
                     let c_start = line[0..byte_idx].chars().count();
                     for c_off in 0..st.chars().count() {
                         search_matches.push(c_start + c_off);
@@ -117,10 +145,11 @@ pub fn draw_editor(f: &mut Frame, app: &App, area: Rect) {
             }
         }
 
-        if let Some(ranges) = editor.highlight_cache.get(scroll_y + i) {
+        let line_with_nl = format!("{}\n", line);
+        if let Ok(ranges) = h.highlight_line(&line_with_nl, &app.syntax_set) {
             let mut char_idx = 0;
             for (style, text) in ranges {
-                let style = *style;
+                let style = &style;
                 let text = text.trim_end_matches('\n');
                 if text.is_empty() {
                     continue;

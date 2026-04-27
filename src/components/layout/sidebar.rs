@@ -1,4 +1,4 @@
-use crate::app::App;
+use crate::{app::App, config};
 use crate::input::action::SidebarCategory;
 use ratatui::{
     Frame,
@@ -7,6 +7,8 @@ use ratatui::{
     text::{Line, Span},
     widgets::{Block, Borders, Paragraph},
 };
+use console::Emoji;
+use compact_str::CompactString;
 
 pub fn draw_sidebar(f: &mut Frame, app: &App, area: Rect) {
     if let Some(ws) = &app.workspace {
@@ -34,8 +36,9 @@ fn draw_activity_bar(f: &mut Frame, app: &App, area: Rect) {
 
     let categories = [
         (SidebarCategory::FileTree, " 󰉓 "), // File icon
-        (SidebarCategory::Search, " 󰍉 "),  // Search icon
-        (SidebarCategory::Git, " 󰊢 "),     // Git icon
+        (SidebarCategory::Search, " 󰍉 "),   // Search icon
+        (SidebarCategory::Git, " 󰊢 "),      // Git icon
+        (SidebarCategory::Settings, " ⚙ "), // Gear icon
     ];
 
     let mut lines = vec![];
@@ -61,6 +64,7 @@ fn draw_sidebar_content(f: &mut Frame, app: &App, area: Rect) {
         SidebarCategory::FileTree => draw_file_tree(f, app, area),
         SidebarCategory::Search => draw_search_view(f, app, area),
         SidebarCategory::Git => draw_git_view(f, app, area),
+        SidebarCategory::Settings => draw_settings_view(f, app, area),
     }
 }
 
@@ -89,9 +93,9 @@ fn draw_file_tree(f: &mut Frame, app: &App, area: Rect) {
             let indent = " ".repeat(depth * 2);
 
             let icon = if node.is_dir {
-                if node.expanded { "▼ " } else { "▶ " }
+                if node.expanded { Emoji("▼ ", "v ") } else { Emoji("▶ ", "> ") }
             } else {
-                "  " // no icon for generic file
+                Emoji("  ", "  ") // no icon for generic file
             };
 
             let style = if ws.focused && ws.selected == i {
@@ -216,7 +220,6 @@ fn draw_search_view(f: &mut Frame, app: &App, area: Rect) {
 }
 
 fn draw_git_view(f: &mut Frame, app: &App, area: Rect) {
-
     let is_focused = app.workspace.as_ref().map_or(false, |w| w.focused);
     let active_style = if is_focused {
         Style::default()
@@ -259,7 +262,7 @@ fn draw_git_view(f: &mut Frame, app: &App, area: Rect) {
         let path = &change.path;
         let components: Vec<&str> = path.split('/').collect();
         let display_path = if components.len() > 3 {
-            format!("{}/.../{}/{}", components[0], components[components.len()-2], components[components.len()-1])
+            CompactString::from(format!("{}/.../{}/{}", components[0], components[components.len()-2], components[components.len()-1]))
         } else {
             path.clone()
         };
@@ -284,4 +287,105 @@ fn draw_git_view(f: &mut Frame, app: &App, area: Rect) {
         // Approximate position for cursor
         f.set_cursor_position((area.x + 1, area.y + 1));
     }
+}
+
+//TODO: Make it so that we do less throwing away work, such as the flattened settings
+fn draw_settings_view(f: &mut Frame, app: &App, area: Rect) {
+    let is_focused = app.workspace.as_ref().map_or(false, |w| w.focused);
+    let active_style = if is_focused {
+        Style::default()
+            .fg(Color::Yellow)
+            .add_modifier(Modifier::BOLD)
+    } else {
+        Style::default()
+            .fg(Color::Gray)
+            .add_modifier(Modifier::BOLD)
+    };
+
+    // TODO: Make this not use the function meant for legacy config storage...
+    let settings: Vec<Setting> = loop_setting_add(&app.config);
+
+    let settings_block = Block::default()
+        .title(" Settings ")
+        .borders(Borders::ALL)
+        .border_style(active_style);
+
+    let inner = settings_block.inner(area);
+    f.render_widget(settings_block, area);
+
+    // Calculate how many items can actually fit in the inner area
+    // Each setting is 3 lines high
+    let visible_count = (inner.height / 3) as usize;
+
+    // Determine the window of items to show based on scroll
+    let start_index = app.settings_scroll;
+    let end_index = (start_index + visible_count).min(settings.len());
+    let visible_settings = &settings[start_index..end_index];
+
+    // compute visible area and scrolling using inner size
+    let height = inner.height as usize + app.settings_scroll;
+    let scroll_y = if app.settings_scroll >= height / 2 {
+        app.settings_scroll - height / 2
+    } else {
+        0
+    };
+
+    // Create chunks ONLY for the visible items
+    let constraints: Vec<Constraint> = visible_settings
+        .iter()
+        .map(|_| Constraint::Length(3))
+        .collect();
+
+    let chunks = Layout::default()
+        .direction(Direction::Vertical)
+        .constraints(constraints)
+        .split(inner);
+
+    // Render only the visible settings
+    for (i, setting) in visible_settings.iter().enumerate() {
+        // Account for the scroll offset
+        let is_selected = is_focused && app.settings_selected == (i + start_index);
+
+        let style = if is_selected {
+            Style::default().bg(Color::Rgb(60, 60, 60)).fg(Color::White)
+        } else {
+            Style::default().fg(Color::Gray)
+        };
+
+        let block = Block::default()
+            .title(format!(" {} ", setting.title))
+            .borders(Borders::ALL)
+            .border_style(style);
+
+        let p = Paragraph::new(setting.value.clone())
+            .block(block)
+            .scroll((scroll_y as u16, 0));
+        f.render_widget(p, chunks[i]);
+    }
+
+    if is_focused {
+        // Cursor logic: Place it relative to the selected item's chunk if visible
+        if app.settings_selected >= start_index && app.settings_selected < end_index {
+            let chunk_idx = app.settings_selected - start_index;
+            let target_chunk = chunks[chunk_idx];
+            f.set_cursor_position((target_chunk.x + 2, target_chunk.y + 1));
+        }
+    }
+}
+
+struct Setting {
+  title: String,
+  value: String,
+}
+
+#[inline(always)]
+fn loop_setting_add(layer: &config::Config) -> Vec<Setting> {
+    let mut settings = vec![];
+    for (key, value) in layer {
+        settings.push(Setting {
+            title: key.clone(),
+            value: value.to_string(),
+        });
+    }
+    settings
 }

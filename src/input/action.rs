@@ -3,6 +3,7 @@ pub enum SidebarCategory {
     FileTree,
     Search,
     Git,
+    Settings,
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -40,11 +41,13 @@ pub enum Action {
     NextSidebarCategory,
     PrevSidebarCategory,
     FocusFile(std::path::PathBuf, Option<usize>),
-    SearchFiles(String),
+    SearchFiles(compact_str::CompactString),
     OpenNewFileModal,
     Save,
     RefreshGit,
     OpenDiff(usize),
     ToggleTerminal,
     TerminalInput(crossterm::event::KeyEvent),
+    ChangeSettings,
+    ToggleDebugConsole,
 }

@@ -1,9 +1,11 @@
 use std::process::Command;
 use std::path::Path;
 
+use compact_str::CompactString;
+
 #[derive(Debug, Clone)]
 pub struct GitDiffLine {
-    pub content: String,
+    pub content: CompactString,
     pub line_type: DiffLineType,
 }
 
@@ -17,8 +19,8 @@ pub enum DiffLineType {
 
 #[derive(Debug, Clone)]
 pub struct GitFileChange {
-    pub path: String,
-    pub status: String,
+    pub path: CompactString,
+    pub status: CompactString,
     pub diff: Vec<GitDiffLine>,
     pub is_expanded: bool,
 }
@@ -54,11 +56,11 @@ impl GitManager {
         let mut changes = vec![];
 
         if let Some(output) = output {
-            let stdout = String::from_utf8_lossy(&output.stdout);
+            let stdout = CompactString::from_utf8_lossy(&output.stdout);
             for line in stdout.lines() {
                 if line.len() < 4 { continue; }
-                let status = line[..2].trim().to_string();
-                let path = line[3..].trim().trim_matches('"').to_string();
+                let status = CompactString::from(line[..2].trim());
+                let path = CompactString::from(line[3..].trim().trim_matches('"'));
 
                 let diff = self.get_diff_for_file(Path::new(&path));
                 changes.push(GitFileChange {
@@ -92,7 +94,7 @@ impl GitManager {
         let mut diff_lines = vec![];
 
         if let Some(output) = output {
-            let stdout = String::from_utf8_lossy(&output.stdout);
+            let stdout = CompactString::from_utf8_lossy(&output.stdout);
             if !stdout.is_empty() {
                 for line in stdout.lines() {
                     let line_type = if line.starts_with('+') && !line.starts_with("+++") {
@@ -106,7 +108,7 @@ impl GitManager {
                     };
 
                     diff_lines.push(GitDiffLine {
-                        content: line.to_string(),
+                        content: line.into(),
                         line_type,
                     });
                 }
@@ -118,16 +120,16 @@ impl GitManager {
         let full_path = std::path::Path::new(root).join(path);
         if let Ok(content) = std::fs::read_to_string(full_path) {
             diff_lines.push(GitDiffLine {
-                content: format!("--- /dev/null"),
+                content: format!("--- /dev/null").into(),
                 line_type: DiffLineType::Header,
             });
             diff_lines.push(GitDiffLine {
-                content: format!("+++ b/{}", path.display()),
+                content: format!("+++ b/{}", path.display()).into(),
                 line_type: DiffLineType::Header,
             });
             for line in content.lines() {
                 diff_lines.push(GitDiffLine {
-                    content: format!("+{}", line),
+                    content: format!("+{}", line).into(),
                     line_type: DiffLineType::Added,
                 });
             }
