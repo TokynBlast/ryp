@@ -1,7 +1,7 @@
 use compact_str::CompactString;
 use mlua::{Lua, Result, StdLib};
 use crate::plugin::action::PluginAction;
-use std::{fs, path::PathBuf, thread};
+use std::{fs, path::PathBuf};
 use rayon;
 
 fn spawn_lua_worker(plugin_path: PathBuf, action_tx: crossbeam_channel::Sender<PluginAction>) -> Result<()> {
