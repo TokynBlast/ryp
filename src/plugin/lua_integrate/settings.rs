@@ -68,12 +68,33 @@ fn set_setting_value(lua: &mlua::Lua, tx: &crossbeam_channel::Sender<PluginActio
 
 #[inline]
 pub fn integrate_settings(lua: &mlua::Lua, tx: crossbeam_channel::Sender<PluginAction>) -> Result<(), mlua::Error> {
-    let settings_table = lua.create_table()?;
-    // Keeps real settings table secure; Our proxy table is empty, so Lua calls __newindex
-    let globals = lua.globals();
-    add_setting(lua, &tx, &settings_table)?;
-    get_setting_value(lua, &tx, &settings_table)?;
-    set_setting_value(lua, &tx, &settings_table)?;
-    globals.set("settings", settings_table)?;
+    let internal_table = lua.create_table()?;
+    add_setting(lua, &tx, &internal_table)?;
+    get_setting_value(lua, &tx, &internal_table)?;
+    set_setting_value(lua, &tx, &internal_table)?;
+
+    let proxy = lua.create_table()?;
+    let metatable = lua.create_table()?;
+
+    // Handle Access: When user calls settings.add, look it up in internal_table
+    let internal_clone = internal_table.clone();
+    metatable.set("__index", lua.create_function(move |_, key: String| {
+        internal_clone.get::<mlua::Value>(key)
+    })?)?;
+
+    // TODO: Implement this. This is a safety feature.
+    //       When a dev tries to modify the table, they become suspicous, and we shouldn't let them continue.
+
+    // let tx_shutdown = tx.clone();
+    // metatable.set("__newindex", lua.create_function(move |_, (_t, _k, _v): (mlua::Value, mlua::Value, mlua::Value)| {
+    //     let _ = tx_shutdown.send(PluginAction::Shutdown);
+    //     Err::<(), mlua::Error>(mlua::Error::RuntimeError(
+    //         "Attempt to modify settings".into()
+    //     ))
+    // })?)?;
+
+    proxy.set_metatable(Some(metatable))?;
+    lua.globals().set("settings", proxy)?;
+
     Ok(())
 }
