@@ -318,33 +318,31 @@ fn draw_settings_view(f: &mut Frame, app: &App, area: Rect) {
     let visible_count = (inner.height / 3) as usize;
 
     // Determine the window of items to show based on scroll
-    let start_index = app.settings_scroll;
-    let end_index = (start_index + visible_count).min(settings.len());
-    let visible_settings = &settings[start_index..end_index];
+    if visible_count == 0 { return; }
+    let mut start_index = app.settings_scroll;
 
-    // compute visible area and scrolling using inner size
-    let height = inner.height as usize + app.settings_scroll;
-    let scroll_y = if app.settings_scroll >= height / 2 {
-        app.settings_scroll - height / 2
-    } else {
-        0
-    };
+    // Ensure selected item is not above the view
+    if app.settings_selected < start_index {
+        start_index = app.settings_selected;
+    } else if app.settings_selected >= start_index + visible_count {
+        start_index = app.settings_selected - visible_count + 1;
+    }
+
+    let end_index = (start_index + visible_count).min(settings.len());
 
     // Create chunks ONLY for the visible items
-    let constraints: Vec<Constraint> = visible_settings
-        .iter()
-        .map(|_| Constraint::Length(3))
-        .collect();
+    let mut constraints = vec![Constraint::Length(3); visible_count];
+    constraints.push(Constraint::Min(0));
 
     let chunks = Layout::default()
         .direction(Direction::Vertical)
         .constraints(constraints)
         .split(inner);
 
-    // Render only the visible settings
-    for (i, setting) in visible_settings.iter().enumerate() {
-        // Account for the scroll offset
-        let is_selected = is_focused && app.settings_selected == (i + start_index);
+        // Render only the visible settings
+        for (i, setting_idx) in (start_index..end_index).enumerate() {
+        let setting = &settings[setting_idx];
+        let is_selected = is_focused && app.settings_selected == setting_idx;
 
         let style = if is_selected {
             Style::default().bg(Color::Rgb(60, 60, 60)).fg(Color::White)
@@ -357,18 +355,10 @@ fn draw_settings_view(f: &mut Frame, app: &App, area: Rect) {
             .borders(Borders::ALL)
             .border_style(style);
 
-        let p = Paragraph::new(setting.value.clone())
-            .block(block)
-            .scroll((scroll_y as u16, 0));
-        f.render_widget(p, chunks[i]);
-    }
+        f.render_widget(Paragraph::new(setting.value.clone()).block(block), chunks[i]);
 
-    if is_focused {
-        // Cursor logic: Place it relative to the selected item's chunk if visible
-        if app.settings_selected >= start_index && app.settings_selected < end_index {
-            let chunk_idx = app.settings_selected - start_index;
-            let target_chunk = chunks[chunk_idx];
-            f.set_cursor_position((target_chunk.x + 2, target_chunk.y + 1));
+        if is_selected {
+            f.set_cursor_position((chunks[i].x + 1, chunks[i].y + 1));
         }
     }
 }
