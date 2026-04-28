@@ -60,6 +60,7 @@ pub struct App {
     pub host_terminal_height: u16,
     pub host_terminal_width: u16,
     pub debug_logs: Vec<CompactString>,
+    pub os: CompactString,
 }
 
 impl App {
@@ -97,6 +98,47 @@ impl App {
             host_terminal_height: 0,
             host_terminal_width: 0,
             debug_logs: vec![],
+            os: if cfg!(target_os = "windows") {
+                   CompactString::from("Windows ")
+                } else if cfg!(target_os = "macos"){
+                    CompactString::from("MacOS ")
+                } else if cfg!(target_os = "linux") {
+                  match os_info::get().os_type() {
+                    os_info::Type::Pop => CompactString::from("!Pop_OS "),
+                    os_info::Type::Arch => CompactString::from("Arch Linux 󰣇"),
+                    os_info::Type::Fedora => CompactString::from("Fedora "),
+                    os_info::Type::Gentoo => CompactString::from("Gentoo "),
+                    os_info::Type::Redhat | os_info::Type::RedHatEnterprise => CompactString::from("Redhat "),
+                    os_info::Type::AlmaLinux => CompactString::from("AlmaLinux "),
+                    os_info::Type::AOSC => CompactString::from("AOSC "),
+                    os_info::Type::Artix => CompactString::from("Artix "),
+                    os_info::Type::CentOS => CompactString::from("CentOS "),
+                    os_info::Type::Cygwin => CompactString::from("Cygwin "),
+                    os_info::Type::Debian => CompactString::from("Debian "),
+                    os_info::Type::Elementary => CompactString::from("ElementaryOS "),
+                    os_info::Type::EndeavourOS => CompactString::from("EndeavourOS "),
+                    os_info::Type::FreeBSD => CompactString::from("FreeBSD "),
+                    os_info::Type::Garuda => CompactString::from("Garuda "),
+                    os_info::Type::Illumos => CompactString::from("Illumos "),
+                    os_info::Type::Kali => CompactString::from("Kali Linux "),
+                    os_info::Type::Manjaro => CompactString::from("Manjaro "),
+                    os_info::Type::Mint => CompactString::from("Linux Mint 󰣭"),
+                    os_info::Type::NixOS => CompactString::from("NixOS "),
+                    os_info::Type::Nobara => CompactString::from("Nobara "),
+                    os_info::Type::OpenBSD => CompactString::from("OpenBSD "),
+                    os_info::Type::Raspbian => CompactString::from("Raspbian "),
+                    os_info::Type::RockyLinux => CompactString::from("RockyLinux "),
+                    os_info::Type::openSUSE => CompactString::from("openSUSE "),
+                    os_info::Type::SUSE => CompactString::from("SUSE "),
+                    os_info::Type::Solus => CompactString::from("Solus "),
+                    os_info::Type::Ubuntu => CompactString::from("Ubuntu 󰕈"),
+                    os_info::Type::Void => CompactString::from("Void Linux "),
+                    os_info::Type::Zorin => CompactString::from("Zorin "),
+                    _ => CompactString::from("")
+                }
+            } else {
+              CompactString::from("?")
+            },
         }
     }
 
