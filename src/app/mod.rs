@@ -620,14 +620,7 @@ impl App {
                                 self.git_selected.saturating_sub(1);
                         }
                         SidebarCategory::Settings => {
-                            if self.settings_selected > 0 {
-                                self.settings_selected -= 1;
-
-                                // If the selection goes above the visible area, scroll up
-                                if self.settings_selected < self.settings_scroll {
-                                   self.settings_scroll = self.settings_selected;
-                                }
-                            }
+                            self.settings_selected = self.settings_selected.saturating_sub(1)
                         },
                     },
                     Action::MoveDown(_) => match self.sidebar_category {
@@ -650,13 +643,6 @@ impl App {
                         SidebarCategory::Settings => {
                             if self.settings_selected < self.config.len().saturating_sub(1) {
                                 self.settings_selected += 1;
-
-                                // If the selection goes below the visible area, scroll down
-                                // TODO: Implement visible area, 3 is just a stable size for when really small...
-                                let visible_height = self.host_terminal_height;
-                                if self.settings_selected >= self.settings_scroll + visible_height as usize {
-                                    self.settings_scroll += 1;
-                                }
                             }
                         },
                     },
