@@ -30,6 +30,12 @@ fn main() -> Result<(), Box<dyn Error>> {
               .map(|mut entries| entries.next().is_some()) // Check if at least one file exists
               .unwrap_or(false) {
 
+
+            rayon::ThreadPoolBuilder::new()
+                .num_threads(3)
+                .build_global()
+                .unwrap();
+
             // Load in the lua plugins
             // We pass in the plugins, to minimize thrown away work, and minimize mistakes
             let _ = crate::plugin::plugin_main::load_plugins(
