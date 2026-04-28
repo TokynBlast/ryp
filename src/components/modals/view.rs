@@ -214,6 +214,9 @@ pub fn draw_modal(f: &mut Frame, app: &App, area: Rect) {
                 .style(Style::default().bg(Color::Rgb(50, 50, 50)));
 
             let text = vec![
+                Line::from(" [ NOTE ] "),
+                Line::from(" Ryp requires a nerd font to be viewed properly. "),
+                Line::from(" They include special characters that Ryp uses."),
                 Line::from(" [ NAVIGATION ] "),
                 Line::from(" Arrows          : Move Cursor "),
                 Line::from(" Shift+Arrow     : Visual Select "),

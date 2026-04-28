@@ -60,6 +60,7 @@ pub fn map_key(key: KeyEvent, in_modal: bool, is_sidebar_focused: bool) -> Optio
 
         // Edit binds
         KeyCode::Char(c) => {
+            // TODO: Use config json
             if ctrl {
                 match c {
                     'f' | 'F' => Some(Action::OpenSearch),

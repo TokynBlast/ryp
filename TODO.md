@@ -23,3 +23,4 @@
 - Add minimum cells size
 - Test caches as arc-swap
 - Test rayon on constant cache rebuild
+- Using mlua's RegisterKey, make Lua RAII instead of GC

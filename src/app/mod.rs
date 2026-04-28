@@ -55,10 +55,12 @@ pub struct App {
     pub debug_console_visible: bool,
     pub dirty: bool,
     pub rx: crossbeam_channel::Receiver<PluginAction>,
-    pub whitespace_cache: Arc<ArcSwap<Vec<usize>>>,
-    pub highlight_cache: Arc<RwLock<Vec<Vec<(Style, CompactString)>>>>,
+    pub whitespace_cache: RwLock<Vec<usize>>,
+    pub highlight_cache: Arc<ArcSwap<Arc<Vec<Vec<(Style, CompactString)>>>>>,
     pub host_terminal_height: u16,
+    pub host_terminal_width: u16,
     pub debug_logs: Vec<CompactString>,
+    pub os: CompactString,
 }
 
 impl App {
@@ -91,10 +93,52 @@ impl App {
             debug_console_visible: false,                                       // Whether plugin debug console is visible or not
             dirty: true,                                                        // Whether there have been changes or not to the file(s)
             rx,                                                                 // Crossbeam send and receive
-            whitespace_cache: Arc::new(ArcSwap::new(Vec::new().into())),                // Cache for where whitespace is, used in searching (performance increase)
-            highlight_cache: Arc::new(RwLock::new(Vec::new())),                  // Cache for highlighting (performance increase)
+            whitespace_cache: RwLock::new(Vec::new()),                // Cache for where whitespace is, used in searching (performance increase)
+            highlight_cache: Arc::new(ArcSwap::new(Arc::new(Vec::new()).into())),                  // Cache for highlighting (performance increase)
             host_terminal_height: 0,
+            host_terminal_width: 0,
             debug_logs: vec![],
+            os: if cfg!(target_os = "windows") {
+                   CompactString::from("Windows ")
+                } else if cfg!(target_os = "macos"){
+                    CompactString::from("MacOS ")
+                } else if cfg!(target_os = "linux") {
+                  match os_info::get().os_type() {
+                    os_info::Type::Pop => CompactString::from("!Pop_OS "),
+                    os_info::Type::Arch => CompactString::from("Arch Linux 󰣇"),
+                    os_info::Type::Fedora => CompactString::from("Fedora "),
+                    os_info::Type::Gentoo => CompactString::from("Gentoo "),
+                    os_info::Type::Redhat | os_info::Type::RedHatEnterprise => CompactString::from("Redhat "),
+                    os_info::Type::AlmaLinux => CompactString::from("AlmaLinux "),
+                    os_info::Type::AOSC => CompactString::from("AOSC "),
+                    os_info::Type::Artix => CompactString::from("Artix "),
+                    os_info::Type::CentOS => CompactString::from("CentOS "),
+                    os_info::Type::Cygwin => CompactString::from("Cygwin "),
+                    os_info::Type::Debian => CompactString::from("Debian "),
+                    os_info::Type::Elementary => CompactString::from("ElementaryOS "),
+                    os_info::Type::EndeavourOS => CompactString::from("EndeavourOS "),
+                    os_info::Type::FreeBSD => CompactString::from("FreeBSD "),
+                    os_info::Type::Garuda => CompactString::from("Garuda "),
+                    os_info::Type::Illumos => CompactString::from("Illumos "),
+                    os_info::Type::Kali => CompactString::from("Kali Linux "),
+                    os_info::Type::Manjaro => CompactString::from("Manjaro "),
+                    os_info::Type::Mint => CompactString::from("Linux Mint 󰣭"),
+                    os_info::Type::NixOS => CompactString::from("NixOS "),
+                    os_info::Type::Nobara => CompactString::from("Nobara "),
+                    os_info::Type::OpenBSD => CompactString::from("OpenBSD "),
+                    os_info::Type::Raspbian => CompactString::from("Raspbian "),
+                    os_info::Type::RockyLinux => CompactString::from("RockyLinux "),
+                    os_info::Type::openSUSE => CompactString::from("openSUSE "),
+                    os_info::Type::SUSE => CompactString::from("SUSE "),
+                    os_info::Type::Solus => CompactString::from("Solus "),
+                    os_info::Type::Ubuntu => CompactString::from("Ubuntu 󰕈"),
+                    os_info::Type::Void => CompactString::from("Void Linux "),
+                    os_info::Type::Zorin => CompactString::from("Zorin "),
+                    _ => CompactString::from("")
+                }
+            } else {
+              CompactString::from("?")
+            },
         }
     }
 
@@ -220,16 +264,17 @@ impl App {
 
     pub fn run(&mut self, term: &mut ratatui::DefaultTerminal) -> std::io::Result<()> {
         while !self.should_quit {
-            self.host_terminal_height = term.size().unwrap().height;
+            // modal.input?
             while let Ok(action) = self.rx.try_recv() {
-                self.dirty = true; // Mark dirty because state changed
                 match action {
                     PluginAction::MakeSetting { name, value } => {
                         self.config.insert(name, json!(value));
+                        self.dirty = true;
                     }
 
                     PluginAction::InsertText { text } => {
                         self.current_editor_mut().unwrap().insert_char(text);
+                        self.dirty = true;
                         todo!("Implement InsertText\nUse self.active_tab in `src/app/mod.rs`");
                     }
 
@@ -243,6 +288,10 @@ impl App {
 
                     PluginAction::DebugLog { message } => {
                         self.debug_logs.push(message.into());
+                        if self.debug_console_visible {
+                          self.dirty = true;
+                        }
+                        if self.debug_logs.len() > 40 { self.debug_logs.clear(); }
                     }
 
                     PluginAction::SetSetting { name, value } => {
@@ -251,12 +300,18 @@ impl App {
                 }
             }
 
-            let had_update = self.terminal.update();
-            if had_update {
-                self.dirty = true;
+            if self.terminal_visible {
+                self.dirty = self.terminal.update();
+            } else {
+                self.dirty = term.autoresize().is_ok();
             }
 
             if self.dirty {
+                // Since dirty is now only triggered on changes, including height,
+                // we set it here to give the most accurate info, with anything that
+                // might access it in the future :)
+                let height_size = term.size().unwrap();
+                (self.host_terminal_height, self.host_terminal_width) = (height_size.height, height_size.width);
                 // do the cache spawn first, completely separately
                 {
                     let cache = Arc::clone(&self.whitespace_cache);
@@ -278,7 +333,7 @@ impl App {
                 self.dirty = false;
             }
 
-            if crossterm::event::poll(Duration::from_nanos(400))? {
+            if crossterm::event::poll(Duration::from_millis(400))? {
                 if let Event::Key(key) = event::read()? {
                     self.handle_key(key);
                 }
@@ -525,9 +580,6 @@ impl App {
             }
             Action::ToggleDebugConsole => {
               self.debug_console_visible = !self.debug_console_visible;
-              if self.debug_console_visible {
-                self.dirty = true;
-              }
             }
             _ => {}
         }

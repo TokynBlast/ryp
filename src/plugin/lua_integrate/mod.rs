@@ -1,5 +1,5 @@
 pub mod settings;
-pub mod shortcut;
+pub mod keys;
 pub mod sidebar;
 pub mod types;
 pub mod editor;
