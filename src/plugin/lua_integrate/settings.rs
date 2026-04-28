@@ -78,7 +78,7 @@ pub fn integrate_settings(lua: &mlua::Lua, tx: crossbeam_channel::Sender<PluginA
 
     // Handle Access: When user calls settings.add, look it up in internal_table
     let internal_clone = internal_table.clone();
-    metatable.set("__index", lua.create_function(move |_, key: String| {
+    metatable.set("__index", lua.create_function(move |_, (_proxy, key): (mlua::Value, String)| {
         internal_clone.get::<mlua::Value>(key)
     })?)?;
 
