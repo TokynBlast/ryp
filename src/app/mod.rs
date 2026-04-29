@@ -17,8 +17,7 @@ use syntect::{
         HighlightState
     }
 };
-use std::path::Path;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 use parking_lot::RwLock;
 use triomphe::Arc;
 use aho_corasick::AhoCorasick;
