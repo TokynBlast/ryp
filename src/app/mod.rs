@@ -75,7 +75,7 @@ impl App {
             theme_set: ThemeSet::load_defaults(),                               // The current theme
             workspace: None,                                                    // Filetree, and other stuff
             sidebar_category: SidebarCategory::FileTree,                        // Current sidebar piece
-            search_query: CompactString::default(),                                        // Actual query to look for
+            search_query: CompactString::default(),                             // Actual query to look for
             search_results: vec![],                                             // All results of search
             search_selected: 0,                                                 // Selected result in searches
             search_scroll: 0,                                                   // Y index on scroll
