@@ -291,10 +291,11 @@ impl App {
                         self.dirty = true;
                     }
 
-                    PluginAction::InsertText { text } => {
-                        self.current_editor_mut().unwrap().insert_char(text);
-                        self.dirty = true;
-                        todo!("Implement InsertText\nUse self.active_tab in `src/app/mod.rs`");
+                    PluginAction::InsertCharAtCursor { txt } => {
+                        if let Some(editor) = self.current_editor_mut() {
+                            editor.insert_char(txt);
+                            self.dirty = true;
+                        }
                     }
 
                     PluginAction::GetSettingValue { name, responder } => {

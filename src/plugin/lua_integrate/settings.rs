@@ -67,11 +67,11 @@ fn set_setting_value(lua: &mlua::Lua, tx: &crossbeam_channel::Sender<PluginActio
 }
 
 #[inline]
-pub fn integrate_settings(lua: &mlua::Lua, tx: crossbeam_channel::Sender<PluginAction>) -> Result<(), mlua::Error> {
+pub fn integrate_settings(lua: &mlua::Lua, tx: &crossbeam_channel::Sender<PluginAction>) -> Result<(), mlua::Error> {
     let internal_table = lua.create_table()?;
-    add_setting(lua, &tx, &internal_table)?;
-    get_setting_value(lua, &tx, &internal_table)?;
-    set_setting_value(lua, &tx, &internal_table)?;
+    add_setting(lua, tx, &internal_table)?;
+    get_setting_value(lua, tx, &internal_table)?;
+    set_setting_value(lua, tx, &internal_table)?;
 
     let proxy = lua.create_table()?;
     let metatable = lua.create_table()?;

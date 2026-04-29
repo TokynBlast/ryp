@@ -11,15 +11,8 @@ pub fn apply_globals(lua: &mlua::Lua, tx: crossbeam_channel::Sender<PluginAction
         })?
     )?;
 
-    let tx_insert = tx.clone();
-    globals.set("insert_text",
-        lua.create_function(move |_, text: char| {
-            let _ = tx_insert.send(PluginAction::InsertText { text });
-            Ok(())
-        })?
-    )?;
-
-    crate::plugin::lua_integrate::settings::integrate_settings(lua, tx)?;
+    crate::plugin::lua_integrate::settings::integrate_settings(lua, &tx)?;
+    crate::plugin::lua_integrate::editor::integrate_editor(lua, &tx)?;
 
     // TODO: Hook this up to real cursor
     globals.set("cursor_x", 0)?;
