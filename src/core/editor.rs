@@ -87,6 +87,7 @@ impl Editor {
                     Some("py") => String::from("Python 󰌠"),
                     Some("java") => String::from("Java 󰬷"),
                     Some("fs") => String::from("F#"),
+                    Some("fsx") => String::from("F# Script"),
                     Some("bat") => String::from("Bash "),
                     Some("sh") => String::from("Shell "),
                     Some("go") => String::from("Go 󰟓"),
