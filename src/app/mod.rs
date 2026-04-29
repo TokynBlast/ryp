@@ -6,9 +6,17 @@ use crate::plugin::action::PluginAction;
 use crossterm::event::{self, Event};
 use hashbrown::HashSet;
 use std::time::Duration;
-use syntect::highlighting::ThemeSet;
-use syntect::highlighting::Style;
-use syntect::parsing::SyntaxSet;
+use syntect::{
+    parsing::{
+        SyntaxSet,
+        ScopeStack
+    },
+    highlighting::{
+        ThemeSet,
+        Highlighter,
+        HighlightState
+    }
+};
 use std::path::Path;
 use std::path::PathBuf;
 use parking_lot::RwLock;
