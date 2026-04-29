@@ -8,13 +8,12 @@ pub mod plugin;
 
 use app::App;
 use compact_str::CompactString;
-use jemallocator::Jemalloc;
 use std::error::Error;
 use std::path::{Path, PathBuf};
 use std::{env, fs};
 
 #[global_allocator]
-static GLOBAL: Jemalloc = Jemalloc;
+static GLOBAL: mimalloc::MiMalloc = mimalloc::MiMalloc;
 
 fn main() -> Result<(), Box<dyn Error>> {
     let path = if cfg!(windows) {
