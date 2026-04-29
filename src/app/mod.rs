@@ -6,17 +6,7 @@ use crate::plugin::action::PluginAction;
 use crossterm::event::{self, Event};
 use hashbrown::HashSet;
 use std::time::Duration;
-use syntect::{
-    parsing::{
-        SyntaxSet,
-        ScopeStack
-    },
-    highlighting::{
-        ThemeSet,
-        Highlighter,
-        HighlightState
-    }
-};
+use syntect::{parsing::SyntaxSet, highlighting::ThemeSet};
 use std::path::{Path, PathBuf};
 use parking_lot::RwLock;
 use triomphe::Arc;
@@ -24,7 +14,6 @@ use aho_corasick::AhoCorasick;
 use serde_json::{json, Value};
 use compact_str::CompactString;
 use rayon::{self, prelude::*};
-use arc_swap::ArcSwap;
 
 mod ui;
 
@@ -63,7 +52,6 @@ pub struct App {
     pub dirty: bool,
     pub rx: crossbeam_channel::Receiver<PluginAction>,
     pub whitespace_cache: Arc<RwLock<Vec<usize>>>,
-    pub highlight_cache: Arc<ArcSwap<Vec<HighlightState>>>,
     pub host_terminal_height: u16,
     pub host_terminal_width: u16,
     pub debug_logs: Vec<CompactString>,
@@ -101,17 +89,6 @@ impl App {
             dirty: true,                                                        // Whether there have been changes or not to the file(s)
             rx,                                                                 // Crossbeam send and receive
             whitespace_cache: Arc::new(RwLock::new(Vec::new())),                // Cache for where whitespace is, used in searching (performance increase)
-            highlight_cache: Arc::new(                                          // Cache for highlighting (performance increase)
-                ArcSwap::from_pointee(
-                    vec![
-                            HighlightState::new(
-                                &Highlighter::new(
-                                    &ThemeSet::load_defaults().themes["base16-ocean.dark"]), // default
-                                    ScopeStack::new()
-                                )
-                            ]
-                      )
-            ),
             host_terminal_height: 0,
             host_terminal_width: 0,
             debug_logs: vec![],

@@ -3,7 +3,21 @@ use std::path::PathBuf;
 use std::path::Path;
 use compact_str::CompactString;
 use std::sync::atomic::AtomicUsize;
-
+use triomphe::Arc;
+use arc_swap::ArcSwap;
+use syntect::{
+  parsing::{
+      SyntaxSet,
+      ScopeStack,
+      ParseState
+  },
+  highlighting::{
+      ThemeSet,
+      Highlighter,
+      HighlightState,
+      HighlightIterator
+  }
+};
 
 pub struct Editor {
     pub lines: Vec<CompactString>,
@@ -16,7 +30,7 @@ pub struct Editor {
     pub filepath: Option<PathBuf>,
     pub dirty: bool,
     pub is_diff: bool,
-    pub highlight_cache: Vec<Vec<(syntect::highlighting::Style, CompactString)>>,
+    pub highlight_cache: Arc<ArcSwap<Vec<HighlightState>>>,
     pub lang: String,
 }
 
@@ -33,28 +47,53 @@ impl Editor {
             filepath: None,
             dirty: false,
             is_diff: false,
-            highlight_cache: vec![],
-            lang: String::new(),
+            highlight_cache: Arc::new(
+                ArcSwap::from_pointee(
+                    vec![
+                    HighlightState::new(
+                        &Highlighter::new(
+                            &ThemeSet::load_defaults().themes["base16-ocean.dark"]),
+                            ScopeStack::new()
+                        )
+                    ]
+                )
+            ),
         }
     }
 
-    pub fn rebuild_highlight_cache(&mut self, syntax_set: &syntect::parsing::SyntaxSet, theme: &syntect::highlighting::Theme) {
-      let ext = self.filepath.as_ref()
-          .and_then(|p| p.extension())
-          .and_then(|e| e.to_str())
-          .unwrap_or("txt");
-      let syntax = syntax_set.find_syntax_by_extension(ext)
-          .unwrap_or_else(|| syntax_set.find_syntax_plain_text());
-      let mut h = syntect::easy::HighlightLines::new(syntax, theme);
+    pub fn rebuild_highlight_cache(&mut self, syntax_set: &SyntaxSet, theme: &syntect::highlighting::Theme) {
+        let ext = self.filepath.as_ref()
+            .and_then(|p| p.extension())
+            .and_then(|e| e.to_str())
+            .unwrap_or("txt");
+        let syntax = syntax_set.find_syntax_by_extension(ext)
+            .unwrap_or_else(|| syntax_set.find_syntax_plain_text());
+        let highlighter = Highlighter::new(theme);
+        let mut highlight_state = HighlightState::new(&highlighter, ScopeStack::new());
+        let mut parse_state = ParseState::new(syntax);
 
-      self.highlight_cache = self.lines.iter().map(|line| {
-          let line_with_nl = format!("{}\n", line);
-          h.highlight_line(&line_with_nl, syntax_set)
-              .unwrap_or_default()
-              .into_iter()
-              .map(|(s, t)| (s, CompactString::from(t.trim_end_matches('\n'))))
-              .collect()
-      }).collect();
+        let states: Vec<HighlightState> = self.lines.iter().map(|line| {
+            let line_with_nl = format!("{}\n", line);
+
+            // Parse the line to get the operations
+            let ops = parse_state.parse_line(&line_with_nl, syntax_set).unwrap_or_default();
+
+            // To advance the HighlightState, we must iterate over the line's tokens
+            // We use an iterator that consumes the ops and updates the highlight_state
+            {
+                let iter = HighlightIterator::new(
+                    &mut highlight_state,
+                    &ops,
+                    &line_with_nl,
+                    &highlighter
+                );
+                // We just consume the iterator to force the highlight_state to update
+                for _ in iter {}
+            }
+            highlight_state.clone()
+        }).collect();
+
+        self.highlight_cache.store(std::sync::Arc::new(states));
     }
 
     pub fn load_file(&mut self, path: &Path) -> bool {
