@@ -98,10 +98,15 @@ impl App {
             host_terminal_height: 0,
             host_terminal_width: 0,
             debug_logs: vec![],
+            // The reason for having even OS' that may not ever have this compiled for... Is what if? :)
+            // There are probably people who will make it run on them, so we should support it... It's
+            // also a compile time decision! So it has no affect anywhere else!
             os: if cfg!(target_os = "windows") {
                    CompactString::from("Windows ")
                 } else if cfg!(target_os = "macos"){
                     CompactString::from("MacOS ")
+                } else if cfg!(target_os = "ios") {
+                    CompactString::from("iOS ")
                 } else if cfg!(target_os = "linux") {
                   match os_info::get().os_type() {
                     os_info::Type::Pop => CompactString::from("!Pop_OS "),
@@ -134,10 +139,30 @@ impl App {
                     os_info::Type::Ubuntu => CompactString::from("Ubuntu 󰕈"),
                     os_info::Type::Void => CompactString::from("Void Linux "),
                     os_info::Type::Zorin => CompactString::from("Zorin "),
+                    os_info::Type::NetBSD => CompactString::from("NetBSD"),
+                    os_info::Type::DragonFly => CompactString::from("DragonFly BSD"),
                     _ => CompactString::from("")
                 }
+            } else if cfg!(target_os="android") {
+              CompactString::from("Android ")
+            } else if cfg!(target_arch = "wasm32") {
+              CompactString::from("WebAssembly ")
+            } else if cfg!(target_os = "wasi") {
+                CompactString::from("WASI ")
+            } else if cfg!(target_os = "freebsd") {
+                CompactString::from("FreeBSD ")
+            } else if cfg!(target_os = "openbsd") {
+                CompactString::from("OpenBSD ")
+            } else if cfg!(target_os = "netbsd") {
+                CompactString::from("NetBSD")
+            } else if cfg!(target_os = "dragonfly") {
+                CompactString::from("DragonFly BSD")
+            } else if cfg!(target_os = "haiku") {
+                CompactString::from("Haiku")
+            } else if cfg!(target_os = "solaris") {
+                CompactString::from("Solaris ")
             } else {
-              CompactString::from("?")
+                CompactString::from("Unknown ?")
             },
         }
     }
