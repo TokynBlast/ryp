@@ -55,7 +55,7 @@ pub struct App {
     pub debug_console_visible: bool,
     pub dirty: bool,
     pub rx: crossbeam_channel::Receiver<PluginAction>,
-    pub whitespace_cache: RwLock<Vec<usize>>,
+    pub whitespace_cache: Arc<RwLock<Vec<usize>>>,
     pub highlight_cache: Arc<ArcSwap<Arc<Vec<Vec<(Style, CompactString)>>>>>,
     pub host_terminal_height: u16,
     pub host_terminal_width: u16,
@@ -340,17 +340,17 @@ impl App {
                 // do the cache spawn first, completely separately
                 {
                     let cache = Arc::clone(&self.whitespace_cache);
-                    let lines: triomphe::Arc<Vec<CompactString>> = self.current_editor()
+                    let lines = self.current_editor()
                         .map(|e| e.lines.clone())
-                        .unwrap_or_default().into();
+                        .unwrap_or_default();
                     rayon::spawn(move || {
                         let result: Vec<usize> = lines.par_iter()
                             .enumerate()
                             .filter(|(_, line)| line.as_bytes().iter().any(|&c| c == b' ' || c == b'\t' || c == b'\n'))
                             .map(|(i, _)| i)
                             .collect();
-                        //let cache = cache.load();
-                        cache.store(std::sync::Arc::new(result));
+                        let mut guard = cache.write();
+                        *guard = result;
                     });
                 } // borrow of self ends here
 
