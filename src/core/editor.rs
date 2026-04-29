@@ -31,7 +31,7 @@ pub struct Editor {
     pub dirty: bool,
     pub is_diff: bool,
     pub highlight_cache: Arc<ArcSwap<Vec<HighlightState>>>,
-    pub lang: String,
+    pub lang: CompactString,
 }
 
 impl Editor {
@@ -58,6 +58,7 @@ impl Editor {
                     ]
                 )
             ),
+            lang: CompactString::default(),
         }
     }
 
@@ -107,32 +108,32 @@ impl Editor {
             self.is_diff = false;
             self.lang = if let Some(path) = &self.filepath {
                 match path.extension().and_then(|e| e.to_str()) {
-                    Some("cpp") => String::from("C++ 󰙲"),
-                    Some("hpp") => String::from("C++ Header 󰙲"),
-                    Some("rs") => String::from("Rust 󱘗"),
-                    Some("lua") => String::from("Lua "),
-                    Some("ll") => String::from("LLVM "),
-                    Some("asm") | Some("s") => String::from("Assembly"),
-                    Some("c") => String::from("C 󰙱"),
-                    Some("h")=> String::from("C Header 󰙱"),
-                    Some("js") => String::from("JavaScript "),
-                    Some("ml") | Some("mli") => String::from("OCaml "),
-                    Some("html") => String::from("HTML "),
-                    Some("md") => String::from("MarkDown 󰍔"),
-                    Some("css") => String::from("CSS "),
-                    Some("mi") => String::from("Minis"),
-                    Some("cs") => String::from("C# 󰌛"),
-                    Some("gd") => String::from("Godot Script "),
-                    Some("py") => String::from("Python 󰌠"),
-                    Some("java") => String::from("Java 󰬷"),
-                    Some("fs") => String::from("F#"),
-                    Some("fsx") => String::from("F# Script"),
-                    Some("bat") => String::from("Bash "),
-                    Some("sh") => String::from("Shell "),
-                    Some("go") => String::from("Go 󰟓"),
-                    Some("php") => String::from("PHP 󰌟"),
-                    Some("rb") => String::from("Ruby "),
-                    Some("ts") => String::from("TypeScript 󰛦"),
+                    Some("cpp") => CompactString::from("C++ 󰙲"),
+                    Some("hpp") => CompactString::from("C++ Header 󰙲"),
+                    Some("rs") => CompactString::from("Rust 󱘗"),
+                    Some("lua") => CompactString::from("Lua "),
+                    Some("ll") => CompactString::from("LLVM "),
+                    Some("asm") | Some("s") => CompactString::from("Assembly"),
+                    Some("c") => CompactString::from("C 󰙱"),
+                    Some("h")=> CompactString::from("C Header 󰙱"),
+                    Some("js") => CompactString::from("JavaScript "),
+                    Some("ml") | Some("mli") => CompactString::from("OCaml "),
+                    Some("html") => CompactString::from("HTML "),
+                    Some("md") => CompactString::from("MarkDown 󰍔"),
+                    Some("css") => CompactString::from("CSS "),
+                    Some("mi") => CompactString::from("Minis"),
+                    Some("cs") => CompactString::from("C# 󰌛"),
+                    Some("gd") => CompactString::from("Godot Script "),
+                    Some("py") => CompactString::from("Python 󰌠"),
+                    Some("java") => CompactString::from("Java 󰬷"),
+                    Some("fs") => CompactString::from("F#"),
+                    Some("fsx") => CompactString::from("F# Script"),
+                    Some("bat") => CompactString::from("Bash "),
+                    Some("sh") => CompactString::from("Shell "),
+                    Some("go") => CompactString::from("Go 󰟓"),
+                    Some("php") => CompactString::from("PHP 󰌟"),
+                    Some("rb") => CompactString::from("Ruby "),
+                    Some("ts") => CompactString::from("TypeScript 󰛦"),
                       Some("f")
                     | Some("for")
                     | Some("f08")
@@ -142,28 +143,28 @@ impl Editor {
                     | Some("F90")
                     | Some("F")
                     | Some("f15")
-                    | Some("f20") => String::from("Fortran 󱈚"),
-                    Some("m") => String::from("Objective-C "),
-                    Some("mm") => String::from("Objective-C++"),
-                    Some("adb") => String::from("Ada"),
-                    Some("d") => String::from("D "),
-                    Some("mod") => String::from("Modula"),
-                    Some("cob") => String::from("COBOL"),
-                    Some("a68") => String::from("ALGOL"),
-                    Some("ipynb") => String::from("Jupyter Notebook"),
-                    Some("red") => String::from("Red"),
-                    Some("json") => String::from("JSON "),
-                    Some("r") => String::from("R "),
-                    Some("lhs") => String::from("Haskel "),
-                    Some("xaml") => String::from("XAML 󰙳"),
-                    Some("yaml") => String::from("YAML "),
-                    Some("kt") => String::from("Kotlin "),
-                    Some("kts") => String::from("Kotlin Script "),
-                    Some("txt") => String::from("Plain Text "),
-                    _ => String::from("Unknown"),
+                    | Some("f20") => CompactString::from("Fortran 󱈚"),
+                    Some("m") => CompactString::from("Objective-C "),
+                    Some("mm") => CompactString::from("Objective-C++"),
+                    Some("adb") => CompactString::from("Ada"),
+                    Some("d") => CompactString::from("D "),
+                    Some("mod") => CompactString::from("Modula"),
+                    Some("cob") => CompactString::from("COBOL"),
+                    Some("a68") => CompactString::from("ALGOL"),
+                    Some("ipynb") => CompactString::from("Jupyter Notebook"),
+                    Some("red") => CompactString::from("Red"),
+                    Some("json") => CompactString::from("JSON "),
+                    Some("r") => CompactString::from("R "),
+                    Some("lhs") => CompactString::from("Haskel "),
+                    Some("xaml") => CompactString::from("XAML 󰙳"),
+                    Some("yaml") => CompactString::from("YAML "),
+                    Some("kt") => CompactString::from("Kotlin "),
+                    Some("kts") => CompactString::from("Kotlin Script "),
+                    Some("txt") => CompactString::from("Plain Text "),
+                    _ => CompactString::from("Unknown"),
                 }
             } else {
-              String::from("Unknown")
+              CompactString::from("Unknown")
             };
             true
         } else {
