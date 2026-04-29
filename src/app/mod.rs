@@ -344,7 +344,7 @@ impl App {
                 // might access it in the future :)
                 let height_size = term.size().unwrap();
                 (self.host_terminal_height, self.host_terminal_width) = (height_size.height, height_size.width);
-                // do the cache spawn first, completely separately
+                // TODO: This really only needs to happen one time when we search. We shouldn't update it on every single key stroke or change.
                 {
                     let cache = Arc::clone(&self.whitespace_cache);
                     let lines = self.current_editor()
