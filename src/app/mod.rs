@@ -100,8 +100,7 @@ impl App {
             debug_console_visible: false,                                       // Whether plugin debug console is visible or not
             dirty: true,                                                        // Whether there have been changes or not to the file(s)
             rx,                                                                 // Crossbeam send and receive
-            whitespace_cache: RwLock::new(Vec::new()),                // Cache for where whitespace is, used in searching (performance increase)
-            highlight_cache: Arc::new(ArcSwap::new(Arc::new(Vec::new()).into())),                  // Cache for highlighting (performance increase)
+            whitespace_cache: Arc::new(RwLock::new(Vec::new())),                // Cache for where whitespace is, used in searching (performance increase)
             host_terminal_height: 0,
             host_terminal_width: 0,
             debug_logs: vec![],
