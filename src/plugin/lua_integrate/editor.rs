@@ -1,27 +1,27 @@
 use mlua;
 use crate::plugin::action::PluginAction;
 
-fn get_char_at(x: usize, y: usize) {
+fn get_char_at(x: usize, y: usize) -> Result<(), mlua::Error> {
   todo!("Implement getting char in editor; plugin/lua_integrate/editor.rs");
 }
 
-fn get_line_at(line: usize) {
+fn get_line_at(line: usize) -> Result<(), mlua::Error> {
   todo!("Implement getting a line in editor; plugin/lua_integrate/editor.rs")
 }
 
-fn set_char_at(char_to_place: char, x: usize, y: usize) {
+fn set_char_at(char_to_place: char, x: usize, y: usize) -> Result<(), mlua::Error> {
   todo!("Implement setting a char at specific place; plugin/lua_integrate/editor.rs")
 }
 
-fn set_char_on_line(char_to_place: char, line: usize, y: usize) {
+fn set_char_on_line(char_to_place: char, line: usize, y: usize) -> Result<(), mlua::Error> {
   todo!("Implement setting a char on a specific line; plugin/lua_integrate/editor.rs")
 }
 
-fn insert_char_at(char_to_place: char, x: usize, y: usize) {
+fn insert_char_at(char_to_place: char, x: usize, y: usize) -> Result<(), mlua::Error> {
   todo!("Implement inserting a char at specific place; plugin/lua_integrate/editor.rs")
 }
 
-fn insert_char_on_line(char_to_place: char, line: usize, y: usize) {
+fn insert_char_on_line(char_to_place: char, line: usize, y: usize) -> Result<(), mlua::Error> {
   todo!("Implement inserting a char on a specific line; plugin/lua_integrate/editor.rs")
 }
 
