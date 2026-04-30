@@ -15,7 +15,6 @@ pub struct Editor {
     pub filepath: Option<PathBuf>,
     pub dirty: bool,
     pub is_diff: bool,
-    pub highlight_cache: Arc<ArcSwap<Vec<HighlightState>>>,
     pub lang: CompactString,
 }
 
