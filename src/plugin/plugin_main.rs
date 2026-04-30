@@ -59,6 +59,14 @@ fn spawn_lua_worker(plugin_path: PathBuf, action_tx: crossbeam_channel::Sender<P
                         let _ = action_tx.send(PluginAction::DebugLog { message: e.to_string() });
                     }
                 }
+
+                // Check if it did anything
+                if action_tx.is_empty() {
+                    // If it didn't, we have less reason to keep moving instantly
+                    std::thread::sleep(std::time::Duration::from_micros(500));
+                } else {
+                    std::thread::yield_now();
+                }
             }
         });
     }
