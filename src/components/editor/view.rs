@@ -8,6 +8,7 @@ use ratatui::{
     widgets::{Block, Borders, Paragraph, Scrollbar, ScrollbarOrientation, ScrollbarState},
 };
 
+#[inline]
 pub fn draw_editor(f: &mut Frame, app: &App, area: Rect) {
     let editor = match app.current_editor() {
         Some(e) => e,
