@@ -236,14 +236,6 @@ impl App {
         } else {
             let mut editor = Editor::new();
             if editor.load_file(path) {
-                let theme_name = self.config.get("theme")
-                    .and_then(|v| v.get("Highlighting Theme"))
-                    .and_then(|v| v.as_str())
-                    .unwrap_or("base16-ocean.dark");
-
-                let theme = &self.theme_set.themes[theme_name];
-
-                editor.rebuild_highlight_cache(&self.syntax_set, theme);
 
                 let current_is_dirty = self.current_editor().map_or(false, |e| e.dirty);
                 if force_new_tab
