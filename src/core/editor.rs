@@ -50,7 +50,7 @@ impl Editor {
                     Some("cpp") => CompactString::from("C++ 󰙲"),
                     Some("hpp") => CompactString::from("C++ Header 󰙲"),
                     Some("rs") => CompactString::from("Rust 󱘗"),
-                    Some("lua") => CompactString::from("Lua "),
+                    Some("lua") => CompactString::from("Lua "),
                     Some("ll") => CompactString::from("LLVM "),
                     Some("asm") | Some("s") => CompactString::from("Assembly"),
                     Some("c") => CompactString::from("C 󰙱"),
