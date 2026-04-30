@@ -1,5 +1,6 @@
 use crate::app::App;
 use crate::windows::modal::ModalType;
+use std::sync::atomic::Ordering::Relaxed;
 use ratatui::{
     Frame,
     layout::{Constraint, Direction, Layout, Margin, Rect},
@@ -97,7 +98,7 @@ pub fn draw_editor(f: &mut Frame, app: &App, area: Rect) {
 
     let mut lines = vec![];
     let end_index = scroll_y.min(editor.lines.len());
-    let pre_scroll_lines = &editor.lines[editor.scroll_y..end_index];
+    let pre_scroll_lines = &editor.lines[editor.scroll_y.load(Relaxed)..end_index];
 
     for line in pre_scroll_lines {
         let line_with_nl = format!("{}\n", line);
