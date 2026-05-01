@@ -2,15 +2,15 @@ use std::fs;
 use std::path::PathBuf;
 use std::path::Path;
 use compact_str::CompactString;
-use std::sync::atomic::AtomicUsize;
+use std::cell::Cell;
 
 pub struct Editor {
     pub lines: Vec<CompactString>,
     pub cursor_x: usize,
     pub cursor_y: usize,
     pub target_x: usize,
-    pub scroll_y: AtomicUsize,
-    pub scroll_x: AtomicUsize,
+    pub scroll_y: Cell<usize>,
+    pub scroll_x: Cell<usize>,
     pub selection_start: Option<(usize, usize)>, // (start_x, start_y)
     pub filepath: Option<PathBuf>,
     pub dirty: bool,
@@ -25,8 +25,8 @@ impl Editor {
             cursor_x: 0,
             cursor_y: 0,
             target_x: 0,
-            scroll_y: AtomicUsize::new(0),
-            scroll_x: AtomicUsize::new(0),
+            scroll_y: Cell::new(0),
+            scroll_x: Cell::new(0),
             selection_start: None,
             filepath: None,
             dirty: false,
