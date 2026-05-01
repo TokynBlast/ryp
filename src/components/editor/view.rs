@@ -96,13 +96,6 @@ pub fn draw_editor(f: &mut Frame, app: &App, area: Rect) {
     editor.scroll_y.store(scroll_y, std::sync::atomic::Ordering::Relaxed);
 
     let mut lines = vec![];
-    let end_index = scroll_y.min(editor.lines.len());
-    let pre_scroll_lines = &editor.lines[editor.scroll_y.load(Relaxed)..end_index];
-
-    for line in pre_scroll_lines {
-        let line_with_nl = format!("{}\n", line);
-        let _ = h.highlight_line(&line_with_nl, &app.syntax_set);
-    }
 
     let search_term = if let Some(modal) = &app.modal {
         if modal.modal_type == ModalType::Search || modal.modal_type == ModalType::Replace {
