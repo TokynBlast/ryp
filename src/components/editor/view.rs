@@ -183,7 +183,7 @@ pub fn draw_editor(f: &mut Frame, app: &App, area: Rect) {
 
         let text_len = spans
             .iter()
-            .map(|s| s.content.chars().count())
+            .map(|s| s.content.len())
             .sum::<usize>();
         if text_len < area.width as usize {
             let padding = " ".repeat(area.width as usize - text_len);
