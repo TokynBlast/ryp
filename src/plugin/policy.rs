@@ -11,7 +11,6 @@ pub fn apply_restrictions(lua: &Lua, tx: crossbeam_channel::Sender<crate::plugin
     // "stdout access": false,
     // "limited io locations": [],
     // "make threads": false,
-    // "forced garbage collection": false,
 
     let globals = lua.globals();
 
@@ -25,9 +24,7 @@ pub fn apply_restrictions(lua: &Lua, tx: crossbeam_channel::Sender<crate::plugin
     globals.set("package", Nil)?;
     globals.set("debug", Nil)?;
     globals.set("loadfile", Nil)?;
-    if not_allowed("forced garbage collection") {
-        globals.set("collectgarbage", Nil)?;
-    }
+    globals.set("collectgarbage", Nil)?;
     globals.set("_VERSION", Nil)?;
     globals.set("require", Nil)?; // TODO: Make this so we can only load some lua files, excluding luac files
     globals.set("warn", Nil)?;
