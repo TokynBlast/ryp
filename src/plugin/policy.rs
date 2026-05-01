@@ -17,7 +17,7 @@ pub fn apply_restrictions(lua: &Lua, tx: crossbeam_channel::Sender<crate::plugin
     let not_allowed = |key: &str| -> bool {
         policy.get(key)
             .and_then(|v| v.as_bool())
-            .unwrap_or(false) // If it's missing, we assume it's not allowed, and that the plugin is from earlier versions
+            .unwrap_or(false) // If it's missing, we assume it's not allowed
     };
 
     // Included in ALL_SAFE; This is something unsafe for us
