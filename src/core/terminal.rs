@@ -159,7 +159,7 @@ impl Terminal {
                   }
                   ParseState::Esc => match c {
                       '[' => { self.parse_state = ParseState::Csi; self.csi_params.clear(); }
-                      ']' => { self.parse_state = ParseState::Osc; self.csi_params.clear(); } // add this
+                      ']' => { self.parse_state = ParseState::Osc; self.csi_params.clear(); }
                       _ => self.parse_state = ParseState::Normal,
                   },
                   ParseState::Csi => {
