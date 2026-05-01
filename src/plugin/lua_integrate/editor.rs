@@ -25,7 +25,6 @@ fn insert_char_on_line(char_to_place: char, line: usize, y: usize) -> Result<(),
   todo!("Implement inserting a char on a specific line; plugin/lua_integrate/editor.rs")
 }
 
-#[inline]
 fn insert_char_at_cursor(lua: &mlua::Lua, tx: &crossbeam_channel::Sender<PluginAction>, insert_table: &mlua::Table) -> Result<(), mlua::Error> {
     let tx = tx.clone();
     insert_table.set("cursor",
@@ -37,7 +36,6 @@ fn insert_char_at_cursor(lua: &mlua::Lua, tx: &crossbeam_channel::Sender<PluginA
     Ok(())
 }
 
-#[inline]
 pub fn integrate_editor(lua: &mlua::Lua, tx: &crossbeam_channel::Sender<PluginAction>) -> Result<(), mlua::Error> {
     let editor_table = lua.create_table()?;
 

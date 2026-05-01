@@ -4,7 +4,6 @@ use mlua::LuaSerdeExt;
 use triomphe::Arc;
 use parking_lot::{Mutex, Condvar};
 
-#[inline]
 fn add_setting(lua: &mlua::Lua, tx: &crossbeam_channel::Sender<PluginAction>, settings_table: &mlua::Table) -> Result<(), mlua::Error>  {
     // We clone the sender for each function
     let tx_add = tx.clone();
@@ -19,7 +18,6 @@ fn add_setting(lua: &mlua::Lua, tx: &crossbeam_channel::Sender<PluginAction>, se
     Ok(())
 }
 
-#[inline]
 fn get_setting_value(lua: &mlua::Lua, tx: &crossbeam_channel::Sender<PluginAction>, settings_table: &mlua::Table) -> Result<(), mlua::Error> {
     let tx_get = tx.clone();
 
@@ -52,7 +50,6 @@ fn get_setting_value(lua: &mlua::Lua, tx: &crossbeam_channel::Sender<PluginActio
     Ok(())
 }
 
-#[inline]
 fn set_setting_value(lua: &mlua::Lua, tx: &crossbeam_channel::Sender<PluginAction>, settings_table: &mlua::Table) -> Result<(), mlua::Error> {
     let tx_set = tx.clone();
 
@@ -66,7 +63,6 @@ fn set_setting_value(lua: &mlua::Lua, tx: &crossbeam_channel::Sender<PluginActio
     Ok(())
 }
 
-#[inline]
 pub fn integrate_settings(lua: &mlua::Lua, tx: &crossbeam_channel::Sender<PluginAction>) -> Result<(), mlua::Error> {
     let internal_table = lua.create_table()?;
     add_setting(lua, tx, &internal_table)?;

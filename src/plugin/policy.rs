@@ -1,7 +1,6 @@
 use mlua::{Lua, Result, Value::{self, Nil}};
 use crate::plugin::action::PluginAction;
 
-#[inline]
 pub fn apply_restrictions(lua: &Lua, tx: crossbeam_channel::Sender<crate::plugin::action::PluginAction>, policy: &serde_json::Value) -> Result<()> {
     // "networking": false,
     // "read stdout": false,
