@@ -34,7 +34,7 @@ pub fn apply_restrictions(lua: &Lua, tx: crossbeam_channel::Sender<crate::plugin
 
     // There are a couple from IO that we keep...
     // However, we drop nearly every single one
-    if not_allowed("unlimited io operations") {
+    if not_allowed("unlimited io access") {
         globals.set("io.tmpfile", Nil)?;
         globals.set("io.stderr", Nil)?;
         globals.set("io.flush", Nil)?;
