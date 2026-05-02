@@ -840,8 +840,8 @@ impl App {
             match action {
                 Action::MoveUp(shift) => editor.move_up(shift),
                 Action::MoveDown(shift) => editor.move_down(shift),
-                Action::MoveLeft(shift) => editor.move_left(shift),
-                Action::MoveRight(shift) => editor.move_right(shift),
+                Action::MoveLeft(shift, ctrl) => editor.move_left(shift, ctrl),
+                Action::MoveRight(shift, ctrl) => editor.move_right(shift, ctrl),
 
                 Action::PageUp(shift) => {
                     for _ in 0..40 {
