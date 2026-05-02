@@ -143,7 +143,6 @@ impl Editor {
     }
 
     pub fn insert_char(&mut self, c: char) {
-        self.dirty = true;
         self.delete_selection();
         let idx = Self::char_to_byte_idx(&self.lines[self.cursor_y], self.cursor_x);
         self.lines[self.cursor_y].insert(idx, c);
@@ -152,7 +151,6 @@ impl Editor {
     }
 
     pub fn insert_newline(&mut self) {
-        self.dirty = true;
         self.delete_selection();
         let idx = Self::char_to_byte_idx(&self.lines[self.cursor_y], self.cursor_x);
         let remainder = self.lines[self.cursor_y].split_off(idx);
