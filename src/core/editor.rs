@@ -2,6 +2,17 @@ use std::fs;
 use std::path::{PathBuf, Path};
 use compact_str::CompactString;
 use std::cell::Cell;
+use std::sync::Arc;
+use arc_swap::ArcSwap;
+use std::collections::VecDeque;
+use syntect::{
+  parsing::ScopeStack,
+  highlighting::{
+      ThemeSet,
+      Highlighter,
+      HighlightState,
+  }
+};
 
 pub struct Editor {
     pub lines: Vec<CompactString>,
@@ -15,6 +26,7 @@ pub struct Editor {
     pub dirty: bool,
     pub is_diff: bool,
     pub lang: CompactString,
+    pub highlight_cache: Arc<ArcSwap<VecDeque<HighlightState>>>,
 }
 
 impl Editor {
@@ -31,6 +43,17 @@ impl Editor {
             dirty: false,
             is_diff: false,
             lang: CompactString::default(),
+            highlight_cache: Arc::new(
+              ArcSwap::from_pointee(
+                VecDeque::from([
+                  HighlightState::new(
+                      &Highlighter::new(
+                          &ThemeSet::load_defaults().themes["base16-ocean.dark"]),
+                          ScopeStack::new()
+                      )
+                  ])
+              )
+          ),
         }
     }
 
