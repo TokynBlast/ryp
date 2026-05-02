@@ -1,6 +1,5 @@
 use std::fs;
-use std::path::PathBuf;
-use std::path::Path;
+use std::path::{PathBuf, Path};
 use compact_str::CompactString;
 use std::cell::Cell;
 
