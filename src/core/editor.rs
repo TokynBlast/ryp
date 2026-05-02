@@ -179,8 +179,9 @@ impl Editor {
     }
 
     pub fn delete_char(&mut self) {
-        self.move_right(false, false);
-        self.backspace_char();
+        self.delete_selection();
+        let idx = Self::char_to_byte_idx(&self.lines[self.cursor_y], self.cursor_x);
+        self.lines[self.cursor_y].remove(idx);
     }
 
     // selection logic
