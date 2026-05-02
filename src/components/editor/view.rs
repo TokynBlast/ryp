@@ -94,8 +94,6 @@ pub fn draw_editor(f: &mut Frame, app: &App, area: Rect) {
     scroll_y = scroll_y.min(editor.lines.len().saturating_sub(1));
     editor.scroll_y.set(scroll_y);
 
-    let mut lines = vec![];
-
     let search_term = if let Some(modal) = &app.modal {
         if modal.modal_type == ModalType::Search || modal.modal_type == ModalType::Replace {
             Some(modal.input.clone())
@@ -106,7 +104,9 @@ pub fn draw_editor(f: &mut Frame, app: &App, area: Rect) {
         None
     };
 
+    let buf = f.buffer_mut();
     for (i, line) in editor.lines.iter().skip(scroll_y).take(height).enumerate() {
+        let y = area.y + i as u16;
         let line_num = scroll_y + i + 1;
         let mut bg_color = if line_num % 2 == 0 {
             Color::Rgb(30, 30, 30)
@@ -122,12 +122,13 @@ pub fn draw_editor(f: &mut Frame, app: &App, area: Rect) {
             }
         }
 
-        let num_span = Span::styled(
-            format!("{:4} | ", line_num),
-            Style::default().fg(Color::Gray).bg(bg_color),
-        );
+        let row_area = Rect::new(area.left(), y, area.width, 1);
+        buf.set_style(row_area, Style::default().bg(bg_color));
 
-        let mut spans = vec![num_span];
+        let num_str = format!("{:4} | ", line_num);
+        buf.set_string(area.x, y, &num_str, Style::default().fg(Color::Gray).bg(bg_color));
+
+        let text_start_x = area.x + 7;
 
         let mut search_matches = vec![];
         if let Some(ref st) = search_term {
@@ -158,6 +159,12 @@ pub fn draw_editor(f: &mut Frame, app: &App, area: Rect) {
                 }
 
                 for c in text.chars() {
+                    let x = text_start_x + char_idx as u16;
+                    // TODO: This shouldn't be needed once we implement x scrolling
+                    if x >= area.right() {
+                        break;
+                    }
+
                     let mut b_bg = bg_color;
                     let mut b_fg = fg;
                     let mut modifier = Modifier::empty();
@@ -166,34 +173,20 @@ pub fn draw_editor(f: &mut Frame, app: &App, area: Rect) {
                         b_bg = Color::LightBlue;
                         b_fg = Color::Black;
                     } else if search_matches.contains(&char_idx) {
+                        // TODO: Add different color for current found item
                         b_bg = Color::LightCyan;
                         b_fg = Color::Black;
                         modifier = Modifier::BOLD;
                     }
 
-                    spans.push(Span::styled(
-                        c.to_string(),
-                        Style::default().fg(b_fg).bg(b_bg).add_modifier(modifier),
-                    ));
+                    let cell = &mut buf[(x, y)];
+                    cell.set_char(c);
+                    cell.set_style(Style::default().fg(b_fg).bg(b_bg).add_modifier(modifier));
                     char_idx += 1;
                 }
             }
         }
-
-        let text_len = spans
-            .iter()
-            .map(|s| s.content.len())
-            .sum::<usize>();
-        if text_len < area.width as usize {
-            let padding = " ".repeat(area.width as usize - text_len);
-            spans.push(Span::styled(padding, Style::default().bg(bg_color)));
-        }
-
-        lines.push(Line::from(spans));
     }
-
-    let p = Paragraph::new(Text::from(lines));
-    f.render_widget(p, area);
 
     let scrollbar = Scrollbar::default()
         .orientation(ScrollbarOrientation::VerticalRight)
