@@ -608,6 +608,8 @@ impl App {
 
             {
                 let ws = self.workspace.as_mut().unwrap();
+                // TODO: Make these expandable
+                // TODO: Implement move left and right for single file search
                 match action {
                     Action::InsertChar(c) => {
                         if self.sidebar_category == SidebarCategory::Search {
