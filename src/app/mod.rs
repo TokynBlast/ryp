@@ -615,7 +615,7 @@ impl App {
                             self.perform_search();
                         }
                     }
-                    Action::DeleteChar => {
+                    Action::BackSpace => {
                         if self.sidebar_category == SidebarCategory::Search {
                             self.search_query.pop();
                             self.perform_search();
