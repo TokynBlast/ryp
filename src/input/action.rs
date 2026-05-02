@@ -10,8 +10,8 @@ pub enum SidebarCategory {
 pub enum Action {
     MoveUp(bool),
     MoveDown(bool),
-    MoveLeft(bool),
-    MoveRight(bool),
+    MoveLeft(bool, bool),
+    MoveRight(bool, bool),
     PageUp(bool),
     PageDown(bool),
     InsertChar(char),

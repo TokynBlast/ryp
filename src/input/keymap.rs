@@ -53,8 +53,8 @@ pub fn map_key(key: KeyEvent, in_modal: bool, is_sidebar_focused: bool) -> Optio
         // Navigation binds
         KeyCode::Up => Some(Action::MoveUp(shift)),
         KeyCode::Down => Some(Action::MoveDown(shift)),
-        KeyCode::Left => Some(Action::MoveLeft(shift)),
-        KeyCode::Right => Some(Action::MoveRight(shift)),
+        KeyCode::Left => Some(Action::MoveLeft(shift, ctrl)),
+        KeyCode::Right => Some(Action::MoveRight(shift, ctrl)),
         KeyCode::PageUp => Some(Action::PageUp(shift)),
         KeyCode::PageDown => Some(Action::PageDown(shift)),
 

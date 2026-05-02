@@ -276,22 +276,55 @@ impl Editor {
         }
     }
 
-    pub fn move_left(&mut self, shift: bool) {
+    pub fn move_left(&mut self, shift: bool, ctrl: bool) {
         self.update_selection(shift);
         if self.cursor_x > 0 {
-            self.cursor_x -= 1;
+            if ctrl {
+                let line = &self.lines[self.cursor_y];
+                let bytes = line.as_bytes();
+
+                // Skip all whitespace
+                while self.cursor_x > 0 && bytes[self.cursor_x - 1] == b' ' {
+                    self.cursor_x -= 1;
+                }
+
+                // Skip what isn't whitespace
+                while self.cursor_x > 0 && bytes[self.cursor_x - 1] != b' ' {
+                    self.cursor_x -= 1;
+                }
+            } else {
+                self.cursor_x -= 1;
+            }
         } else if self.cursor_y > 0 {
+            // Move to the end of the previous line
             self.cursor_y -= 1;
             self.cursor_x = self.lines[self.cursor_y].len();
         }
         self.target_x = self.cursor_x;
     }
 
-    pub fn move_right(&mut self, shift: bool) {
+    pub fn move_right(&mut self, shift: bool, ctrl: bool) {
         self.update_selection(shift);
-        if self.cursor_x < self.lines[self.cursor_y].len() {
-            self.cursor_x += 1;
+
+        let line_len = self.lines[self.cursor_y].len();
+        if self.cursor_x < line_len {
+            if ctrl {
+                let line = &self.lines[self.cursor_y];
+                let bytes = line.as_bytes();
+
+                // Skip non-whitespace
+                while self.cursor_x < line_len && bytes[self.cursor_x] != b' ' {
+                    self.cursor_x += 1;
+                }
+                // Skip whitespace
+                while self.cursor_x < line_len && bytes[self.cursor_x] == b' ' {
+                    self.cursor_x += 1;
+                }
+            } else {
+                self.cursor_x += 1;
+            }
         } else if self.cursor_y < self.lines.len() - 1 {
+            // Move to the start of the next line
             self.cursor_y += 1;
             self.cursor_x = 0;
         }
