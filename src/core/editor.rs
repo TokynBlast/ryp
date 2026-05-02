@@ -162,8 +162,7 @@ impl Editor {
         self.target_x = self.cursor_x;
     }
 
-    pub fn delete_char(&mut self) {
-        self.dirty = true;
+    pub fn backspace_char(&mut self) {
         if self.delete_selection() {
             return;
         }
@@ -179,6 +178,11 @@ impl Editor {
             self.lines[self.cursor_y].push_str(&current_line);
         }
         self.target_x = self.cursor_x;
+    }
+
+    pub fn delete_char(&mut self) {
+        self.move_right(false, false);
+        self.backspace_char();
     }
 
     // selection logic

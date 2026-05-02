@@ -92,7 +92,8 @@ pub fn map_key(key: KeyEvent, in_modal: bool, is_sidebar_focused: bool) -> Optio
                 Some(Action::InsertNewline)
             }
         }
-        KeyCode::Backspace => Some(Action::DeleteChar),
+        KeyCode::Backspace => Some(Action::BackSpace),
+        KeyCode::Delete => Some(Action::DeleteChar),
         KeyCode::Tab => Some(Action::Tab),
         _ => None,
     }

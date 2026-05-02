@@ -855,6 +855,7 @@ impl App {
                 Action::InsertChar(c) => editor.insert_char(c),
                 Action::InsertNewline => editor.insert_newline(),
                 Action::DeleteChar => editor.delete_char(),
+                Action::BackSpace => editor.backspace_char(),
                 Action::Tab => {
                     for _ in 0..tab_size {
                         editor.insert_char(' ');

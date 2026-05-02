@@ -17,6 +17,7 @@ pub enum Action {
     InsertChar(char),
     InsertNewline,
     DeleteChar,
+    BackSpace,
     Tab,
     OpenSearch,
     OpenReplace,
