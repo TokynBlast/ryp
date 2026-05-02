@@ -83,7 +83,7 @@ impl App {
             git_selected: 0,                                                    // Git diff file selected
             settings_selected: 0,                                               // Setting selected
             settings_scroll: 0,                                                 // Scroll on settings
-            terminal: crate::core::terminal::Terminal::new(PathBuf::from(".")),// The terminal; Defaults to current path
+            terminal: crate::core::terminal::Terminal::new(PathBuf::from(".")), // The terminal; Defaults to current path
             terminal_visible: false,                                            // Sets whether the terminal is currently visible or not
             debug_console_visible: false,                                       // Whether plugin debug console is visible or not
             dirty: true,                                                        // Whether there have been changes or not to the file(s)
