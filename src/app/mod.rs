@@ -844,11 +844,13 @@ impl App {
                 Action::MoveRight(shift, ctrl) => editor.move_right(shift, ctrl),
 
                 Action::PageUp(shift) => {
+                    editor.update_selection(shift);
                     for _ in 0..40 {
                         editor.move_up(shift);
                     }
                 }
                 Action::PageDown(shift) => {
+                    editor.update_selection(shift);
                     for _ in 0..40 {
                         editor.move_down(shift);
                     }
