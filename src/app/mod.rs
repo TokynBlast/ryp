@@ -339,22 +339,6 @@ impl App {
                 // might access it in the future :)
                 let height_size = term.size().unwrap();
                 (self.host_terminal_height, self.host_terminal_width) = (height_size.height, height_size.width);
-                // TODO: This really only needs to happen one time when we search. We shouldn't update it on every single key stroke or change.
-                {
-                    let cache = Arc::clone(&self.whitespace_cache);
-                    let lines = self.current_editor()
-                        .map(|e| e.lines.clone())
-                        .unwrap_or_default();
-                    rayon::spawn(move || {
-                        let result: Vec<usize> = lines.par_iter()
-                            .enumerate()
-                            .filter(|(_, line)| line.as_bytes().iter().any(|&c| c == b' ' || c == b'\t' || c == b'\n'))
-                            .map(|(i, _)| i)
-                            .collect();
-                        let mut guard = cache.write();
-                        *guard = result;
-                    });
-                } // borrow of self ends here
 
                 term.draw(|f| ui::draw(f, self))?;
                 self.dirty = false;
@@ -978,6 +962,24 @@ impl App {
         }
     }
 
+    fn fill_ws_cache(&mut self) {
+        {
+            let cache = Arc::clone(&self.whitespace_cache);
+            let lines = self.current_editor()
+                .map(|e| e.lines.clone())
+                .unwrap_or_default();
+            rayon::spawn(move || {
+                let result: Vec<usize> = lines.par_iter()
+                    .enumerate()
+                    .filter(|(_, line)| line.as_bytes().iter().any(|&c| c == b' ' || c == b'\t' || c == b'\n'))
+                    .map(|(i, _)| i)
+                    .collect();
+                let mut guard = cache.write();
+                *guard = result;
+            });
+        }
+    }
+
     fn perform_search(&mut self) {
         if self.search_query.is_empty() {
             self.search_results.clear();
@@ -986,6 +988,9 @@ impl App {
             self.search_advanced.clear();
             return;
         }
+
+        // TODO: Make this happen once when we need it
+        self.fill_ws_cache();
 
         let ws_path = if let Some(ws) = &self.workspace {
             ws.nodes[ws.root].path.clone()
