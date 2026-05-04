@@ -1,8 +1,33 @@
-use mlua;
+use parking_lot::{Mutex, Condvar};
+use triomphe::Arc;
+use mlua::{self, LuaSerdeExt};
 use crate::plugin::action::PluginAction;
 
 fn get_char_at(x: usize, y: usize) -> Result<(), mlua::Error> {
   todo!("Implement getting char in editor; plugin/lua_integrate/editor.rs");
+}
+
+fn get_key_press(lua: &mlua::Lua, tx: &crossbeam_channel::Sender<PluginAction>, get_table: &mlua::Table) -> Result<(), mlua::Error> {
+    let responder = Arc::new(crate::plugin::action::KeyPressResponder {
+        c: Mutex::new(None),
+        signal: Condvar::new(),
+    });
+    let responder_clone = responder.clone();
+    let tx_clone = tx.clone();
+    get_table.set("key",
+        lua.create_function(move |lua, ()| {
+              let _ = tx_clone.send(PluginAction::GetKeyPress { responder: responder_clone.clone() });
+
+              let mut lock = responder_clone.c.lock();
+              if lock.is_none() {
+                  responder_clone.signal.wait(&mut lock);
+              }
+
+              let info = lock.take();
+              lua.to_value(&info)
+        })?
+    )?;
+    Ok(())
 }
 
 fn get_line_at(line: usize) -> Result<(), mlua::Error> {
@@ -38,28 +63,14 @@ fn insert_char_at_cursor(lua: &mlua::Lua, tx: &crossbeam_channel::Sender<PluginA
 
 pub fn integrate_editor(lua: &mlua::Lua, tx: &crossbeam_channel::Sender<PluginAction>) -> Result<(), mlua::Error> {
     let editor_table = lua.create_table()?;
-
     let insert_table = lua.create_table()?;
-
-    let tx_cursor = tx.clone();
-    insert_table.set("cursor", lua.create_function(move |_, value: char| {
-        let _ = tx_cursor.send(PluginAction::InsertCharAtCursor { txt: value });
-        Ok(())
-    })?)?;
+    let get_table = lua.create_table()?;
 
     insert_char_at_cursor(lua, tx, &insert_table)?;
-
-    //let tx_set = tx.clone();
-    // insert_table.set("set", lua.create_function(move |_, (c, x, y): (char, usize, usize)| {
-    //     Ok(())
-    // })?)?;
-
-    // //let tx_get = tx.clone();
-    // insert_table.set("get", lua.create_function(move |_, (c, x, y): (char, usize, usize)| {
-    //     Ok(())
-    // })?)?;
+    get_key_press(lua, tx, &get_table)?;
 
     editor_table.set("insert", insert_table)?;
+    editor_table.set("get", get_table)?;
 
     let proxy = lua.create_table()?;
     let metatable = lua.create_table()?;

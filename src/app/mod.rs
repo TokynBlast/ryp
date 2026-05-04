@@ -8,7 +8,7 @@ use hashbrown::HashSet;
 use std::time::Duration;
 use syntect::{parsing::SyntaxSet, highlighting::ThemeSet};
 use std::path::{Path, PathBuf};
-use parking_lot::RwLock;
+use parking_lot::{Mutex, RwLock};
 use triomphe::Arc;
 use aho_corasick::AhoCorasick;
 use serde_json::{json, Value};
@@ -56,6 +56,7 @@ pub struct App {
     pub host_terminal_width: u16,
     pub debug_logs: Vec<CompactString>,
     pub os: CompactString,
+    pub key_pressed: Mutex<Option<char>>,
 }
 
 impl App {
@@ -160,6 +161,7 @@ impl App {
             } else {
                 CompactString::from("Unknown ?")
             },
+            key_pressed: None.into(),
         }
     }
 
@@ -311,6 +313,18 @@ impl App {
                     PluginAction::SetSetting { name, value } => {
                         self.config.insert(name, json!(value));
                     }
+
+                    PluginAction::GetKeyPress { responder } => {
+                        let val = *self.key_pressed.lock();
+
+                        let mut lock = responder.c.lock();
+                        *lock = val;
+                        responder.signal.notify_one();
+                        self.key_pressed = None.into();
+                    }
+                }
+            }
+
             if !self.dirty {
                 self.dirty = if self.terminal_visible {
                     self.terminal.update()
@@ -381,6 +395,7 @@ impl App {
         if let Some(action) = keymap::map_key(key, in_modal, is_tree_focused) {
             self.dispatch(action);
         }
+        self.key_pressed = key.code.as_char().into();
         self.dirty = true;
     }
 
