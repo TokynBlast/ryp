@@ -866,6 +866,7 @@ impl App {
                 }
                 Action::PageDown(shift) => {
                     editor.update_selection(shift);
+                    // TODO: Make it dynamic to the terminal size
                     for _ in 0..40 {
                         editor.move_down(shift);
                     }
