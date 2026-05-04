@@ -7,29 +7,6 @@ fn get_char_at(x: usize, y: usize) -> Result<(), mlua::Error> {
   todo!("Implement getting char in editor; plugin/lua_integrate/editor.rs");
 }
 
-fn get_key_press(lua: &mlua::Lua, tx: &crossbeam_channel::Sender<PluginAction>, get_table: &mlua::Table) -> Result<(), mlua::Error> {
-    let responder = Arc::new(crate::plugin::action::KeyPressResponder {
-        c: Mutex::new(None),
-        signal: Condvar::new(),
-    });
-    let responder_clone = responder.clone();
-    let tx_clone = tx.clone();
-    get_table.set("key",
-        lua.create_function(move |lua, ()| {
-              let _ = tx_clone.send(PluginAction::GetKeyPress { responder: responder_clone.clone() });
-
-              let mut lock = responder_clone.c.lock();
-              if lock.is_none() {
-                  responder_clone.signal.wait(&mut lock);
-              }
-
-              let info = lock.take();
-              lua.to_value(&info)
-        })?
-    )?;
-    Ok(())
-}
-
 fn get_line_at(line: usize) -> Result<(), mlua::Error> {
   todo!("Implement getting a line in editor; plugin/lua_integrate/editor.rs")
 }
@@ -67,7 +44,6 @@ pub fn integrate_editor(lua: &mlua::Lua, tx: &crossbeam_channel::Sender<PluginAc
     let get_table = lua.create_table()?;
 
     insert_char_at_cursor(lua, tx, &insert_table)?;
-    get_key_press(lua, tx, &get_table)?;
 
     editor_table.set("insert", insert_table)?;
     editor_table.set("get", get_table)?;
