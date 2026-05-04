@@ -297,7 +297,7 @@ impl App {
 
                         let mut lock = responder.value.lock();
                         *lock = Some(val);
-                        responder.signal.notify_one(); // Wake up Lua!
+                        responder.signal.notify_one();
                     }
 
                     PluginAction::DebugLog { message } => {
