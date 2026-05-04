@@ -311,13 +311,12 @@ impl App {
                     PluginAction::SetSetting { name, value } => {
                         self.config.insert(name, json!(value));
                     }
-                }
-            }
-
-            if self.terminal_visible {
-                self.dirty = self.terminal.update();
-            } else {
-                self.dirty = term.autoresize().is_ok();
+            if !self.dirty {
+                self.dirty = if self.terminal_visible {
+                    self.terminal.update()
+                } else {
+                    term.autoresize().is_ok()
+                };
             }
 
             if self.dirty {
