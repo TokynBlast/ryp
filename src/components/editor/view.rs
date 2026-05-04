@@ -30,7 +30,7 @@ pub fn draw_editor(f: &mut Frame, app: &App, area: Rect) {
                 ]),
                 Line::from(vec![
                     Span::styled(" Close / Quit: ", Style::default().fg(Color::DarkGray)),
-                    Span::styled("Ctrl + W", Style::default().fg(Color::Cyan)),
+                    Span::styled("Ctrl + W / Ctrl + C", Style::default().fg(Color::Cyan)),
                 ]),
                 Line::from(vec![
                     Span::styled(" Help: ", Style::default().fg(Color::DarkGray)),
