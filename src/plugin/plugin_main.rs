@@ -12,7 +12,7 @@ fn spawn_lua_worker(plugin_path: PathBuf, action_tx: crossbeam_channel::Sender<P
             // Since an empty script is wasted work, we just do nothing with it
             let lua = Lua::new();
 
-       crate::plugin::policy::apply_restrictions(&lua, action_tx.clone(), &plugin_policy).expect("Something went wrong with applying resrtictions to plugins.");
+            crate::plugin::policy::apply_restrictions(&lua, action_tx.clone(), &plugin_policy).expect("Something went wrong with applying resrtictions to plugins.");
 
             lua.load_std_libs(StdLib::ALL_SAFE).expect("Critical: Could not load Lua libs");
 

@@ -44,16 +44,16 @@ impl Editor {
             is_diff: false,
             lang: CompactString::default(),
             highlight_cache: Arc::new(
-              ArcSwap::from_pointee(
-                VecDeque::from([
-                  HighlightState::new(
-                      &Highlighter::new(
-                          &ThemeSet::load_defaults().themes["base16-ocean.dark"]),
-                          ScopeStack::new()
-                      )
-                  ])
-              )
-          ),
+                ArcSwap::from_pointee(
+                  VecDeque::from([
+                    HighlightState::new(
+                        &Highlighter::new(
+                            &ThemeSet::load_defaults().themes["base16-ocean.dark"]),
+                            ScopeStack::new()
+                        )
+                    ])
+                )
+            ),
         }
     }
 
