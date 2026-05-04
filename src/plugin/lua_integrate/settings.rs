@@ -24,7 +24,7 @@ fn get_setting_value(lua: &mlua::Lua, tx: &crossbeam_channel::Sender<PluginActio
     settings_table.set("get",
         lua.create_function(move |lua_ctx, name: String| {
             // 1. Create the high-speed responder
-            let responder = Arc::new(crate::plugin::action::Responder {
+            let responder = Arc::new(crate::plugin::action::SettingResponder {
                 value: Mutex::new(None),
                 signal: Condvar::new(),
             });
