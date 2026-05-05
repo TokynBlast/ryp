@@ -337,6 +337,27 @@ impl App {
                             responder.signal.notify_one();
                         }
                     }
+
+                    PluginAction::GetCursorX { responder } => {
+                        if let Some(editor) = self.current_editor(){
+                            let val = editor.cursor_x;
+                            let mut lock = responder.number.lock();
+                            *lock = val;
+                            responder.signal.notify_one();
+                        }
+                    }
+
+                    PluginAction::GetCursorY { responder } => {
+                        if let Some(editor) = self.current_editor(){
+                            let val = editor.cursor_y;
+                            let mut lock = responder.number.lock();
+                            *lock = val;
+                            responder.signal.notify_one();
+                        }
+                    }
+                }
+            }
+
             self.dirty = if !self.dirty {
                 self.terminal_visible && self.terminal.update()
             } else {
