@@ -1063,7 +1063,6 @@ impl App {
             self.search_results.clear();
             self.search_num_files = 0;
             self.search_num_occurrences = 0;
-            self.search_advanced.clear();
             return;
         }
 
