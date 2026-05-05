@@ -574,6 +574,8 @@ impl App {
                 return;
             }
             Action::NextSidebarCategory => {
+                // TODO: Turn this into a VecDeque so that it is easier to expand later,
+                //       and it becomes a pointer move instead of an if branch
                 self.sidebar_category = match self.sidebar_category {
                     SidebarCategory::FileTree => SidebarCategory::Search,
                     SidebarCategory::Search => SidebarCategory::Git,
@@ -590,6 +592,8 @@ impl App {
                 return;
             }
             Action::PrevSidebarCategory => {
+                // TODO: Turn this into a VecDeque so that it is easier to expand later,
+                //       and it becomes a pointer move instead of an if branch
                 self.sidebar_category = match self.sidebar_category {
                     SidebarCategory::FileTree => SidebarCategory::Settings,
                     SidebarCategory::Git => SidebarCategory::Search,
