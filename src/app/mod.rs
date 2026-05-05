@@ -802,6 +802,9 @@ impl App {
             Action::PrevTab => {
                 if !self.editors.is_empty() {
                     if self.active_tab == 0 {
+                        // There's no need for a saturating sub, as we can very safely
+                        // assume that because a usize must be >= 0, and we check if
+                        // it is 0, there's no need to ever check that it might go below
                         self.active_tab = self.editors.len() - 1;
                     } else {
                         self.active_tab -= 1;
