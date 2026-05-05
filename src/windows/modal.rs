@@ -47,13 +47,18 @@ pub struct Modal {
 
 impl Modal {
     pub fn new(modal_type: ModalType) -> Self {
-        let active_button = if modal_type == ModalType::QuitPrompt {
-            1
-        } else if modal_type == ModalType::ConfirmExit {
-            0 // "No" by default
-        } else {
-            0
-        };
+        let active_button =
+            match modal_type {
+                // "No" by default on all
+                ModalType::QuitPrompt => 1,
+                ModalType::ConfirmExit => 0,
+                ModalType::Replace => 0,
+                ModalType::ReplaceAll => 0,
+                ModalType::Search => 0,
+                ModalType::NewFile => 0,
+                _ => 0
+            };
+
         Self {
             modal_type,
             input: CompactString::default(),
