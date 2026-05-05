@@ -1,4 +1,4 @@
-use crate::{app::App, input::action::SidebarCategory, config};
+use crate::{app::App, input::action::SidebarCategory};
 use ratatui::{
     Frame,
     layout::{Constraint, Direction, Layout, Rect},
@@ -304,8 +304,18 @@ fn draw_settings_view(f: &mut Frame, app: &App, area: Rect) {
             .add_modifier(Modifier::BOLD)
     };
 
-    // TODO: Make this not use the function meant for legacy config storage...
-    let settings: Vec<Setting> = loop_setting_add(&app.config);
+    struct Setting {
+      title: String,
+      value: String,
+    }
+
+    let mut settings: Vec<Setting> = Vec::new();
+    for (key, value) in &app.config {
+        settings.push(Setting {
+            title: key.clone(),
+            value: value.to_string(),
+        });
+    }
 
     let settings_block = Block::default()
         .title(" Settings ")
@@ -363,21 +373,4 @@ fn draw_settings_view(f: &mut Frame, app: &App, area: Rect) {
             f.set_cursor_position((chunks[i].x + 1, chunks[i].y + 1));
         }
     }
-}
-
-struct Setting {
-  title: String,
-  value: String,
-}
-
-#[inline(always)]
-fn loop_setting_add(layer: &config::Config) -> Vec<Setting> {
-    let mut settings = vec![];
-    for (key, value) in layer {
-        settings.push(Setting {
-            title: key.clone(),
-            value: value.to_string(),
-        });
-    }
-    settings
 }
