@@ -322,15 +322,22 @@ impl App {
                         responder.signal.notify_one();
                         self.key_pressed = None.into();
                     }
-                }
-            }
 
-            if !self.dirty {
-                self.dirty = if self.terminal_visible {
-                    self.terminal.update()
-                } else {
-                    term.autoresize().is_ok()
-                };
+                    PluginAction::GetCharAt { x, y, responder } => {
+                        if let Some(editor) = self.current_editor() {
+                            // Get char at the line of y, and then the x :)
+                            // Or return None! :D
+                            let val: Option<char> = if editor.lines[y].len() <= x {
+                                Some(editor.lines[y].as_bytes()[x] as char)
+                            } else {
+                                None
+                            };
+                            let mut lock = responder.c.lock();
+                            *lock = val;
+                            responder.signal.notify_one();
+                        }
+                    }
+                }
             }
 
             if self.dirty {

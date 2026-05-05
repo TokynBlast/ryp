@@ -1,10 +1,10 @@
 use parking_lot::{Mutex, Condvar};
 use triomphe::Arc;
 use mlua::{self, LuaSerdeExt};
-use crate::plugin::action::{PluginAction, KeyPressResponder};
+use crate::plugin::action::{PluginAction, CharResponder};
 
 fn get_key_press(lua: &mlua::Lua, tx: &crossbeam_channel::Sender<PluginAction>, get_table: &mlua::Table) -> Result<(), mlua::Error> {
-    let responder = Arc::new(KeyPressResponder {
+    let responder = Arc::new(CharResponder {
         c: Mutex::new(None),
         signal: Condvar::new(),
     });
