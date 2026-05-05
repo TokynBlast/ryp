@@ -3,3 +3,4 @@ pub mod keys;
 pub mod sidebar;
 pub mod types;
 pub mod editor;
+pub mod cursor;

@@ -13,6 +13,12 @@ pub struct CharResponder {
     pub signal: Condvar,
 }
 
+#[derive(Debug)]
+pub struct UsizeResponder {
+    pub number: Mutex<usize>,
+    pub signal: Condvar
+}
+
 #[derive(Debug, Clone)]
 pub enum PluginAction {
     MakeSetting { name: String, value: serde_json::Value },
@@ -21,5 +27,6 @@ pub enum PluginAction {
     SetSetting { name: String, value: serde_json::Value },
     InsertCharAtCursor { txt: char },
     GetKeyPress { responder: Arc<CharResponder> },
-    GetCharAt {x: usize, y: usize, responder: Arc<CharResponder> },
+    GetCursorX { responder: Arc<UsizeResponder> },
+    GetCursorY { responder: Arc<UsizeResponder> },
 }

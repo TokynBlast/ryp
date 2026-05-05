@@ -14,10 +14,7 @@ pub fn apply_globals(lua: &mlua::Lua, tx: crossbeam_channel::Sender<PluginAction
     settings::integrate_settings(lua, &tx)?;
     editor::integrate_editor(lua, &tx)?;
     keys::integrate_keys(lua, &tx)?;
-
-    // TODO: Hook this up to real cursor
-    globals.set("cursor_x", 0)?;
-    globals.set("cursor_y", 0)?;
+    cursor::integrate_cursor_pos(lua, &tx)?;
 
     Ok(())
 }
