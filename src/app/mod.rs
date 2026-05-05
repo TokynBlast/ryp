@@ -103,80 +103,80 @@ impl App {
                 } else if cfg!(target_os = "ios") {
                     CompactString::from("iOS ")
                 } else if cfg!(target_os = "linux") {
-                  use os_info::Type::*;
-                  match os_info::get().os_type() {
-                    Pop => CompactString::from("!Pop_OS "),
-                    Arch => CompactString::from("Arch Linux 󰣇"),
-                    Fedora => CompactString::from("Fedora "),
-                    Gentoo => CompactString::from("Gentoo "),
-                    Redhat
-                    | RedHatEnterprise => CompactString::from("Redhat "),
-                    AlmaLinux => CompactString::from("AlmaLinux "),
-                    AOSC => CompactString::from("AOSC "),
-                    Artix => CompactString::from("Artix "),
-                    CentOS => CompactString::from("CentOS "),
-                    Cygwin => CompactString::from("Cygwin "),
-                    Debian => CompactString::from("Debian "),
-                    Elementary => CompactString::from("ElementaryOS "),
-                    EndeavourOS => CompactString::from("EndeavourOS "),
-                    FreeBSD => CompactString::from("FreeBSD "),
-                    Garuda => CompactString::from("Garuda "),
-                    Illumos => CompactString::from("Illumos "),
-                    Kali => CompactString::from("Kali Linux "),
-                    Manjaro => CompactString::from("Manjaro "),
-                    Mint => CompactString::from("Linux Mint 󰣭"),
-                    NixOS => CompactString::from("NixOS "),
-                    Nobara => CompactString::from("Nobara "),
-                    OpenBSD => CompactString::from("OpenBSD "),
-                    Raspbian => CompactString::from("Raspbian "),
-                    RockyLinux => CompactString::from("RockyLinux "),
-                    openSUSE => CompactString::from("openSUSE "),
-                    SUSE => CompactString::from("SUSE "),
-                    Solus => CompactString::from("Solus "),
-                    Ubuntu => CompactString::from("Ubuntu 󰕈"),
-                    Void => CompactString::from("Void Linux "),
-                    Zorin => CompactString::from("Zorin "),
-                    NetBSD => CompactString::from("NetBSD"),
-                    DragonFly => CompactString::from("DragonFly BSD"),
-                    _ => CompactString::from("")
-                }
-            } else if cfg!(target_os="android") {
-              CompactString::from("Android ")
-            } else if cfg!(target_arch = "wasm32") {
-              CompactString::from("WebAssembly ")
-            } else if cfg!(target_os = "wasi") {
-                CompactString::from("WASI ")
-            } else if cfg!(target_os = "freebsd") {
-                CompactString::from("FreeBSD ")
-            } else if cfg!(target_os = "openbsd") {
-                CompactString::from("OpenBSD ")
-            } else if cfg!(target_os = "netbsd") {
-                CompactString::from("NetBSD")
-            } else if cfg!(target_os = "dragonfly") {
-                CompactString::from("DragonFly BSD")
-            } else if cfg!(target_os = "haiku") {
-                CompactString::from("Haiku")
-            } else if cfg!(target_os = "solaris") {
-                CompactString::from("Solaris ")
-            } else {
-                CompactString::from("Unknown ?")
-            },
+                    use os_info::Type::*;
+                    match os_info::get().os_type() {
+                        Pop => CompactString::from("!Pop_OS "),
+                        Arch => CompactString::from("Arch Linux 󰣇"),
+                        Fedora => CompactString::from("Fedora "),
+                        Gentoo => CompactString::from("Gentoo "),
+                        Redhat
+                        | RedHatEnterprise => CompactString::from("Redhat "),
+                        AlmaLinux => CompactString::from("AlmaLinux "),
+                        AOSC => CompactString::from("AOSC "),
+                        Artix => CompactString::from("Artix "),
+                        CentOS => CompactString::from("CentOS "),
+                        Cygwin => CompactString::from("Cygwin "),
+                        Debian => CompactString::from("Debian "),
+                        Elementary => CompactString::from("ElementaryOS "),
+                        EndeavourOS => CompactString::from("EndeavourOS "),
+                        FreeBSD => CompactString::from("FreeBSD "),
+                        Garuda => CompactString::from("Garuda "),
+                        Illumos => CompactString::from("Illumos "),
+                        Kali => CompactString::from("Kali Linux "),
+                        Manjaro => CompactString::from("Manjaro "),
+                        Mint => CompactString::from("Linux Mint 󰣭"),
+                        NixOS => CompactString::from("NixOS "),
+                        Nobara => CompactString::from("Nobara "),
+                        OpenBSD => CompactString::from("OpenBSD "),
+                        Raspbian => CompactString::from("Raspbian "),
+                        RockyLinux => CompactString::from("RockyLinux "),
+                        openSUSE => CompactString::from("openSUSE "),
+                        SUSE => CompactString::from("SUSE "),
+                        Solus => CompactString::from("Solus "),
+                        Ubuntu => CompactString::from("Ubuntu 󰕈"),
+                        Void => CompactString::from("Void Linux "),
+                        Zorin => CompactString::from("Zorin "),
+                        NetBSD => CompactString::from("NetBSD"),
+                        DragonFly => CompactString::from("DragonFly BSD"),
+                        _ => CompactString::from("")
+                    }
+                } else if cfg!(target_os="android") {
+                  CompactString::from("Android ")
+                } else if cfg!(target_arch = "wasm32") {
+                  CompactString::from("WebAssembly ")
+                } else if cfg!(target_os = "wasi") {
+                    CompactString::from("WASI ")
+                } else if cfg!(target_os = "freebsd") {
+                    CompactString::from("FreeBSD ")
+                } else if cfg!(target_os = "openbsd") {
+                    CompactString::from("OpenBSD ")
+                } else if cfg!(target_os = "netbsd") {
+                    CompactString::from("NetBSD")
+                } else if cfg!(target_os = "dragonfly") {
+                    CompactString::from("DragonFly BSD")
+                } else if cfg!(target_os = "haiku") {
+                    CompactString::from("Haiku")
+                } else if cfg!(target_os = "solaris") {
+                    CompactString::from("Solaris ")
+                } else {
+                    CompactString::from("Unknown ?")
+                },
             key_pressed: None.into(),
         }
     }
 
     pub fn load_workspace(&mut self, path: &Path) {
-      let path = &path.canonicalize().unwrap_or(path.to_path_buf());
+        let path = &path.canonicalize().unwrap_or(path.to_path_buf());
 
-      self.workspace = Some(crate::core::tree::FileTree::new(
-        path.to_path_buf()
-      ));
-      self.git_manager.set_root(path);
-      self.refresh_git();
-      let _ = self
-          .terminal
-          .tx
-          .send(format!("cd {}\n", path.display()).as_bytes().to_vec());
+        self.workspace = Some(crate::core::tree::FileTree::new(
+            path.to_path_buf()
+        ));
+        self.git_manager.set_root(path);
+        self.refresh_git();
+        let _ = self
+            .terminal
+            .tx
+            .send(format!("cd {}\n", path.display()).as_bytes().to_vec());
     }
 
     pub fn open_diff(&mut self, change_idx: usize) {
@@ -305,7 +305,7 @@ impl App {
                     PluginAction::DebugLog { message } => {
                         self.debug_logs.push(message.into());
                         if self.debug_console_visible {
-                          self.dirty = true;
+                            self.dirty = true;
                         }
                         if self.debug_logs.len() > 40 { self.debug_logs.clear(); }
                     }
@@ -361,8 +361,7 @@ impl App {
     }
 
     fn handle_key(&mut self, key: event::KeyEvent) {
-        use crate::input::action::Action;
-        use crate::input::keymap;
+        use crate::input::{action::Action, keymap};
         use crossterm::event::{KeyCode, KeyModifiers};
 
         if self.terminal_visible {
@@ -679,11 +678,11 @@ impl App {
                                             ws.toggle(node_idx);
                                         }
                                     } else {
-                                      file_to_open = Some(ws.nodes[node_idx].path.clone());
-                                        let current_is_dirty =
-                                            self.current_editor().map_or(false, |e| e.dirty);
-                                        open_in_new_tab = force_new || current_is_dirty;
-                                        close_focused = true;
+                                        file_to_open = Some(ws.nodes[node_idx].path.clone());
+                                          let current_is_dirty =
+                                              self.current_editor().map_or(false, |e| e.dirty);
+                                          open_in_new_tab = force_new || current_is_dirty;
+                                          close_focused = true;
                                     }
                                 }
                             }

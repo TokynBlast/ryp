@@ -23,26 +23,26 @@ fn get_setting_value(lua: &mlua::Lua, tx: &crossbeam_channel::Sender<PluginActio
 
     settings_table.set("get",
         lua.create_function(move |lua_ctx, name: String| {
-            // 1. Create the high-speed responder
+            // Create the high-speed responder
             let responder = Arc::new(crate::plugin::action::SerdeResponder {
                 value: Mutex::new(None),
                 signal: Condvar::new(),
             });
 
-            // 2. Send the Arc to the App
+            // Send the Arc to the App
             tx_get.send(PluginAction::GetSettingValue {
                 name: name.clone(),
                 responder: responder.clone()
             }).ok();
 
-            // 3. LOCK and WAIT
+            // Lock and wait untill told to continue
             let mut lock = responder.value.lock();
             if lock.is_none() {
                 // This parks the thread until App calls .notify_one()
                 responder.signal.wait(&mut lock);
             }
 
-            // 4. Take the value and convert to Lua
+            // Take the value and convert to Lua
             let info = lock.take().unwrap_or(serde_json::Value::Null);
             lua_ctx.to_value(&info)
         })?

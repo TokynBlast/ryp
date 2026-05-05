@@ -1,5 +1,4 @@
-use crate::{app::App, config};
-use crate::input::action::SidebarCategory;
+use crate::{app::App, input::action::SidebarCategory, config};
 use ratatui::{
     Frame,
     layout::{Constraint, Direction, Layout, Rect},

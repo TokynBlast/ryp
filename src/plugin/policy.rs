@@ -82,7 +82,6 @@ pub fn apply_restrictions(lua: &Lua, tx: crossbeam_channel::Sender<crate::plugin
         let msg = args
             .iter()
             .map(|v| match v {
-                // .ok() converts Result to Option, allowing unwrap_or to take a &str
                 Value::String(s) => s.to_str().ok().as_deref().unwrap_or("").to_string(),
                 Value::Nil => "nil".to_string(),
                 Value::Boolean(b) => b.to_string(),

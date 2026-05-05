@@ -80,7 +80,7 @@ pub fn load_plugins(plugin_path: CompactString, tx: crossbeam_channel::Sender<Pl
     for entry in entries.flatten() {
         let path = entry.path();
 
-        // 2. We only care about directories (each directory is a plugin)
+        // We only care about directories (each directory is a plugin)
         if path.is_dir() {
             let _ = spawn_lua_worker(path, tx.clone());
         }

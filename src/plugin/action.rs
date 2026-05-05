@@ -27,6 +27,7 @@ pub enum PluginAction {
     SetSetting { name: String, value: serde_json::Value },
     InsertCharAtCursor { txt: char },
     GetKeyPress { responder: Arc<CharResponder> },
+    GetCharAt { x: usize, y: usize, responder: Arc<CharResponder> },
     GetCursorX { responder: Arc<UsizeResponder> },
     GetCursorY { responder: Arc<UsizeResponder> },
 }

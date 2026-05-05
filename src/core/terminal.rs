@@ -5,32 +5,32 @@ use compact_str::CompactString;
 
 #[derive(Clone)]
 pub struct TermCell {
-  pub c: char,
-  // TODO: style info
+    pub c: char,
+    // TODO: style info
 }
 
 pub struct TerminalGrid {
-  pub cells: Vec<Vec<TermCell>>,  // [row][col]
-  pub cursor_row: usize,
-  pub cursor_col: usize,
-  pub rows: usize,
-  pub cols: usize,
-  pub scrollback: Vec<Vec<TermCell>>,
+    pub cells: Vec<Vec<TermCell>>,  // [row][col]
+    pub cursor_row: usize,
+    pub cursor_col: usize,
+    pub rows: usize,
+    pub cols: usize,
+    pub scrollback: Vec<Vec<TermCell>>,
 }
 
 enum ParseState {
-  Normal,
-  Esc,        // got \x1b
-  Csi,        // got \x1b[, accumulating params
-  Osc,
+    Normal,
+    Esc,        // got \x1b
+    Csi,        // got \x1b[, accumulating params
+    Osc,
 }
 
 pub struct Terminal {
-  pub tx: crossbeam_channel::Sender<Vec<u8>>,
-  rx: crossbeam_channel::Receiver<Vec<u8>>,
-  pub grid: TerminalGrid,
-  parse_state: ParseState,
-  pub csi_params: CompactString,
+    pub tx: crossbeam_channel::Sender<Vec<u8>>,
+    rx: crossbeam_channel::Receiver<Vec<u8>>,
+    pub grid: TerminalGrid,
+    parse_state: ParseState,
+    pub csi_params: CompactString,
 }
 
 impl Terminal {
@@ -172,38 +172,38 @@ impl Terminal {
                     }
 
                     match c {
-                      // up, clamp to greater than 0
-                      'A' => self.grid.cursor_row = self.grid.cursor_row.saturating_sub(n),
-                      // left, clamp to greater than 0
-                      'D' => self.grid.cursor_col = self.grid.cursor_col.saturating_sub(n),
-                      // down, clamp to greater than rows - 1
-                      'B' => self.grid.cursor_row = (self.grid.cursor_row + n).min(self.grid.rows - 1),
-                      // right, clamp to greater than cols - 1
-                      'C' => self.grid.cursor_col = (self.grid.cursor_col + n).min(self.grid.cols - 1),
-                      'J' => {
-                          for row in &mut self.grid.cells {
-                              for cell in row.iter_mut() {
-                                  cell.c = ' ';
-                              }
-                          }
-                          self.grid.cursor_row = 0;
-                          self.grid.cursor_col = 0;
-                      },
-                      'K' => {
-                          let row = &mut self.grid.cells[self.grid.cursor_row];
-                          for cell in row[self.grid.cursor_col..].iter_mut() {
-                              cell.c = ' ';
-                          }
-                      },
-                      'H' => {
-                          let mut parts = self.csi_params.split(';');
-                          let row = parts.next().and_then(|s| s.parse::<usize>().ok()).unwrap_or(1).saturating_sub(1);
-                          let col = parts.next().and_then(|s| s.parse::<usize>().ok()).unwrap_or(1).saturating_sub(1);
-                          self.grid.cursor_row = row.min(self.grid.rows - 1);
-                          self.grid.cursor_col = col.min(self.grid.cols - 1);
-                      }
-                      'h' | 'l' => { /* ignore mode set/reset */ }
-                      _ => {},
+                        // up, clamp to greater than 0
+                        'A' => self.grid.cursor_row = self.grid.cursor_row.saturating_sub(n),
+                        // left, clamp to greater than 0
+                        'D' => self.grid.cursor_col = self.grid.cursor_col.saturating_sub(n),
+                        // down, clamp to greater than rows - 1
+                        'B' => self.grid.cursor_row = (self.grid.cursor_row + n).min(self.grid.rows - 1),
+                        // right, clamp to greater than cols - 1
+                        'C' => self.grid.cursor_col = (self.grid.cursor_col + n).min(self.grid.cols - 1),
+                        'J' => {
+                            for row in &mut self.grid.cells {
+                                for cell in row.iter_mut() {
+                                    cell.c = ' ';
+                                }
+                            }
+                            self.grid.cursor_row = 0;
+                            self.grid.cursor_col = 0;
+                        },
+                        'K' => {
+                            let row = &mut self.grid.cells[self.grid.cursor_row];
+                            for cell in row[self.grid.cursor_col..].iter_mut() {
+                                cell.c = ' ';
+                            }
+                        },
+                        'H' => {
+                            let mut parts = self.csi_params.split(';');
+                            let row = parts.next().and_then(|s| s.parse::<usize>().ok()).unwrap_or(1).saturating_sub(1);
+                            let col = parts.next().and_then(|s| s.parse::<usize>().ok()).unwrap_or(1).saturating_sub(1);
+                            self.grid.cursor_row = row.min(self.grid.rows - 1);
+                            self.grid.cursor_col = col.min(self.grid.cols - 1);
+                        }
+                        'h' | 'l' => { /* ignore mode set/reset */ }
+                        _ => {},
                     }
 
                     self.parse_state = ParseState::Normal;
