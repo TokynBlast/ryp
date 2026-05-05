@@ -1,5 +1,5 @@
 use mlua;
-use crate::plugin::action::PluginAction;
+use crate::plugin::{action::PluginAction, lua_integrate::*};
 
 pub fn apply_globals(lua: &mlua::Lua, tx: crossbeam_channel::Sender<PluginAction>) -> Result<(), mlua::Error> {
     let globals = lua.globals();
@@ -11,9 +11,9 @@ pub fn apply_globals(lua: &mlua::Lua, tx: crossbeam_channel::Sender<PluginAction
         })?
     )?;
 
-    crate::plugin::lua_integrate::settings::integrate_settings(lua, &tx)?;
-    crate::plugin::lua_integrate::editor::integrate_editor(lua, &tx)?;
-    crate::plugin::lua_integrate::keys::integrate_keys(lua, &tx)?;
+    settings::integrate_settings(lua, &tx)?;
+    editor::integrate_editor(lua, &tx)?;
+    keys::integrate_keys(lua, &tx)?;
 
     // TODO: Hook this up to real cursor
     globals.set("cursor_x", 0)?;
