@@ -70,7 +70,7 @@ pub fn map_key(key: KeyEvent, in_modal: bool, is_sidebar_focused: bool) -> Optio
                     'a' | 'A' => Some(Action::PrevTab),
                     'd' | 'D' => Some(Action::NextTab),
                     'w' | 'W' => Some(Action::CloseTab),
-                    'c' | 'C' => Some(Action::Quit),
+                    'q' | 'Q' => Some(Action::Quit),
                     'n' | 'N' => Some(Action::OpenNewFileModal),
                     's' | 'S' => Some(Action::Save),
                     't' | 'T' => Some(Action::ToggleTerminal),
