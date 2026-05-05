@@ -792,7 +792,10 @@ impl App {
         match action {
             Action::NextTab => {
                 if !self.editors.is_empty() {
-                    self.active_tab = (self.active_tab + 1) % self.editors.len();
+                    self.active_tab += 1;
+                    if self.active_tab >= self.editors.len() {
+                        self.active_tab = 0;
+                    }
                 }
                 return;
             }
