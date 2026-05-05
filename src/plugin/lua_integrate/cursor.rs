@@ -46,7 +46,6 @@ pub fn integrate_cursor_pos(lua: &mlua::Lua, tx: &crossbeam_channel::Sender<Plug
     add_x(lua, tx, &cursor_table, &responder)?;
     add_y(lua, tx, &cursor_table, &responder)?;
 
-    cursor_table.set("y", 0)?;
     lua.globals().set("cursor", cursor_table)?;
     Ok(())
 }
