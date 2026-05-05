@@ -499,10 +499,13 @@ impl App {
                         self.replace_match();
                         self.find_next_match();
                     } else if modal.modal_type == ModalType::ReplaceAll {
-                        // TODO: Implement loop stopping
-                        loop {
-                            self.replace_match();
-                            self.find_next_match();
+                        // TODO: Implement better loop stopping
+                        if let Some(modal) = self.modal.take() {
+                            while self.search_num_occurrences != 0 && modal.input != modal.replace_input {
+                                self.replace_match();
+                                self.find_next_match();
+                            }
+                            self.modal = Some(modal);
                         }
                     } else if modal.modal_type == ModalType::QuitPrompt {
                         match modal.active_button {
