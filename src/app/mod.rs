@@ -921,14 +921,27 @@ impl App {
                     }
                 }
 
-                Action::InsertChar(c) => editor.insert_char(c),
-                Action::InsertNewline => editor.insert_newline(),
-                Action::DeleteChar => editor.delete_char(),
-                Action::BackSpace => editor.backspace_char(),
+                Action::InsertChar(c) => {
+                    editor.insert_char(c);
+                    editor.dirty = true;
+                }
+                Action::InsertNewline => {
+                    editor.insert_newline();
+                    editor.dirty = true;
+                }
+                Action::DeleteChar => {
+                    editor.delete_char();
+                    editor.dirty = true;
+                }
+                Action::BackSpace => {
+                    editor.backspace_char();
+                    editor.dirty = true;
+                }
                 Action::Tab => {
                     for _ in 0..tab_size {
                         editor.insert_char(' ');
                     }
+                    editor.dirty = true;
                 }
                 _ => {}
             }
