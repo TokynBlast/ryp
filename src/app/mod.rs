@@ -337,8 +337,11 @@ impl App {
                             responder.signal.notify_one();
                         }
                     }
-                }
-            }
+            self.dirty = if !self.dirty {
+                self.terminal_visible && self.terminal.update()
+            } else {
+                term.autoresize().is_ok()
+            };
 
             if self.dirty {
                 // Since dirty is now only triggered on changes, including height,
