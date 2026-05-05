@@ -79,10 +79,7 @@ pub fn map_key(key: KeyEvent, in_modal: bool, is_sidebar_focused: bool) -> Optio
                     _ => None,
                 }
             } else {
-                match key.code {
-                    KeyCode::F(5) => Some(Action::ToggleTerminal),
-                    _ => Some(Action::InsertChar(c)),
-                }
+                Some(Action::InsertChar(c))
             }
         }
         KeyCode::Enter => {
