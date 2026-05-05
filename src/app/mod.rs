@@ -162,7 +162,7 @@ impl App {
                 } else {
                     CompactString::from("Unknown ?")
                 },
-            key_pressed: None.into(),
+            key_pressed: Mutex::new(None),
         }
     }
 
