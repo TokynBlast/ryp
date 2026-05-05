@@ -44,7 +44,7 @@ fn main() -> Result<(), Box<dyn Error>> {
                           .expect("Could not complete path")
                   ), tx);
         } else {
-          //  drop(tx);
+            drop(tx);
         }
     } else {
         fs::create_dir_all(&path)?;
