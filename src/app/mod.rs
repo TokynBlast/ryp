@@ -445,24 +445,51 @@ impl App {
                         self.find_next_match();
                     }
                 }
-                Action::ModalUp | Action::ModalLeft => {
-                    if modal.modal_type == ModalType::QuitPrompt
-                        || modal.modal_type == ModalType::ConfirmExit
-                    {
-                        if modal.active_button > 0 {
-                            modal.active_button -= 1;
+                Action::ModalLeft => {
+                    match modal.modal_type {
+                        ModalType::ConfirmExit => {
+                            modal.active_button =
+                                modal.active_button.saturating_sub(1);
                         }
+                        ModalType::Search => {
+                            modal.active_button =
+                                modal.active_button.saturating_sub(1);
+                        }
+                        _ => {}
                     }
                 }
-                Action::ModalDown | Action::ModalRight => {
-                    if modal.modal_type == ModalType::QuitPrompt {
-                        if modal.active_button < 2 {
-                            modal.active_button += 1;
+
+                Action::ModalRight => {
+                    match modal.modal_type {
+                        ModalType::Search => {
+                          // Active button for the search modal is just the cursor position
+                          modal.active_button += 1;
                         }
-                    } else if modal.modal_type == ModalType::ConfirmExit {
-                        if modal.active_button < 1 {
-                            modal.active_button += 1;
+                        ModalType::ConfirmExit => {
+                            if modal.active_button < 1 {
+                                modal.active_button += 1;
+                            }
                         }
+                        _ => {}
+                    }
+                }
+                Action::ModalUp => {
+                    match modal.modal_type {
+                        ModalType::QuitPrompt => {
+                            modal.active_button =
+                                modal.active_button.saturating_sub(1);
+                        }
+                        _ => {}
+                    }
+                }
+                Action::ModalDown => {
+                    match modal.modal_type {
+                        ModalType::QuitPrompt => {
+                            if modal.active_button < 2 {
+                                modal.active_button += 1;
+                            }
+                        }
+                        _ => {}
                     }
                 }
                 Action::ModalConfirm => {
