@@ -61,12 +61,14 @@ pub fn integrate_editor(lua: &mlua::Lua, tx: &crossbeam_channel::Sender<PluginAc
     let editor_table = lua.create_table()?;
     let insert_table = lua.create_table()?;
     let get_table = lua.create_table()?;
+    let set_table = lua.create_table()?;
 
     insert_char_at_cursor(lua, tx, &insert_table)?;
     get_char_at(lua, tx, &get_table)?;
 
     editor_table.set("insert", insert_table)?;
     editor_table.set("get", get_table)?;
+    editor_table.set("set", set_table)?;
 
     let proxy = lua.create_table()?;
     let metatable = lua.create_table()?;
