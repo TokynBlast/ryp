@@ -325,8 +325,6 @@ impl App {
 
                     PluginAction::GetCharAt { x, y, responder } => {
                         if let Some(editor) = self.current_editor() {
-                            // Get char at the line of y, and then the x :)
-                            // Or return None! :D
                             let val: Option<char> = if editor.lines[y].len() <= x {
                                 Some(editor.lines[y].as_bytes()[x] as char)
                             } else {
