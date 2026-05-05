@@ -5,6 +5,7 @@ use crate::windows::modal::{Modal, ModalType};
 use crate::plugin::action::PluginAction;
 use crossterm::event::{self, Event};
 use hashbrown::HashSet;
+use std::collections::VecDeque;
 use std::time::Duration;
 use syntect::{parsing::SyntaxSet, highlighting::ThemeSet};
 use std::path::{Path, PathBuf};
@@ -54,7 +55,7 @@ pub struct App {
     pub whitespace_cache: Arc<RwLock<Vec<usize>>>,
     pub host_terminal_height: u16,
     pub host_terminal_width: u16,
-    pub debug_logs: Vec<CompactString>,
+    pub debug_logs: VecDeque<CompactString>,
     pub os: CompactString,
     pub key_pressed: Mutex<Option<char>>,
 }
@@ -92,7 +93,7 @@ impl App {
             whitespace_cache: Arc::new(RwLock::new(Vec::new())),                // Cache for where whitespace is, used in searching (performance increase)
             host_terminal_height: 0,
             host_terminal_width: 0,
-            debug_logs: vec![],
+            debug_logs: VecDeque::with_capacity(40),
             // The reason for having even OS' that may not ever have this compiled for... Is what if? :)
             // There are probably people who will make it run on them, so we should support it... It's
             // also a compile time decision! So it has no affect anywhere else!
@@ -303,11 +304,10 @@ impl App {
                     }
 
                     PluginAction::DebugLog { message } => {
-                        self.debug_logs.push(message.into());
+                        self.debug_logs.push_back(message.into());
                         if self.debug_console_visible {
                             self.dirty = true;
                         }
-                        if self.debug_logs.len() > 40 { self.debug_logs.clear(); }
                     }
 
                     PluginAction::SetSetting { name, value } => {
