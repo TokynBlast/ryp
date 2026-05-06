@@ -967,6 +967,10 @@ impl App {
                 Action::MoveLeft(shift, ctrl) => editor.move_left(shift, ctrl),
                 Action::MoveRight(shift, ctrl) => editor.move_right(shift, ctrl),
 
+                Action::Copy() => editor.copy(),
+                Action::Cut() => editor.cut(),
+                Action::Paste() => editor.paste(),
+
                 Action::PageUp(shift) => {
                     editor.update_selection(shift);
                     for _ in 0..height {
