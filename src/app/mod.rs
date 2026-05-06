@@ -58,6 +58,7 @@ pub struct App {
     pub debug_logs: VecDeque<CompactString>,
     pub os: CompactString,
     pub key_pressed: Mutex<Option<char>>,
+    pub focused: bool,
 }
 
 impl App {
@@ -163,6 +164,7 @@ impl App {
                     CompactString::from("Unknown ?")
                 },
             key_pressed: Mutex::new(None),
+            focused: true,
         }
     }
 
@@ -315,12 +317,21 @@ impl App {
                     }
 
                     PluginAction::GetKeyPress { responder } => {
-                        let val = *self.key_pressed.lock();
+                        // Since this is something dependent on the user, if they don't have Ryp focused,
+                        // they can't type, so it's faster to give a value instea of get a value then
+                        // give the value back to the plugin
+                        if self.focused {
+                            let val = *self.key_pressed.lock();
 
-                        let mut lock = responder.c.lock();
-                        *lock = val;
-                        responder.signal.notify_one();
-                        self.key_pressed = None.into();
+                            let mut lock = responder.c.lock();
+                            *lock = val;
+                            responder.signal.notify_one();
+                            self.key_pressed = None.into();
+                        } else {
+                            let mut lock = responder.c.lock();
+                            *lock = None;
+                            responder.signal.notify_one();
+                        }
                     }
 
                     PluginAction::GetCharAt { x, y, responder } => {
@@ -356,26 +367,32 @@ impl App {
                 }
             }
 
-            self.dirty = if !self.dirty {
-                self.terminal_visible && self.terminal.update()
-            } else {
-                term.autoresize().is_ok()
-            };
+            if self.focused {
+                self.dirty = if !self.dirty {
+                    self.terminal_visible && self.terminal.update()
+                } else {
+                    term.autoresize().is_ok()
+                };
 
-            if self.dirty {
-                // Since dirty is now only triggered on changes, including height,
-                // we set it here to give the most accurate info, with anything that
-                // might access it in the future :)
-                let height_size = term.size().unwrap();
-                (self.host_terminal_height, self.host_terminal_width) = (height_size.height, height_size.width);
+                if self.dirty {
+                    // Since dirty is now only triggered on changes, including height,
+                    // we set it here to give the most accurate info, with anything that
+                    // might access it in the future :)
+                    let height_size = term.size().unwrap();
+                    (self.host_terminal_height, self.host_terminal_width) = (height_size.height, height_size.width);
 
-                term.draw(|f| ui::draw(f, self))?;
-                self.dirty = false;
+                    term.draw(|f| ui::draw(f, self))?;
+                    self.dirty = false;
+                }
             }
 
             if crossterm::event::poll(Duration::from_millis(400))? {
-                if let Event::Key(key) = event::read()? {
-                    self.handle_key(key);
+                let event = event::read()?;
+                match event {
+                    Event::Key(key) => self.handle_key(key),
+                    Event::FocusLost => self.focused = false,
+                    Event::FocusGained => self.focused = true,
+                    _ => {}
                 }
             }
         }
