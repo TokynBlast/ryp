@@ -359,16 +359,19 @@ impl App {
                         if let Some(editor) = self.current_editor_mut() {
                             editor.cursor_x = x;
                             editor.cursor_y = y;
+                            self.dirty = true;
                         }
                     }
                     PluginAction::SetCursorX { x} => {
                         if let Some(editor) = self.current_editor_mut() {
                             editor.cursor_x = x;
+                            self.dirty = true;
                         }
                     }
                     PluginAction::SetCursorY { y } => {
                         if let Some(editor) = self.current_editor_mut() {
                             editor.cursor_y = y;
+                            self.dirty = true;
                         }
                     }
                     PluginAction::GetLine { line, responder } => {
