@@ -76,6 +76,9 @@ pub fn map_key(key: KeyEvent, in_modal: bool, is_sidebar_focused: bool) -> Optio
                     't' | 'T' => Some(Action::ToggleTerminal),
                     'g' | 'G' => Some(Action::RefreshGit),
                     'e' | 'E' => Some(Action::ToggleDebugConsole),
+                    'c' | 'C' => Some(Action::Copy()),
+                    'x' | 'X' => Some(Action::Cut()),
+                    'v' | 'V' => Some(Action::Paste()),
                     _ => None,
                 }
             } else {

@@ -5,6 +5,7 @@ use std::cell::Cell;
 use std::sync::Arc;
 use arc_swap::ArcSwap;
 use std::collections::VecDeque;
+use arboard;
 use syntect::{
   parsing::ScopeStack,
   highlighting::{
@@ -27,6 +28,7 @@ pub struct Editor {
     pub is_diff: bool,
     pub lang: CompactString,
     pub highlight_cache: Arc<ArcSwap<VecDeque<HighlightState>>>,
+    pub clipboard: Option<arboard::Clipboard>,
 }
 
 impl Editor {
@@ -54,6 +56,7 @@ impl Editor {
                     ])
                 )
             ),
+            clipboard: Some(arboard::Clipboard::new().unwrap()),
         }
     }
 
@@ -328,5 +331,109 @@ impl Editor {
             self.cursor_x = 0;
         }
         self.target_x = self.cursor_x;
+    }
+
+    fn get_selected_text(&self) -> Option<String> {
+        let (start_x, start_y) = self.selection_start?;
+
+        // Normalize coordinates (ensure we know which is start vs end)
+        let ((sy, sx), (ey, ex)) = if start_y < self.cursor_y || (start_y == self.cursor_y && start_x < self.cursor_x) {
+            ((start_y, start_x), (self.cursor_y, self.cursor_x))
+        } else {
+            ((self.cursor_y, self.cursor_x), (start_y, start_x))
+        };
+
+        if sy == ey {
+            // Single line selection
+            let line = &self.lines[sy];
+            let bs = Self::char_to_byte_idx(line, sx);
+            let be = Self::char_to_byte_idx(line, ex);
+            Some(line[bs..be].to_string())
+        } else {
+            // Multi-line selection
+            let mut result = String::new();
+
+            // First line: from start_x to end
+            let first_line = &self.lines[sy];
+            let bs = Self::char_to_byte_idx(first_line, sx);
+            result.push_str(&first_line[bs..]);
+            result.push('\n');
+
+            // Middle lines: full content
+            for y in (sy + 1)..ey {
+                result.push_str(&self.lines[y]);
+                result.push('\n');
+            }
+
+            // Last line: from start to end_x
+            let last_line = &self.lines[ey];
+            let be = Self::char_to_byte_idx(last_line, ex);
+            result.push_str(&last_line[..be]);
+
+            Some(result)
+        }
+    }
+
+    pub fn copy(&mut self) {
+        if let Some(text) = self.get_selected_text() {
+            if let Some(clipboard) = &mut self.clipboard {
+                let _ = clipboard.set_text(text);
+            }
+        }
+    }
+
+    pub fn cut(&mut self) {
+        if self.selection_start.is_some() {
+            self.copy();
+            self.delete_selection();
+            self.dirty = true;
+        }
+    }
+
+    pub fn paste(&mut self) {
+        if let Some(clipboard) = &mut self.clipboard {
+            if let Ok(text) = clipboard.get_text() {
+                // If we have a selection, delete it first so we "replace" it
+                self.delete_selection();
+
+                let paste_lines: Vec<&str> = text.split('\n').collect();
+
+                if paste_lines.is_empty() { return; }
+
+                if paste_lines.len() == 1 {
+                    // Simple single line paste
+                    let idx = Self::char_to_byte_idx(&self.lines[self.cursor_y], self.cursor_x);
+                    self.lines[self.cursor_y].insert_str(idx, paste_lines[0]);
+                    self.cursor_x += paste_lines[0].chars().count();
+                } else {
+                    // Multi-line paste
+                    let idx = Self::char_to_byte_idx(&self.lines[self.cursor_y], self.cursor_x);
+
+                    // Split the current line at cursor
+                    let current_line_suffix = self.lines[self.cursor_y].split_off(idx);
+
+                    // Add the first part of the paste to the current line
+                    self.lines[self.cursor_y].push_str(paste_lines[0]);
+
+                    // Insert middle lines
+                    for i in 1..paste_lines.len() - 1 {
+                        self.lines.insert(self.cursor_y + i, CompactString::from(paste_lines[i]));
+                    }
+
+                    // Handle the last line of the paste
+                    let last_paste_line = paste_lines.last().unwrap();
+                    let mut new_last_line = CompactString::from(*last_paste_line);
+                    let final_cursor_x = new_last_line.chars().count();
+                    new_last_line.push_str(&current_line_suffix);
+
+                    self.cursor_y += paste_lines.len() - 1;
+                    self.lines.insert(self.cursor_y, new_last_line);
+                    self.cursor_x = final_cursor_x;
+                }
+
+                self.target_x = self.cursor_x;
+                self.dirty = true;
+            }
+        }
     }
 }
