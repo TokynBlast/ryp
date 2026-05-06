@@ -54,4 +54,6 @@ pub enum Action {
     TerminalInput(crossterm::event::KeyEvent),
     ChangeSettings,
     ToggleDebugConsole,
+    Undo,
+    Redo,
 }

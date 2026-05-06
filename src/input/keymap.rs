@@ -79,6 +79,8 @@ pub fn map_key(key: KeyEvent, in_modal: bool, is_sidebar_focused: bool) -> Optio
                     'c' | 'C' => Some(Action::Copy()),
                     'x' | 'X' => Some(Action::Cut()),
                     'v' | 'V' => Some(Action::Paste()),
+                    'z' | 'Z' => Some(Action::Undo),
+                    'y' | 'Y' => Some(Action::Redo),
                     _ => None,
                 }
             } else {
