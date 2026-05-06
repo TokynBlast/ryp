@@ -282,7 +282,6 @@ impl App {
 
     pub fn run(&mut self, term: &mut ratatui::DefaultTerminal) -> std::io::Result<()> {
         while !self.should_quit {
-            // modal.input?
             while let Ok(action) = self.rx.try_recv() {
                 match action {
                     PluginAction::MakeSetting { name, value } => {
