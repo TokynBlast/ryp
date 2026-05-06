@@ -11,6 +11,7 @@ use compact_str::CompactString;
 use std::error::Error;
 use std::path::{Path, PathBuf};
 use std::{env, fs};
+use crossterm::{execute, event::{EnableFocusChange, DisableFocusChange}};
 
 #[global_allocator]
 static GLOBAL: mimalloc::MiMalloc = mimalloc::MiMalloc;
@@ -51,6 +52,8 @@ fn main() -> Result<(), Box<dyn Error>> {
         drop(tx);
     }
 
+    execute!(std::io::stdout(), EnableFocusChange)?;
+
     let mut terminal = ratatui::init();
 
     // Create app and run it
@@ -73,6 +76,8 @@ fn main() -> Result<(), Box<dyn Error>> {
     let res = app.run(&mut terminal);
 
     ratatui::restore();
+
+    execute!(std::io::stdout(), DisableFocusChange)?;
 
     if let Err(err) = res {
         println!("{:?}", err);
