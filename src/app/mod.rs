@@ -355,6 +355,22 @@ impl App {
                             responder.signal.notify_one();
                         }
                     }
+                    PluginAction::SetCursorPos { x, y } => {
+                        if let Some(editor) = self.current_editor_mut() {
+                            editor.cursor_x = x;
+                            editor.cursor_y = y;
+                        }
+                    }
+                    PluginAction::SetCursorX { x} => {
+                        if let Some(editor) = self.current_editor_mut() {
+                            editor.cursor_x = x;
+                        }
+                    }
+                    PluginAction::SetCursorY { y } => {
+                        if let Some(editor) = self.current_editor_mut() {
+                            editor.cursor_y = y;
+                        }
+                    }
                 }
             }
 

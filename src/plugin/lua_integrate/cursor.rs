@@ -35,6 +35,39 @@ fn get_cursor_y(lua: &mlua::Lua, tx: &crossbeam_channel::Sender<PluginAction>, c
     Ok(())
 }
 
+fn set_cursor_pos(lua: &mlua::Lua, tx: &crossbeam_channel::Sender<PluginAction>, cursor_table_set: &mlua::Table)  -> Result<(), mlua::Error> {
+    let tx = tx.clone();
+    cursor_table_set.set("pos",
+        lua.create_function(move |_lua, (x, y) : (usize, usize)| {
+            let _ = tx.send(PluginAction::SetCursorPos { x, y });
+            Ok(())
+        })?
+    )?;
+    Ok(())
+}
+
+fn set_cursor_x(lua: &mlua::Lua, tx: &crossbeam_channel::Sender<PluginAction>, cursor_table_set: &mlua::Table)  -> Result<(), mlua::Error> {
+    let tx = tx.clone();
+    cursor_table_set.set("x",
+        lua.create_function(move |_lua, x: usize| {
+            let _ = tx.send(PluginAction::SetCursorX { x });
+            Ok(())
+        })?
+    )?;
+    Ok(())
+}
+
+fn set_cursor_y(lua: &mlua::Lua, tx: &crossbeam_channel::Sender<PluginAction>, cursor_table_set: &mlua::Table)  -> Result<(), mlua::Error> {
+    let tx = tx.clone();
+    cursor_table_set.set("y",
+        lua.create_function(move |_lua, y: usize| {
+            let _ = tx.send(PluginAction::SetCursorY { y });
+            Ok(())
+        })?
+    )?;
+    Ok(())
+}
+
 pub fn integrate_cursor_pos(lua: &mlua::Lua, tx: &crossbeam_channel::Sender<PluginAction>) -> Result<(), mlua::Error> {
     let cursor_table = lua.create_table()?;
     let cursor_table_set = lua.create_table()?;
@@ -45,6 +78,13 @@ pub fn integrate_cursor_pos(lua: &mlua::Lua, tx: &crossbeam_channel::Sender<Plug
         signal: Condvar::new(),
     });
 
+    get_cursor_x(lua, tx, &cursor_table_get, &responder)?;
+    get_cursor_y(lua, tx, &cursor_table_get, &responder)?;
+    set_cursor_pos(lua, tx, &cursor_table_set)?;
+    set_cursor_x(lua, tx, &cursor_table_set)?;
+    set_cursor_y(lua, tx, &cursor_table_set)?;
+
+    cursor_table.set("set", cursor_table_set)?;
     cursor_table.set("get", cursor_table_get)?;
     lua.globals().set("cursor", cursor_table)?;
     Ok(())

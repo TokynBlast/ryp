@@ -30,4 +30,7 @@ pub enum PluginAction {
     GetCharAt { x: usize, y: usize, responder: Arc<CharResponder> },
     GetCursorX { responder: Arc<UsizeResponder> },
     GetCursorY { responder: Arc<UsizeResponder> },
+    SetCursorX { x: usize },
+    SetCursorY { y: usize },
+    SetCursorPos { x: usize, y: usize },
 }
