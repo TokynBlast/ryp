@@ -288,14 +288,12 @@ impl App {
                         self.config.insert(name, json!(value));
                         self.dirty = true;
                     }
-
                     PluginAction::InsertCharAtCursor { txt } => {
                         if let Some(editor) = self.current_editor_mut() {
                             editor.insert_char(txt);
                             self.dirty = true;
                         }
                     }
-
                     PluginAction::GetSettingValue { name, responder } => {
                         let val = self.config.get(&name).cloned().unwrap_or(serde_json::Value::Null);
 
@@ -303,18 +301,15 @@ impl App {
                         *lock = Some(val);
                         responder.signal.notify_one();
                     }
-
                     PluginAction::DebugLog { message } => {
                         self.debug_logs.push_back(message.into());
                         if self.debug_console_visible {
                             self.dirty = true;
                         }
                     }
-
                     PluginAction::SetSetting { name, value } => {
                         self.config.insert(name, json!(value));
                     }
-
                     PluginAction::GetKeyPress { responder } => {
                         // Since this is something dependent on the user, if they don't have Ryp focused,
                         // they can't type, so it's faster to give a value instea of get a value then
@@ -332,7 +327,6 @@ impl App {
                             responder.signal.notify_one();
                         }
                     }
-
                     PluginAction::GetCharAt { x, y, responder } => {
                         if let Some(editor) = self.current_editor() {
                             let val: Option<char> = if editor.lines[y].len() <= x {
@@ -345,18 +339,16 @@ impl App {
                             responder.signal.notify_one();
                         }
                     }
-
                     PluginAction::GetCursorX { responder } => {
-                        if let Some(editor) = self.current_editor(){
+                        if let Some(editor) = self.current_editor() {
                             let val = editor.cursor_x;
                             let mut lock = responder.number.lock();
                             *lock = val;
                             responder.signal.notify_one();
                         }
                     }
-
                     PluginAction::GetCursorY { responder } => {
-                        if let Some(editor) = self.current_editor(){
+                        if let Some(editor) = self.current_editor() {
                             let val = editor.cursor_y;
                             let mut lock = responder.number.lock();
                             *lock = val;

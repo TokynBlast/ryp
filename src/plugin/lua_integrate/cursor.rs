@@ -20,19 +20,19 @@ fn add_x(lua: &mlua::Lua, tx: &crossbeam_channel::Sender<PluginAction>, cursor_t
 }
 
 fn add_y(lua: &mlua::Lua, tx: &crossbeam_channel::Sender<PluginAction>, cursor_table: &mlua::Table, responder: &Arc<UsizeResponder>)  -> Result<(), mlua::Error> {
-  let tx = tx.clone();
-  let responder_clone = responder.clone();
-  cursor_table.set("y",
-      lua.create_function(move |lua, ()| {
-          let _ = tx.send(PluginAction::GetCursorY { responder: responder_clone.clone() });
-          let mut lock = responder_clone.number.lock();
-          responder_clone.signal.wait(&mut lock);
+    let tx = tx.clone();
+    let responder_clone = responder.clone();
+    cursor_table.set("y",
+        lua.create_function(move |lua, ()| {
+            let _ = tx.send(PluginAction::GetCursorY { responder: responder_clone.clone() });
+            let mut lock = responder_clone.number.lock();
+            responder_clone.signal.wait(&mut lock);
 
-          let info = *lock;
-          lua.to_value(&info)
-      })?
-  )?;
-  Ok(())
+            let info = *lock;
+            lua.to_value(&info)
+        })?
+    )?;
+    Ok(())
 }
 
 pub fn integrate_cursor_pos(lua: &mlua::Lua, tx: &crossbeam_channel::Sender<PluginAction>) -> Result<(), mlua::Error> {
