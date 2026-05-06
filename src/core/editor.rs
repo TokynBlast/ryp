@@ -5,7 +5,7 @@ use std::cell::Cell;
 use std::sync::Arc;
 use arc_swap::ArcSwap;
 use std::collections::VecDeque;
-use arboard;
+use arboard::Clipboard;
 use syntect::{
   parsing::ScopeStack,
   highlighting::{
@@ -56,7 +56,16 @@ impl Editor {
                     ])
                 )
             ),
-            clipboard: Some(arboard::Clipboard::new().unwrap()),
+            clipboard:
+                if let Some(clip_board) = Some(Clipboard::new()) {
+                    if clip_board.is_ok() {
+                        Some(clip_board.unwrap())
+                    } else {
+                        None
+                    }
+                } else {
+                    None
+                },
         }
     }
 
