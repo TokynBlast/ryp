@@ -919,6 +919,8 @@ impl App {
             _ => {}
         }
 
+        let height = self.host_terminal_height.clone();
+
         if let Some(editor) = self.current_editor_mut() {
             match action {
                 Action::MoveUp(shift) => editor.move_up(shift),
@@ -928,15 +930,13 @@ impl App {
 
                 Action::PageUp(shift) => {
                     editor.update_selection(shift);
-                    // TODO: Make it dynamic to the terminal size
-                    for _ in 0..40 {
+                    for _ in 0..height {
                         editor.move_up(shift);
                     }
                 }
                 Action::PageDown(shift) => {
                     editor.update_selection(shift);
-                    // TODO: Make it dynamic to the terminal size
-                    for _ in 0..40 {
+                    for _ in 0..height {
                         editor.move_down(shift);
                     }
                 }
