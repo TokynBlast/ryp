@@ -986,7 +986,12 @@ impl App {
                 return;
             }
             Action::OpenHelp => {
-                self.modal = Some(Modal::new(ModalType::Help));
+                if self.modal.as_ref().map_or(false, |m| m.modal_type == ModalType::Help) {
+                    self.modal = None;
+                    self.dirty = true;
+                } else {
+                    self.modal = Some(Modal::new(ModalType::Help));
+                }
                 return;
             }
             Action::Save => {
