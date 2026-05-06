@@ -435,6 +435,13 @@ impl App {
         self.dirty = true;
     }
 
+    pub fn close_current_editor(&mut self) {
+        self.editors.remove(self.active_tab);
+        if self.active_tab >= self.editors.len() {
+            self.active_tab = self.editors.len().saturating_sub(1);
+        }
+    }
+
     pub fn dispatch(&mut self, action: crate::input::action::Action) {
         use crate::input::action::Action;
         use crate::windows::modal::ModalType;
@@ -499,7 +506,7 @@ impl App {
                 }
                 Action::ModalUp => {
                     match modal.modal_type {
-                        ModalType::QuitPrompt => {
+                        ModalType::QuitPrompt | ModalType::CloseTabPrompt => {
                             modal.active_button =
                                 modal.active_button.saturating_sub(1);
                         }
@@ -508,7 +515,7 @@ impl App {
                 }
                 Action::ModalDown => {
                     match modal.modal_type {
-                        ModalType::QuitPrompt => {
+                        ModalType::QuitPrompt | ModalType::CloseTabPrompt => {
                             if modal.active_button < 2 {
                                 modal.active_button += 1;
                             }
@@ -517,73 +524,101 @@ impl App {
                     }
                 }
                 Action::ModalConfirm => {
-                    if modal.modal_type == ModalType::Search {
-                        self.find_next_match();
-                    } else if modal.modal_type == ModalType::Replace {
-                        self.replace_match();
-                        self.find_next_match();
-                    } else if modal.modal_type == ModalType::ReplaceAll {
-                        // TODO: Implement better loop stopping
-                        if let Some(modal) = self.modal.take() {
-                            while self.search_num_occurrences != 0 && modal.input != modal.replace_input {
-                                self.replace_match();
-                                self.find_next_match();
-                            }
-                            self.modal = Some(modal);
+                    match modal.modal_type {
+                        ModalType::Search => {
+                            self.find_next_match();
                         }
-                    } else if modal.modal_type == ModalType::QuitPrompt {
-                        match modal.active_button {
-                            0 => self.should_quit = true, // Discard
-                            1 => self.modal = None,       // Cancel
-                            2 => {
-                                // Save
-                                let mut saved = false;
-                                if let Some(editor) = self.current_editor_mut() {
-                                    if let Some(path) = &editor.filepath {
-                                        let content = editor.lines.join("\n");
-                                        if std::fs::write(path, content).is_ok() {
-                                            editor.dirty = false;
-                                            saved = true;
+                        ModalType::Replace => {
+                            self.replace_match();
+                            self.find_next_match();
+                        }
+                        ModalType::ReplaceAll => {
+                            // TODO: Implement better loop stopping
+                            if let Some(modal) = self.modal.take() {
+                                while self.search_num_occurrences != 0 && modal.input != modal.replace_input {
+                                    self.replace_match();
+                                    self.find_next_match();
+                                }
+                                self.modal = Some(modal);
+                            }
+                        }
+                        ModalType::QuitPrompt => {
+                            match modal.active_button {
+                                0 => self.should_quit = true, // Discard
+                                1 => self.modal = None,       // Cancel
+                                2 => {
+                                    // Save
+                                    let mut saved = false;
+                                    if let Some(editor) = self.current_editor_mut() {
+                                        if let Some(path) = &editor.filepath {
+                                            let content = editor.lines.join("\n");
+                                            if std::fs::write(path, content).is_ok() {
+                                                editor.dirty = false;
+                                                saved = true;
+                                            }
                                         }
                                     }
+                                    if saved {
+                                        self.should_quit = true;
+                                    } else {
+                                        self.modal = None;
+                                    }
                                 }
-                                if saved {
-                                    self.should_quit = true;
+                                _ => {}
+                            }
+                        }
+                        ModalType::NewFile => {
+                            let path_str = modal.input.clone();
+                            if !path_str.is_empty() && modal.error_message.is_none() {
+                                let root = if let Some(ws) = &self.workspace {
+                                    &ws.nodes[ws.root].path
                                 } else {
+                                    &PathBuf::from(".")
+                                };
+                                let full_path = root.join(&path_str);
+
+                                // Ensure directory exists
+                                if let Some(parent) = full_path.parent() {
+                                    let _ = std::fs::create_dir_all(parent);
+                                }
+
+                                if let Ok(_) = std::fs::write(&full_path, "") {
+                                    self.modal = None;
+                                    self.open_file(&full_path, true);
+                                }
+                            }
+                        }
+                        ModalType::ConfirmExit => {
+                            match modal.active_button {
+                                0 => self.modal = None,
+                                1 => self.should_quit = true,
+                                _ => {}
+                            }
+                        }
+                        ModalType::CloseTabPrompt => {
+                            match modal.active_button {
+                                0 => {
+                                    // Discard
+                                    self.modal = None;
+                                    self.close_current_editor();
+                                }
+                                1 => {
+                                    // Cancel
                                     self.modal = None;
                                 }
-                            }
-                            _ => {}
-                        }
-                    } else if modal.modal_type == ModalType::NewFile {
-                        let path_str = modal.input.clone();
-                        if !path_str.is_empty() && modal.error_message.is_none() {
-                            let root = if let Some(ws) = &self.workspace {
-                                &ws.nodes[ws.root].path
-                            } else {
-                                &PathBuf::from(".")
-                            };
-                            let full_path = root.join(&path_str);
-
-                            // Ensure directory exists
-                            if let Some(parent) = full_path.parent() {
-                                let _ = std::fs::create_dir_all(parent);
-                            }
-
-                            if let Ok(_) = std::fs::write(&full_path, "") {
-                                self.modal = None;
-                                self.open_file(&full_path, true);
+                                2 => {
+                                    // Save
+                                    self.modal = None;
+                                    self.save_current_file();
+                                    self.close_current_editor();
+                                }
+                                _ => {}
                             }
                         }
-                    } else if modal.modal_type == ModalType::ConfirmExit {
-                        match modal.active_button {
-                            0 => self.modal = None,
-                            1 => self.should_quit = true,
-                            _ => {}
-                        }
+                        _ => {} // Other actions ignored in modal
                     }
                 }
-                _ => {} // Other actions ignored in modal
+                _ => {}
             }
             return;
         }
@@ -849,12 +884,9 @@ impl App {
                     // For now, reuse QuitPrompt but it leads to quitting the app.
                     // In a future refactor we might want to distinguish.
                     // But the user's primary request is about the non-dirty last tab.
-                    self.modal = Some(crate::windows::modal::Modal::new(ModalType::QuitPrompt));
+                    self.modal = Some(crate::windows::modal::Modal::new(ModalType::CloseTabPrompt));
                 } else {
-                    self.editors.remove(self.active_tab);
-                    if self.active_tab >= self.editors.len() {
-                        self.active_tab = self.editors.len().saturating_sub(1);
-                    }
+                    self.close_current_editor();
                 }
                 return;
             }
