@@ -182,9 +182,20 @@ impl Editor {
     }
 
     pub fn delete_char(&mut self) {
-        self.delete_selection();
-        let idx = Self::char_to_byte_idx(&self.lines[self.cursor_y], self.cursor_x);
-        self.lines[self.cursor_y].remove(idx);
+        if self.delete_selection() {
+            return;
+        }
+
+        let line_len = self.lines[self.cursor_y].chars().count();
+
+        if self.cursor_x < line_len {
+            let idx = Self::char_to_byte_idx(&self.lines[self.cursor_y], self.cursor_x);
+            self.lines[self.cursor_y].remove(idx);
+        } else if self.cursor_y < self.lines.len() - 1 {
+            let next_line = self.lines.remove(self.cursor_y + 1);
+            self.lines[self.cursor_y].push_str(&next_line);
+        }
+        self.target_x = self.cursor_x;
     }
 
     // selection logic
