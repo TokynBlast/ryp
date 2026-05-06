@@ -371,6 +371,41 @@ impl App {
                             editor.cursor_y = y;
                         }
                     }
+                    PluginAction::GetLine { line, responder } => {
+                        if let Some(editor) = self.current_editor() {
+                            let val = if line <= editor.lines.len() {
+                                Some(&editor.lines[line])
+                            } else {
+                                None
+                            };
+                            let mut lock = responder.string.lock();
+                            *lock = val.cloned();
+                            responder.signal.notify_one();
+                        }
+                    }
+                    PluginAction::SetLine { line, contents } => {
+                        if let Some(editor) = self.current_editor_mut() {
+                            if line <= editor.lines.len() {
+                                editor.lines[line] = contents;
+                                editor.dirty = true;
+                            }
+                            self.dirty = true;
+                        }
+                    }
+                    PluginAction::SetChar { x, y, c } => {
+                        if let Some(editor) = self.current_editor_mut() {
+                            if let Some(line) = editor.lines.get_mut(y) {
+                                // Find the byte range of the character at the given visual index
+                                let target_char = line.char_indices().nth(x);
+
+                                if let Some((idx, old_char)) = target_char {
+                                    // CompactString supports replace_range like a normal String
+                                    let end_idx = idx + old_char.len_utf8();
+                                    line.replace_range(idx..end_idx, &c.to_string());
+                                }
+                            }
+                        }
+                    }
                 }
             }
 

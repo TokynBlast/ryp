@@ -1,5 +1,6 @@
 use parking_lot::{Mutex, Condvar};
 use triomphe::Arc;
+use compact_str::CompactString;
 
 #[derive(Debug)]
 pub struct SerdeResponder {
@@ -19,6 +20,12 @@ pub struct UsizeResponder {
     pub signal: Condvar
 }
 
+#[derive(Debug)]
+pub struct StrResponder {
+    pub string: Mutex<Option<CompactString>>,
+    pub signal: Condvar
+}
+
 #[derive(Debug, Clone)]
 pub enum PluginAction {
     MakeSetting { name: String, value: serde_json::Value },
@@ -33,4 +40,7 @@ pub enum PluginAction {
     SetCursorX { x: usize },
     SetCursorY { y: usize },
     SetCursorPos { x: usize, y: usize },
+    GetLine { line: usize, responder: Arc<StrResponder> },
+    SetLine { line: usize, contents: CompactString },
+    SetChar { x: usize, y: usize, c: char },
 }
