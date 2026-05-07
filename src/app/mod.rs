@@ -129,7 +129,6 @@ impl App {
                         Debian => CompactString::from("Debian "),
                         Elementary => CompactString::from("ElementaryOS "),
                         EndeavourOS => CompactString::from("EndeavourOS "),
-                        FreeBSD => CompactString::from("FreeBSD "),
                         Garuda => CompactString::from("Garuda "),
                         Illumos => CompactString::from("Illumos "),
                         Kali => CompactString::from("Kali Linux "),
@@ -137,7 +136,6 @@ impl App {
                         Mint => CompactString::from("Linux Mint 󰣭"),
                         NixOS => CompactString::from("NixOS "),
                         Nobara => CompactString::from("Nobara "),
-                        OpenBSD => CompactString::from("OpenBSD "),
                         Raspbian => CompactString::from("Raspbian "),
                         RockyLinux => CompactString::from("RockyLinux "),
                         openSUSE => CompactString::from("openSUSE "),
@@ -146,8 +144,6 @@ impl App {
                         Ubuntu => CompactString::from("Ubuntu 󰕈"),
                         Void => CompactString::from("Void Linux "),
                         Zorin => CompactString::from("Zorin "),
-                        NetBSD => CompactString::from("NetBSD"),
-                        DragonFly => CompactString::from("DragonFly BSD"),
                         _ => CompactString::from("")
                     }
                 } else if cfg!(target_os="android") {
