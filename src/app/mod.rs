@@ -164,6 +164,106 @@ impl App {
                     CompactString::from("Haiku")
                 } else if cfg!(target_os = "solaris") {
                     CompactString::from("Solaris ")
+                } else if cfg!(target_os = "cuda") {
+                    CompactString::from("Cuda ")
+                } else if cfg!(target_os = "aix") {
+                    CompactString::from("AIX")
+                } else if cfg!(target_os = "fuchsia") {
+                    CompactString::from("Fuchsia")
+                } else if cfg!(target_os = "emscripten") {
+                    CompactString::from("Web 󰖟")
+                } else if cfg!(target_os = "hermit") {
+                    CompactString::from("Hermit")
+                } else if cfg!(target_os = "horizon") {
+                    // This could technicallt be a 3DS, or a Switch
+                    // But, the character for the Nintendo Logo is
+                    // too small: 
+                    CompactString::from("Nintendo 󰟡")
+                } else if cfg!(target_os = "hurd") {
+                    CompactString::from("GNU Hurd")
+                } else if cfg!(target_os = "illumos") {
+                    CompactString::from("Illumos")
+                } else if cfg!(target_os = "l4re") {
+                    CompactString::from("L4 MicroKernel")
+                } else if cfg!(target_os = "nto") {
+                    // This is usually an OS for medical equipment/cars...
+                    CompactString::from("QNX Neutrino")
+                } else if cfg!(target_os = "psp") {
+                    CompactString::from("PlayStation Portable")
+                } else if cfg!(target_os = "vita") {
+                    CompactString::from("PlayStation Vita")
+                } else if cfg!(target_os = "redox") {
+                    // OS written in the same language this text editor is!
+                    CompactString::from("Redox OS")
+                } else if cfg!(target_os = "solid_asp3") {
+                    CompactString::from("SOLID RTOS")
+                } else if cfg!(target_os = "teeos") {
+                    CompactString::from("TEEOS")
+                } else if cfg!(target_os = "vxworks") {
+                    CompactString::from("Wind River VxWorks")
+                } else if cfg!(target_os = "zkvm") {
+                    CompactString::from("ZK VM")
+                } else if cfg!(target_os = "xous") {
+                    CompactString::from("Xous Microkernel")
+                } else if cfg!(target_os = "espidf") {
+                    CompactString::from("ESP Board")
+                } else if cfg!(target_os = "uefi") {
+                    // Although this would be insane if it were happening,
+                    // it would be pretty cool!
+                    // And for that, I've decided to have some fun with these,
+                    // and be literal or add fitting icons!
+                    if cfg!(target_arch = "x86_64") {
+                        CompactString::from("x86_64 UEFI 󰻠")
+                    } else if cfg!(target_arch = "x86") {
+                        CompactString::from("x86 UEFI 󰻟")
+                    } else if cfg!(target_arch = "arm") {
+                        CompactString::from("ARM UEFI 󰿗")
+                    } else if cfg!(target_arch = "aarch64") {
+                        CompactString::from("ARM64 UEFI 󰿗")
+                    } else if cfg!(target_arch = "arm64ec") {
+                        CompactString::from("ARM64EC UEFI 󰿗󰻠")
+                    } else if cfg!(target_arch = "avr") {
+                        CompactString::from("AVR UEFI")
+                    } else if cfg!(target_arch = "bpf") {
+                        CompactString::from("BPF UEFI")
+                    } else if cfg!(target_arch = "csky") {
+                        CompactString::from("C-SKY UEFI ")
+                    } else if cfg!(target_arch = "hexagon") {
+                        CompactString::from("Qualcom Hexago UEFI ")
+                    } else if cfg!(target_arch = "loongarch64") {
+                        CompactString::from("LoongArch64 UEFI 󰻠")
+                    } else if cfg!(target_arch = "m68k") {
+                        CompactString::from("Motorola 68000 UEFI ")
+                    } else if cfg!(any(
+                        target_arch="mips",
+                        target_arch="mips32r6",
+                        target_arch="mips64",
+                        target_arch="mips64r6",
+                        target_arch="msp430",
+                        ))
+                    {
+                        CompactString::from("MIPS UEFI")
+                    } else if cfg!(target_arch = "nvptx64") {
+                        CompactString::from("NVIDIA PTX UEFI")
+                    } else if cfg!(any(target_arch = "powerpc")) {
+                        CompactString::from("PowerPC UEFI ⏻")
+                    } else if cfg!(target_arch = "powerpc64") {
+                        CompactString::from("PowerPC64 UEFI ⏻")
+                    } else if cfg!(any(target_arch="riscv32", target_arch="riscv64")) {
+                        // The  may be misleading, and may at some point need to be changed
+                        CompactString::from("Risc-V UEFI ")
+                    } else if cfg!(target_arch="s390x") {
+                        CompactString::from("IBM Z UEFI")
+                    } else if cfg!(any(target_arch="sparc", target_arch="sparc64")) {
+                        CompactString::from("Sparc UEFI ")
+                    } else if cfg!(target_arch = "xtensa") {
+                        CompactString::from("Xtensa")
+                    } else {
+                        // Would be unreachable!(), but we can't garuntee that in the future
+                        // there won't be more arch' that Rust supports, so we just use "UEFI"
+                        // as a backup value for that case
+                        CompactString::from("UEFI")
+                    }
                 } else {
                     CompactString::from("Unknown ?")
                 },
