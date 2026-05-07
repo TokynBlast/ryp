@@ -59,9 +59,22 @@ pub fn map_key(key: KeyEvent, in_modal: bool, is_sidebar_focused: bool) -> Optio
         KeyCode::PageDown => Some(Action::PageDown(shift)),
 
         // Edit binds
-        KeyCode::Char(c) => {
+        KeyCode::Char(mut c) => {
             // TODO: Use config json
             if ctrl {
+                // TODO: When we have CTRL pressed, SHIFT is ignored,
+                //       But only when a character is also pressed...
+                //
+                // We could do it, so that depending on where we are
+                // (TTY, GUI, etc.), we can use the appropriate method
+
+                // Caps lock cancelling
+                c = if shift {
+                    c.to_uppercase().next().take().unwrap()
+                } else {
+                    c
+                };
+
                 match c {
                     'f' => Some(Action::OpenSearch),
                     'r' => Some(Action::OpenReplace),
