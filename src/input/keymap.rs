@@ -6,6 +6,7 @@ use crossterm::event::{KeyCode, KeyEvent, KeyModifiers};
 pub fn map_key(key: KeyEvent, in_modal: bool, is_sidebar_focused: bool) -> Option<Action> {
     let shift = key.modifiers.contains(KeyModifiers::SHIFT);
     let ctrl = key.modifiers.contains(KeyModifiers::CONTROL);
+    let caps_lock = crate::input::caps_lock::is_caps_lock_on();
 
     // Modal Keymap context
     if in_modal {
