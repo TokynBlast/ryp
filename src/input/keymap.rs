@@ -63,19 +63,21 @@ pub fn map_key(key: KeyEvent, in_modal: bool, is_sidebar_focused: bool) -> Optio
             // TODO: Use config json
             if ctrl {
                 match c {
-                    'f' | 'F' => Some(Action::OpenSearch),
-                    'r' | 'R' => Some(Action::OpenReplace),
-                    'k' | 'K' => Some(Action::OpenHelp),
-                    'b' | 'B' => Some(Action::ToggleSidebar),
+                    'f' => Some(Action::OpenSearch),
+                    'r' => Some(Action::OpenReplace),
+                    'k' => Some(Action::OpenHelp),
+                    'b' => Some(Action::ToggleSidebar),
+                    // TODO: Make CTRL+SHIFT+A/D to tab movement
                     'a' | 'A' => Some(Action::PrevTab),
                     'd' | 'D' => Some(Action::NextTab),
-                    'w' | 'W' => Some(Action::CloseTab),
-                    'q' | 'Q' => Some(Action::Quit),
-                    'n' | 'N' => Some(Action::OpenNewFileModal),
-                    's' | 'S' => Some(Action::Save),
-                    't' | 'T' => Some(Action::ToggleTerminal),
-                    'g' | 'G' => Some(Action::RefreshGit),
-                    'e' | 'E' => Some(Action::ToggleDebugConsole),
+                    'w' => Some(Action::CloseTab),
+                    'q' => Some(Action::Quit),
+                    'n' => Some(Action::OpenNewFileModal),
+                    //'N' => Some(Action::OpenNewRyp)
+                    's' => Some(Action::Save),
+                    't' => Some(Action::ToggleTerminal),
+                    'g' => Some(Action::RefreshGit),
+                    'e' => Some(Action::ToggleDebugConsole),
                     'c' | 'C' => Some(Action::Copy()),
                     'x' | 'X' => Some(Action::Cut()),
                     'v' | 'V' => Some(Action::Paste()),
