@@ -70,6 +70,9 @@ pub fn map_key(key: KeyEvent, in_modal: bool, is_sidebar_focused: bool) -> Optio
                 // (TTY, GUI, etc.), we can use the appropriate method
 
                 // Caps lock cancelling
+                // May need to use actual caps lock detection and
+                // check for lower case in the future to tell if it
+                // is shift (in rare cases)
                 c = if shift {
                     c.to_uppercase().next().take().unwrap()
                 } else {
