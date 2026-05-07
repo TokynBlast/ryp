@@ -6,19 +6,21 @@ Including things such as a git viewer, plugins, search and replace, plus so much
 
 ## Features
 Ryp is feature rich!<br>
-There are all sorts of features, such as git, plugins, customizability, 
-Plus, a server to install plugins from is being developed!<br>
+There are all sorts of features, such as git, plugins,
 
-Plus, there are tons of planned features, such as config files, resource limiting, capability setting, and so much more!
+> [!NOTE]
+> There is currently a Ryp plugin hub being developed, to ease the installing of plugins.
 
 ## Requirements
-Since Ryp is still new, the requirements can vary, and are only based on what's been tested and seen:
-```
-Intel Celeron N4120 CPU
-24MB RAM
-```
-It requries 24MB to start up. After that, RAM needed can vary.
-It also changes, if you have plugins.
+## OS
+`Windows` and `Linux` are the only tested OSes. `Mac`, `Android`, and so on, may have limited, full, or no support at all.
+
+## CPU
+`Intel Celeron N4120` is the weakest CPU you can use, while maintaining a (mostly) smooth experience.
+
+## Terminal
+While not entirely needed, a terminal that supports Kitty Protocol is suggested.<br>
+You will gain full support. Terminals such as Windows cmd.exe don't have Kitty Support.
 
 ### Contributions
 Feel free to contribuite by making an issue report, or making changes and a pull request.<br>
