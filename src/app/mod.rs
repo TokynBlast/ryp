@@ -104,6 +104,14 @@ impl App {
                     CompactString::from("MacOS ")
                 } else if cfg!(target_os = "ios") {
                     CompactString::from("iOS ")
+                } else if cfg!(target_os = "watchos") {
+                    // This is here incase someone is insane enough to do this...
+                    CompactString::from("WatchOS ")
+                } else if cfg!(target_os = "tvos") {
+                    // Same as WatchOS... just incase...
+                    CompactString::from("TVOS ")
+                } else if cfg!(target_os = "visionos") {
+                    CompactString::from("VisionOS ")
                 } else if cfg!(target_os = "linux") {
                     use os_info::Type::*;
                     match os_info::get().os_type() {
