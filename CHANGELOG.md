@@ -1,3 +1,15 @@
+## v0.2.0
+<pre>Include extreme optimizations
+Add settings sidebar
+Fix temrinal
+Add plugin support
+Force shift vs. caps lock differing at source level
+Improve visuals
+Add support for:
+ - Delete key
+ - Ctrl + Arrow
+Made changing current editor cheaper</pre>
+
 ## v0.1.0
 <pre>Fix bug where opening a file wouldn't pull up file tree
 Fix bug where when changing files in file tree, all paths would close
