@@ -95,9 +95,9 @@ impl App {
             host_terminal_height: 0,
             host_terminal_width: 0,
             debug_logs: VecDeque::with_capacity(40),
-            // The reason for having even OS' that may not ever have this compiled for... Is what if? :)
-            // There are probably people who will make it run on them, so we should support it... It's
-            // also a compile time decision! So it has no affect anywhere else!
+            // The reason for having all of this, is for the case where someone modifies the code
+            // And compiles for these... Or, in the future, we may want to add support for these.
+            // This adds support to render the bottom bar appropriatley, built-in!
             os: if cfg!(target_os = "windows") {
                    CompactString::from("Windows ")
                 } else if cfg!(target_os = "macos"){
