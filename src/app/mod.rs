@@ -147,9 +147,9 @@ impl App {
                         _ => CompactString::from("")
                     }
                 } else if cfg!(target_os="android") {
-                  CompactString::from("Android ")
-                } else if cfg!(target_arch = "wasm32") {
-                  CompactString::from("WebAssembly ")
+                    CompactString::from("Android ")
+                } else if cfg!(any(target_arch="wasm32", target_arch="wasm64")) {
+                    CompactString::from("WebAssembly ")
                 } else if cfg!(target_os = "wasi") {
                     CompactString::from("WASI ")
                 } else if cfg!(target_os = "freebsd") {
