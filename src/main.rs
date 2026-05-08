@@ -7,7 +7,6 @@ pub mod windows;
 pub mod plugin;
 
 use app::App;
-use compact_str::CompactString;
 use std::error::Error;
 use std::path::{Path, PathBuf};
 use std::{env, fs};
@@ -38,12 +37,7 @@ fn main() -> Result<(), Box<dyn Error>> {
 
             // Load in the lua plugins
             // We pass in the plugins, to minimize thrown away work, and minimize mistakes
-            let _ = crate::plugin::plugin_main::load_plugins(
-                  CompactString::from(
-                      path.join("plugins")
-                          .to_str()
-                          .expect("Could not complete path")
-                  ), tx);
+            let _ = crate::plugin::plugin_main::load_plugins(path.join("plugins"), tx);
         } else {
             drop(tx);
         }

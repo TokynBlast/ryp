@@ -1,13 +1,14 @@
+use compact_str::CompactString;
 use parking_lot::{Mutex, Condvar};
 use triomphe::Arc;
 use mlua::{self, LuaSerdeExt};
-use crate::plugin::action::{PluginAction, CharResponder};
+use crate::plugin::action::{PluginAction, StrResponder};
 
 pub fn integrate_keys(lua: &mlua::Lua, tx: &crossbeam_channel::Sender<PluginAction>) -> Result<(), mlua::Error> {
     let tx_clone = tx.clone();
 
-    let responder = Arc::new(CharResponder {
-        c: Mutex::new(None),
+    let responder = Arc::new(StrResponder {
+        string: Mutex::new(CompactString::default()),
         signal: Condvar::new(),
     });
 
@@ -17,13 +18,11 @@ pub fn integrate_keys(lua: &mlua::Lua, tx: &crossbeam_channel::Sender<PluginActi
             responder: responder_clone.clone()
         });
 
-        let mut lock = responder_clone.c.lock();
-        if lock.is_none() {
-            responder_clone.signal.wait(&mut lock);
-        }
+        let mut lock = responder_clone.string.lock();
+        responder_clone.signal.wait(&mut lock);
 
-        let info = lock.take();
-        lua.to_value(&info)
+        let info = lock.clone();
+        lua.to_value(&info.to_string())
     })?;
 
     lua.globals().set("key", key_fn)?;

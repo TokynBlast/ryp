@@ -2,27 +2,25 @@ use compact_str::CompactString;
 use parking_lot::{Mutex, Condvar};
 use triomphe::Arc;
 use mlua::{self, LuaSerdeExt};
-use crate::plugin::action::{CharResponder, PluginAction, StrResponder};
+use crate::plugin::action::{PluginAction, StrResponder};
 
 // editor.get.char_at(x: usize, y: usize)
 fn get_char_at(lua: &mlua::Lua, tx: &crossbeam_channel::Sender<PluginAction>, get_table: &mlua::Table) -> Result<(), mlua::Error> {
-    let responder = Arc::new(CharResponder {
-        c: Mutex::new(None),
+    let responder = Arc::new(StrResponder {
+      string: Mutex::new(CompactString::default()),
         signal: Condvar::new(),
     });
     let responder_clone = responder.clone();
     let tx = tx.clone();
 
     get_table.set("char_at",
-        lua.create_function(move |lua, (x, y): (usize, usize)| {
-            let _ = tx.send(PluginAction::GetCharAt { x, y, responder: responder_clone.clone() });
-            let mut lock = responder_clone.c.lock();
-            if lock.is_none() {
-                responder_clone.signal.wait(&mut lock);
-            }
+        lua.create_function(move |lua, (from, to): (Vec<usize>, Vec<usize>)| {
+            let _ = tx.send(PluginAction::GetStrAt { from, to, responder: responder_clone.clone() });
+            let mut lock = responder_clone.string.lock();
+            responder_clone.signal.wait(&mut lock);
 
-            let info = lock.take();
-            lua.to_value(&info)
+            let info = lock.clone();
+            lua.to_value(&info.to_string())
         })?
     )?;
     Ok(())
@@ -31,7 +29,7 @@ fn get_char_at(lua: &mlua::Lua, tx: &crossbeam_channel::Sender<PluginAction>, ge
 // editor.get.line(line: usize)
 fn get_line(lua: &mlua::Lua, tx: &crossbeam_channel::Sender<PluginAction>, get_table: &mlua::Table) -> Result<(), mlua::Error> {
     let responder = Arc::new(StrResponder {
-        string: Mutex::new(Some(CompactString::default())),
+        string: Mutex::new(CompactString::default()),
         signal: Condvar::new(),
     });
 
@@ -42,11 +40,9 @@ fn get_line(lua: &mlua::Lua, tx: &crossbeam_channel::Sender<PluginAction>, get_t
         lua.create_function(move |lua, line: usize| {
             let _ = tx.send(PluginAction::GetLine { line, responder: responder_clone.clone() });
             let mut lock = responder_clone.string.lock();
-            if lock.is_none() {
-                responder_clone.signal.wait(&mut lock);
-            }
-            let info = lock.take().map(|s| s.to_string());
-            lua.to_value(&info)
+            responder_clone.signal.wait(&mut lock);
+            let info = lock.clone();
+            lua.to_value(&info.to_string())
         })?
     )?;
     Ok(())
@@ -56,8 +52,8 @@ fn get_line(lua: &mlua::Lua, tx: &crossbeam_channel::Sender<PluginAction>, get_t
 fn set_char_at(lua: &mlua::Lua, tx: &crossbeam_channel::Sender<PluginAction>, set_table: &mlua::Table) -> Result<(), mlua::Error> {
     let tx = tx.clone();
     set_table.set("char",
-        lua.create_function(move |_lua, (x, y, c) : (usize, usize, char)| {
-              let _ = tx.send(PluginAction::SetChar { x, y, c });
+        lua.create_function(move |_lua, (pos, txt) : (Vec<usize>, String)| {
+              let _ = tx.send(PluginAction::SetStrAt { pos, txt: CompactString::from(txt) });
               Ok(())
           })?
       )?;
@@ -72,8 +68,8 @@ fn insert_char_at(lua: &mlua::Lua, tx: &crossbeam_channel::Sender<PluginAction>,
 fn insert_char_at_cursor(lua: &mlua::Lua, tx: &crossbeam_channel::Sender<PluginAction>, insert_table: &mlua::Table) -> Result<(), mlua::Error> {
     let tx = tx.clone();
     insert_table.set("cursor",
-        lua.create_function(move |_lua, txt: char| {
-            let _ = tx.send(PluginAction::InsertCharAtCursor { txt });
+        lua.create_function(move |_lua, txt: String| {
+            let _ = tx.send(PluginAction::InsertStrAtCursor { txt: CompactString::from(txt) });
             Ok(())
         })?
     )?;

@@ -57,7 +57,7 @@ pub struct App {
     pub host_terminal_width: u16,
     pub debug_logs: VecDeque<CompactString>,
     pub os: CompactString,
-    pub key_pressed: Mutex<Option<char>>,
+    pub key_pressed: Mutex<CompactString>,
     pub focused: bool,
 }
 
@@ -267,7 +267,7 @@ impl App {
                 } else {
                     CompactString::new("Unknown ?")
                 },
-            key_pressed: Mutex::new(None),
+            key_pressed: Mutex::new(CompactString::new("")),
             focused: true,
         }
     }
@@ -392,9 +392,9 @@ impl App {
                         self.config.insert(name, json!(value));
                         self.dirty = true;
                     }
-                    PluginAction::InsertCharAtCursor { txt } => {
+                    PluginAction::InsertStrAtCursor { txt } => {
                         if let Some(editor) = self.current_editor_mut() {
-                            editor.insert_char(txt);
+                            editor.lines[editor.cursor_x].insert_str(editor.cursor_y, &txt);
                             self.dirty = true;
                         }
                     }
@@ -406,7 +406,7 @@ impl App {
                         responder.signal.notify_one();
                     }
                     PluginAction::DebugLog { message } => {
-                        self.debug_logs.push_back(message.into());
+                        self.debug_logs.push_back(message);
                         if self.debug_console_visible {
                             self.dirty = true;
                         }
@@ -419,26 +419,29 @@ impl App {
                         // they can't type, so it's faster to give a value instea of get a value then
                         // give the value back to the plugin
                         if self.focused {
-                            let val = *self.key_pressed.lock();
+                            let val = self.key_pressed.lock().clone();
 
-                            let mut lock = responder.c.lock();
+                            let mut lock = responder.string.lock();
                             *lock = val;
                             responder.signal.notify_one();
-                            self.key_pressed = None.into();
+                            self.key_pressed = Mutex::new(CompactString::default());
                         } else {
-                            let mut lock = responder.c.lock();
-                            *lock = None;
+                            let mut lock = responder.string.lock();
+                            *lock = CompactString::new("");
                             responder.signal.notify_one();
                         }
                     }
-                    PluginAction::GetCharAt { x, y, responder } => {
+                    PluginAction::GetStrAt { from, to, responder } => {
                         if let Some(editor) = self.current_editor() {
-                            let val: Option<char> = if editor.lines[y].len() <= x {
-                                Some(editor.lines[y].as_bytes()[x] as char)
+                            let val: CompactString =
+                                if editor.lines[from[1]].len() <= from[1]
+                                && editor.lines[to[1]].len() <= to[1]
+                            {
+                                editor.lines[from[0]].to_string().chars().skip(from[1]).take(to[1] - from[1]).collect::<String>().into()
                             } else {
-                                None
+                                CompactString::default()
                             };
-                            let mut lock = responder.c.lock();
+                            let mut lock = responder.string.lock();
                             *lock = val;
                             responder.signal.notify_one();
                         }
@@ -459,11 +462,19 @@ impl App {
                             responder.signal.notify_one();
                         }
                     }
-                    PluginAction::SetCursorPos { x, y } => {
+                    PluginAction::SetCursorPos { pos } => {
                         if let Some(editor) = self.current_editor_mut() {
-                            editor.cursor_x = x;
-                            editor.cursor_y = y;
+                            editor.cursor_x = pos[0];
+                            editor.cursor_y = pos[1];
                             self.dirty = true;
+                        }
+                    }
+                    PluginAction::GetCursorPos { responder } => {
+                        if let Some(editor) = self.current_editor() {
+                            let val = vec![editor.cursor_x, editor.cursor_y];
+                            let mut lock = responder.numbers.lock();
+                            *lock = val;
+                            responder.signal.notify_all();
                         }
                     }
                     PluginAction::SetCursorX { x} => {
@@ -481,12 +492,12 @@ impl App {
                     PluginAction::GetLine { line, responder } => {
                         if let Some(editor) = self.current_editor() {
                             let val = if line <= editor.lines.len() {
-                                Some(&editor.lines[line])
+                                editor.lines[line].clone()
                             } else {
-                                None
+                                CompactString::default()
                             };
                             let mut lock = responder.string.lock();
-                            *lock = val.cloned();
+                            *lock = val;
                             responder.signal.notify_one();
                         }
                     }
@@ -499,17 +510,24 @@ impl App {
                             self.dirty = true;
                         }
                     }
-                    PluginAction::SetChar { x, y, c } => {
+                    PluginAction::SetStrAt { pos, txt } => {
                         if let Some(editor) = self.current_editor_mut() {
-                            if let Some(line) = editor.lines.get_mut(y) {
+                            if let Some(line) = editor.lines.get_mut(pos[1]) {
                                 // Find the byte range of the character at the given visual index
-                                let target_char = line.char_indices().nth(x);
+                                let target_char = line.char_indices().nth(pos[0]);
 
                                 if let Some((idx, old_char)) = target_char {
                                     // CompactString supports replace_range like a normal String
                                     let end_idx = idx + old_char.len_utf8();
-                                    line.replace_range(idx..end_idx, &c.to_string());
+                                    line.replace_range(idx..end_idx, &txt.to_string());
                                 }
+                            }
+                        }
+                    }
+                    PluginAction::InsertStrAt { pos, txt } => {
+                        if let Some(editor) = self.current_editor_mut() {
+                            if pos[0] <= editor.lines.len() {
+                                editor.lines[pos[0]].insert_str(pos[1], &txt);
                             }
                         }
                     }
@@ -573,7 +591,8 @@ impl App {
         if let Some(action) = keymap::map_key(key, in_modal, is_tree_focused) {
             self.dispatch(action);
         }
-        self.key_pressed = key.code.as_char().into();
+        // TODO: There might be a simpler way to do this
+        self.key_pressed = Mutex::new(CompactString::from(key.code.to_string()));
         self.dirty = true;
     }
 

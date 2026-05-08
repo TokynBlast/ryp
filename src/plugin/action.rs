@@ -9,20 +9,19 @@ pub struct SerdeResponder {
 }
 
 #[derive(Debug)]
-pub struct CharResponder {
-    pub c: Mutex<Option<char>>,
-    pub signal: Condvar,
-}
-
-#[derive(Debug)]
 pub struct UsizeResponder {
     pub number: Mutex<usize>,
+    pub signal: Condvar
+}
+#[derive(Debug)]
+pub struct UsizeVecResponder {
+    pub numbers: Mutex<Vec<usize>>,
     pub signal: Condvar
 }
 
 #[derive(Debug)]
 pub struct StrResponder {
-    pub string: Mutex<Option<CompactString>>,
+    pub string: Mutex<CompactString>,
     pub signal: Condvar
 }
 
@@ -30,17 +29,19 @@ pub struct StrResponder {
 pub enum PluginAction {
     MakeSetting { name: String, value: serde_json::Value },
     GetSettingValue { name: String, responder: Arc<SerdeResponder> },
-    DebugLog { message: String },
+    DebugLog { message: CompactString },
     SetSetting { name: String, value: serde_json::Value },
-    InsertCharAtCursor { txt: char },
-    GetKeyPress { responder: Arc<CharResponder> },
-    GetCharAt { x: usize, y: usize, responder: Arc<CharResponder> },
+    InsertStrAtCursor { txt: CompactString },
+    GetKeyPress { responder: Arc<StrResponder> },
+    GetCursorPos { responder: Arc<UsizeVecResponder> },
     GetCursorX { responder: Arc<UsizeResponder> },
     GetCursorY { responder: Arc<UsizeResponder> },
     SetCursorX { x: usize },
     SetCursorY { y: usize },
-    SetCursorPos { x: usize, y: usize },
+    SetCursorPos { pos: Vec<usize> },
     GetLine { line: usize, responder: Arc<StrResponder> },
     SetLine { line: usize, contents: CompactString },
-    SetChar { x: usize, y: usize, c: char },
+    SetStrAt { pos: Vec<usize>, txt: CompactString },
+    GetStrAt { from: Vec<usize>, to: Vec<usize>, responder: Arc<StrResponder> },
+    InsertStrAt { pos: Vec<usize>, txt: CompactString }
 }
