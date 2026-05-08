@@ -4,7 +4,7 @@ use triomphe::Arc;
 use mlua::{self, LuaSerdeExt};
 use crate::plugin::action::{PluginAction, StrResponder};
 
-// editor.get.char_at(x: usize, y: usize)
+// editor.get.at(x: usize, y: usize)
 fn get_char_at(lua: &mlua::Lua, tx: &crossbeam_channel::Sender<PluginAction>, get_table: &mlua::Table) -> Result<(), mlua::Error> {
     let responder = Arc::new(StrResponder {
       string: Mutex::new(CompactString::default()),
@@ -13,7 +13,7 @@ fn get_char_at(lua: &mlua::Lua, tx: &crossbeam_channel::Sender<PluginAction>, ge
     let responder_clone = responder.clone();
     let tx = tx.clone();
 
-    get_table.set("char_at",
+    get_table.set("at",
         lua.create_function(move |lua, (from, to): (Vec<usize>, Vec<usize>)| {
             let _ = tx.send(PluginAction::GetStrAt { from, to, responder: responder_clone.clone() });
             let mut lock = responder_clone.string.lock();
