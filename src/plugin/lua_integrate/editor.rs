@@ -6,14 +6,16 @@ use crate::plugin::action::{PluginAction, StrResponder};
 
 // editor.get.at(x: usize, y: usize)
 fn get_char_at(lua: &mlua::Lua, tx: &crossbeam_channel::Sender<PluginAction>, get_table: &mlua::Table) -> Result<(), mlua::Error> {
+fn get_str_at(lua: &mlua::Lua, tx: &crossbeam_channel::Sender<PluginAction>, get_table: &mlua::Table) -> Result<(), mlua::Error> {
     let responder = Arc::new(StrResponder {
         string: Mutex::new(None),
         signal: Condvar::new(),
     });
+
     let responder_clone = responder.clone();
     let tx = tx.clone();
 
-    get_table.set("at",
+    get_table.set("str",
         lua.create_function(move |lua, (from, to): (Vec<usize>, Vec<usize>)| {
             let _ = tx.send(PluginAction::GetStrAt { from, to, responder: responder_clone.clone() });
             let mut lock = responder_clone.string.lock();
