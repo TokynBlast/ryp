@@ -472,7 +472,7 @@ impl App {
                             let val = vec![editor.cursor_x, editor.cursor_y];
                             let mut lock = responder.numbers.lock();
                             *lock = val;
-                            responder.signal.notify_all();
+                            responder.signal.notify_one();
                         }
                     }
                     PluginAction::SetCursorX { x} => {
