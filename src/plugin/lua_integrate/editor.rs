@@ -60,8 +60,16 @@ fn set_char_at(lua: &mlua::Lua, tx: &crossbeam_channel::Sender<PluginAction>, se
       Ok(())
 }
 
+// editor.insert.at(pos: vec<usize>, txt: char)
 fn insert_char_at(lua: &mlua::Lua, tx: &crossbeam_channel::Sender<PluginAction>, insert_table: &mlua::Table) -> Result<(), mlua::Error> {
-    todo!("Implement inserting a char at specific place; plugin/lua_integrate/editor.rs")
+    let tx = tx.clone();
+    insert_table.set("cursor",
+        lua.create_function(move |_lua, (pos, txt) : (Vec<usize>, String)| {
+            let _ = tx.send(PluginAction::InsertStrAt { pos, txt: CompactString::from(txt) });
+            Ok(())
+        })?
+    )?;
+    Ok(())
 }
 
 // editor.insert.cursor(txt: char)
@@ -83,6 +91,7 @@ pub fn integrate_editor(lua: &mlua::Lua, tx: &crossbeam_channel::Sender<PluginAc
     let set_table = lua.create_table()?;
 
     insert_char_at_cursor(lua, tx, &insert_table)?;
+    insert_char_at(lua, tx, &insert_table)?;
     get_char_at(lua, tx, &get_table)?;
     set_char_at(lua, tx, &set_table)?;
     get_line(lua, tx, &get_table)?;
