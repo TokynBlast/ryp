@@ -70,10 +70,10 @@ fn set_char_at(lua: &mlua::Lua, tx: &crossbeam_channel::Sender<PluginAction>, se
     )
 }
 
-// editor.insert.at(pos: vec<usize>, txt: char)
+// editor.insert.char(pos: vec<usize>, txt: char)
 fn insert_char_at(lua: &mlua::Lua, tx: &crossbeam_channel::Sender<PluginAction>, insert_table: &mlua::Table) -> Result<(), mlua::Error> {
     let tx = tx.clone();
-    insert_table.set("cursor",
+    insert_table.set("char",
         lua.create_function(move |_lua, (pos, txt) : (Vec<usize>, String)| {
             let _ = tx.send(PluginAction::InsertStrAt { pos, txt: CompactString::from(txt) });
             Ok(())
