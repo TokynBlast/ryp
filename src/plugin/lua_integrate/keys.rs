@@ -1,4 +1,3 @@
-use compact_str::CompactString;
 use parking_lot::{Mutex, Condvar};
 use triomphe::Arc;
 use mlua::{self, LuaSerdeExt};
@@ -8,7 +7,7 @@ pub fn integrate_keys(lua: &mlua::Lua, tx: &crossbeam_channel::Sender<PluginActi
     let tx_clone = tx.clone();
 
     let responder = Arc::new(StrResponder {
-        string: Mutex::new(CompactString::default()),
+        string: Mutex::new(None),
         signal: Condvar::new(),
     });
 
@@ -19,10 +18,16 @@ pub fn integrate_keys(lua: &mlua::Lua, tx: &crossbeam_channel::Sender<PluginActi
         });
 
         let mut lock = responder_clone.string.lock();
-        responder_clone.signal.wait(&mut lock);
+        if lock.is_none() {
+            responder_clone.signal.wait(&mut lock);
+        }
 
         let info = lock.clone();
-        lua.to_value(&info.to_string())
+        if info.is_some() {
+            lua.to_value(&info.unwrap().to_string())
+        } else {
+            lua.to_value(&mlua::Nil)
+        }
     })?;
 
     lua.globals().set("key", key_fn)?;

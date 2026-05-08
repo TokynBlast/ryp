@@ -9,11 +9,14 @@ fn get_cursor_pos(lua: &mlua::Lua, tx: &crossbeam_channel::Sender<PluginAction>,
     let responder_clone = responder.clone();
     cursor_table_get.set("get",
         lua.create_function(move |lua, ()|{
-              let _ = tx.send(PluginAction::GetCursorPos { responder: responder_clone.clone() });
-              let mut lock = responder_clone.numbers.lock();
-              responder_clone.signal.wait(&mut lock);
-              let info = lock.clone();
-              lua.to_value(&info)
+            let _ = tx.send(PluginAction::GetCursorPos { responder: responder_clone.clone() });
+            let mut lock = responder_clone.numbers.lock();
+            if lock.is_none() {
+                responder_clone.signal.wait(&mut lock);
+            }
+
+            let info = lock.clone();
+            lua.to_value(&info)
         })?
     )
 }
@@ -26,7 +29,9 @@ fn get_cursor_x(lua: &mlua::Lua, tx: &crossbeam_channel::Sender<PluginAction>, c
         lua.create_function(move |lua, ()| {
             let _ = tx.send(PluginAction::GetCursorX { responder: responder_clone.clone() });
             let mut lock = responder_clone.number.lock();
-            responder_clone.signal.wait(&mut lock);
+            if lock.is_none() {
+                responder_clone.signal.wait(&mut lock);
+            }
 
             let info = *lock;
             lua.to_value(&info)
@@ -42,7 +47,9 @@ fn get_cursor_y(lua: &mlua::Lua, tx: &crossbeam_channel::Sender<PluginAction>, c
         lua.create_function(move |lua, ()| {
             let _ = tx.send(PluginAction::GetCursorY { responder: responder_clone.clone() });
             let mut lock = responder_clone.number.lock();
-            responder_clone.signal.wait(&mut lock);
+            if lock.is_none() {
+                responder_clone.signal.wait(&mut lock);
+            }
 
             let info = *lock;
             lua.to_value(&info)
@@ -90,12 +97,12 @@ pub fn integrate_cursor_pos(lua: &mlua::Lua, tx: &crossbeam_channel::Sender<Plug
     let cursor_table_pos = lua.create_table()?;
 
     let responder = Arc::new(UsizeResponder {
-        number: Mutex::new(0),
+        number: Mutex::new(None),
         signal: Condvar::new(),
     });
 
     let vec_responder = Arc::new(UsizeVecResponder {
-        numbers: Mutex::new(vec![0, 0]),
+        numbers: Mutex::new(None),
         signal: Condvar::new(),
     });
 

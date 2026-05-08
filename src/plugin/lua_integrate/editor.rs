@@ -7,7 +7,7 @@ use crate::plugin::action::{PluginAction, StrResponder};
 // editor.get.at(x: usize, y: usize)
 fn get_char_at(lua: &mlua::Lua, tx: &crossbeam_channel::Sender<PluginAction>, get_table: &mlua::Table) -> Result<(), mlua::Error> {
     let responder = Arc::new(StrResponder {
-      string: Mutex::new(CompactString::default()),
+        string: Mutex::new(None),
         signal: Condvar::new(),
     });
     let responder_clone = responder.clone();
@@ -17,10 +17,16 @@ fn get_char_at(lua: &mlua::Lua, tx: &crossbeam_channel::Sender<PluginAction>, ge
         lua.create_function(move |lua, (from, to): (Vec<usize>, Vec<usize>)| {
             let _ = tx.send(PluginAction::GetStrAt { from, to, responder: responder_clone.clone() });
             let mut lock = responder_clone.string.lock();
-            responder_clone.signal.wait(&mut lock);
+            if lock.is_none() {
+                responder_clone.signal.wait(&mut lock);
+            }
 
             let info = lock.clone();
-            lua.to_value(&info.to_string())
+            if info.is_some() {
+                lua.to_value(&info.unwrap().to_string())
+            } else {
+                lua.to_value(&mlua::Nil)
+            }
         })?
     )
 }
@@ -28,7 +34,7 @@ fn get_char_at(lua: &mlua::Lua, tx: &crossbeam_channel::Sender<PluginAction>, ge
 // editor.get.line(line: usize)
 fn get_line(lua: &mlua::Lua, tx: &crossbeam_channel::Sender<PluginAction>, get_table: &mlua::Table) -> Result<(), mlua::Error> {
     let responder = Arc::new(StrResponder {
-        string: Mutex::new(CompactString::default()),
+        string: Mutex::new(None),
         signal: Condvar::new(),
     });
 
@@ -39,9 +45,16 @@ fn get_line(lua: &mlua::Lua, tx: &crossbeam_channel::Sender<PluginAction>, get_t
         lua.create_function(move |lua, line: usize| {
             let _ = tx.send(PluginAction::GetLine { line, responder: responder_clone.clone() });
             let mut lock = responder_clone.string.lock();
-            responder_clone.signal.wait(&mut lock);
+            if lock.is_none() {
+                responder_clone.signal.wait(&mut lock);
+            }
+
             let info = lock.clone();
-            lua.to_value(&info.to_string())
+            if info.is_some() {
+                lua.to_value(&info.unwrap().to_string())
+            } else {
+                lua.to_value(&mlua::Nil)
+            }
         })?
     )
 }
