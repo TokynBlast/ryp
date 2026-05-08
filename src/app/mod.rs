@@ -437,7 +437,7 @@ impl App {
                                 CompactString::default()
                             };
                             let mut lock = responder.string.lock();
-                            *lock = val;
+                            *lock = Some(val);
                             responder.signal.notify_one();
                         }
                     }
@@ -460,7 +460,7 @@ impl App {
                     }
                     PluginAction::GetCursorPos { responder } => {
                         if let Some(editor) = self.current_editor() {
-                            let val = vec![editor.cursor_x, editor.cursor_y];
+                            let val = Some(vec![editor.cursor_x, editor.cursor_y]);
                             let mut lock = responder.numbers.lock();
                             *lock = val;
                             responder.signal.notify_one();
@@ -486,7 +486,7 @@ impl App {
                                 CompactString::default()
                             };
                             let mut lock = responder.string.lock();
-                            *lock = val;
+                            *lock = Some(val);
                             responder.signal.notify_one();
                         }
                     }
@@ -581,7 +581,7 @@ impl App {
             self.dispatch(action);
         }
         // TODO: There might be a simpler way to do this
-        self.key_pressed = Mutex::new(CompactString::from(key.code.to_string()));
+        self.key_pressed = Mutex::new(Some(CompactString::from(key.code.to_string())));
         self.dirty = true;
     }
 
