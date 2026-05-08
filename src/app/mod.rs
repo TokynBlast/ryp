@@ -57,7 +57,7 @@ pub struct App {
     pub host_terminal_width: u16,
     pub debug_logs: VecDeque<CompactString>,
     pub os: CompactString,
-    pub key_pressed: Mutex<CompactString>,
+    pub key_pressed: Mutex<Option<CompactString>>,
     pub focused: bool,
 }
 
@@ -267,7 +267,7 @@ impl App {
                 } else {
                     CompactString::new("Unknown ?")
                 },
-            key_pressed: Mutex::new(CompactString::new("")),
+            key_pressed: Mutex::new(None),
             focused: true,
         }
     }
