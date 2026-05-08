@@ -14,8 +14,7 @@ fn add_setting(lua: &mlua::Lua, tx: &crossbeam_channel::Sender<PluginAction>, se
             let _ = tx_add.send(PluginAction::MakeSetting { name, value: json_value }).ok();
             Ok(())
         })?
-    )?;
-    Ok(())
+    )
 }
 
 fn get_setting_value(lua: &mlua::Lua, tx: &crossbeam_channel::Sender<PluginAction>, settings_table: &mlua::Table) -> Result<(), mlua::Error> {
@@ -46,8 +45,7 @@ fn get_setting_value(lua: &mlua::Lua, tx: &crossbeam_channel::Sender<PluginActio
             let info = lock.take().unwrap_or(serde_json::Value::Null);
             lua_ctx.to_value(&info)
         })?
-    )?;
-    Ok(())
+    )
 }
 
 fn set_setting_value(lua: &mlua::Lua, tx: &crossbeam_channel::Sender<PluginAction>, settings_table: &mlua::Table) -> Result<(), mlua::Error> {
@@ -59,8 +57,7 @@ fn set_setting_value(lua: &mlua::Lua, tx: &crossbeam_channel::Sender<PluginActio
             let _ = tx_set.send(PluginAction::SetSetting { name, value: json_value });
             Ok(())
         })?
-    )?;
-    Ok(())
+    )
 }
 
 pub fn integrate_settings(lua: &mlua::Lua, tx: &crossbeam_channel::Sender<PluginAction>) -> Result<(), mlua::Error> {

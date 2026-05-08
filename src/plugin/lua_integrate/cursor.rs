@@ -15,8 +15,7 @@ fn get_cursor_pos(lua: &mlua::Lua, tx: &crossbeam_channel::Sender<PluginAction>,
               let info = lock.clone();
               lua.to_value(&info)
         })?
-    )?;
-    Ok(())
+    )
 }
 
 // cursor.x.get()
@@ -32,8 +31,7 @@ fn get_cursor_x(lua: &mlua::Lua, tx: &crossbeam_channel::Sender<PluginAction>, c
             let info = *lock;
             lua.to_value(&info)
         })?
-    )?;
-    Ok(())
+    )
 }
 
 // cursor.y.get()
@@ -49,8 +47,7 @@ fn get_cursor_y(lua: &mlua::Lua, tx: &crossbeam_channel::Sender<PluginAction>, c
             let info = *lock;
             lua.to_value(&info)
         })?
-    )?;
-    Ok(())
+    )
 }
 
 //cursor.pos.set(pos: Vec<usize>)
@@ -61,8 +58,7 @@ fn set_cursor_pos(lua: &mlua::Lua, tx: &crossbeam_channel::Sender<PluginAction>,
             let _ = tx.send(PluginAction::SetCursorPos { pos });
             Ok(())
         })?
-    )?;
-    Ok(())
+    )
 }
 
 // cursor.x.set(x: usize)
@@ -73,8 +69,7 @@ fn set_cursor_x(lua: &mlua::Lua, tx: &crossbeam_channel::Sender<PluginAction>, c
             let _ = tx.send(PluginAction::SetCursorX { x });
             Ok(())
         })?
-    )?;
-    Ok(())
+    )
 }
 
 // cursor.y.set(y: usize)
@@ -85,8 +80,7 @@ fn set_cursor_y(lua: &mlua::Lua, tx: &crossbeam_channel::Sender<PluginAction>, c
             let _ = tx.send(PluginAction::SetCursorY { y });
             Ok(())
         })?
-    )?;
-    Ok(())
+    )
 }
 
 pub fn integrate_cursor_pos(lua: &mlua::Lua, tx: &crossbeam_channel::Sender<PluginAction>) -> Result<(), mlua::Error> {

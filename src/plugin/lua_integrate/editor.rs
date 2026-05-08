@@ -22,8 +22,7 @@ fn get_char_at(lua: &mlua::Lua, tx: &crossbeam_channel::Sender<PluginAction>, ge
             let info = lock.clone();
             lua.to_value(&info.to_string())
         })?
-    )?;
-    Ok(())
+    )
 }
 
 // editor.get.line(line: usize)
@@ -44,8 +43,7 @@ fn get_line(lua: &mlua::Lua, tx: &crossbeam_channel::Sender<PluginAction>, get_t
             let info = lock.clone();
             lua.to_value(&info.to_string())
         })?
-    )?;
-    Ok(())
+    )
 }
 
 // editor.set.char(x: usize, y: usize, c: char)
@@ -56,8 +54,7 @@ fn set_char_at(lua: &mlua::Lua, tx: &crossbeam_channel::Sender<PluginAction>, se
               let _ = tx.send(PluginAction::SetStrAt { pos, txt: CompactString::from(txt) });
               Ok(())
           })?
-      )?;
-      Ok(())
+    )
 }
 
 // editor.insert.at(pos: vec<usize>, txt: char)
@@ -68,8 +65,7 @@ fn insert_char_at(lua: &mlua::Lua, tx: &crossbeam_channel::Sender<PluginAction>,
             let _ = tx.send(PluginAction::InsertStrAt { pos, txt: CompactString::from(txt) });
             Ok(())
         })?
-    )?;
-    Ok(())
+    )
 }
 
 // editor.insert.cursor(txt: char)
@@ -80,8 +76,8 @@ fn insert_char_at_cursor(lua: &mlua::Lua, tx: &crossbeam_channel::Sender<PluginA
             let _ = tx.send(PluginAction::InsertStrAtCursor { txt: CompactString::from(txt) });
             Ok(())
         })?
-    )?;
-    Ok(())
+    )
+}
 }
 
 pub fn integrate_editor(lua: &mlua::Lua, tx: &crossbeam_channel::Sender<PluginAction>) -> Result<(), mlua::Error> {
