@@ -4,9 +4,14 @@ use triomphe::Arc;
 use mlua::{self, LuaSerdeExt};
 
 // cursor.pos.get()
-fn get_cursor_pos(lua: &mlua::Lua, tx: &crossbeam_channel::Sender<PluginAction>, cursor_table_get: &mlua::Table, responder: Arc<UsizeVecResponder>)  -> Result<(), mlua::Error> {
+fn get_cursor_pos(lua: &mlua::Lua, tx: &crossbeam_channel::Sender<PluginAction>, cursor_table_get: &mlua::Table)  -> Result<(), mlua::Error> {
+    let vec_responder = Arc::new(UsizeVecResponder {
+        numbers: Mutex::new(None),
+        signal: Condvar::new(),
+    });
+
     let tx = tx.clone();
-    let responder_clone = responder.clone();
+    let responder_clone = vec_responder.clone();
     cursor_table_get.set("get",
         lua.create_function(move |lua, ()|{
             let _ = tx.send(PluginAction::GetCursorPos { responder: responder_clone.clone() });
@@ -101,12 +106,8 @@ pub fn integrate_cursor_pos(lua: &mlua::Lua, tx: &crossbeam_channel::Sender<Plug
         signal: Condvar::new(),
     });
 
-    let vec_responder = Arc::new(UsizeVecResponder {
-        numbers: Mutex::new(None),
-        signal: Condvar::new(),
-    });
 
-    get_cursor_pos(lua, tx, &cursor_table_pos, vec_responder)?;
+    get_cursor_pos(lua, tx, &cursor_table_pos)?;
     get_cursor_x(lua, tx, &cursor_table_x, &responder)?;
     get_cursor_y(lua, tx, &cursor_table_y, &responder)?;
 
