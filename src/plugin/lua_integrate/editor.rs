@@ -4,8 +4,34 @@ use triomphe::Arc;
 use mlua::{self, LuaSerdeExt};
 use crate::plugin::action::{CharResponder, PluginAction, StrResponder};
 
-// editor.get.at(x: usize, y: usize)
+// editor.get.char(pos: Vec<usize>)
 fn get_char_at(lua: &mlua::Lua, tx: &crossbeam_channel::Sender<PluginAction>, get_table: &mlua::Table) -> Result<(), mlua::Error> {
+    let responder = Arc::new(CharResponder {
+        c: Mutex::new(None),
+        signal: Condvar::new(),
+    });
+
+    let responder_clone = responder.clone();
+    let tx = tx.clone();
+    get_table.set("char",
+        lua.create_function(move | lua, pos: Vec<usize> | {
+            let _ = tx.send(PluginAction::GetCharAt { pos, responder: responder_clone.clone() });
+            let mut lock = responder_clone.c.lock();
+            if lock.is_none() {
+                responder_clone.signal.wait(&mut lock);
+            }
+
+            let info = lock.clone();
+            if info.is_some() {
+                lua.to_value(&info.unwrap())
+            } else {
+                lua.to_value(&mlua::Nil)
+            }
+        })?
+    )
+}
+
+// editor.get.str(from: Vec<usize>, to: Vec<usize>)
 fn get_str_at(lua: &mlua::Lua, tx: &crossbeam_channel::Sender<PluginAction>, get_table: &mlua::Table) -> Result<(), mlua::Error> {
     let responder = Arc::new(StrResponder {
         string: Mutex::new(None),
@@ -118,6 +144,7 @@ pub fn integrate_editor(lua: &mlua::Lua, tx: &crossbeam_channel::Sender<PluginAc
     set_char_at(lua, tx, &set_table)?;
     get_line(lua, tx, &get_table)?;
     get_str_at(lua, tx, &get_table)?;
+    get_char_at(lua, tx, &get_table)?;
 
     editor_table.set("insert", insert_table)?;
     editor_table.set("get", get_table)?;
