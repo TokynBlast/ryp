@@ -4,6 +4,17 @@ use triomphe::Arc;
 use mlua::{self, LuaSerdeExt};
 use crate::plugin::action::{CharResponder, PluginAction, StrResponder};
 
+// editor.set.str(from: Vec<usize>, to: Vec<usize>, txt: String)
+fn set_str_at(lua: &mlua::Lua, tx: &crossbeam_channel::Sender<PluginAction>, set_table: &mlua::Table) -> Result<(), mlua::Error> {
+    let tx = tx.clone();
+    set_table.set("str",
+        lua.create_function(move |_lua, (from, to, txt) : (Vec<usize>, Vec<usize>, String)| {
+            let _ = tx.send(PluginAction::SetStrAt { from, to, txt: CompactString::from(txt) });
+            Ok(())
+        })?
+    )
+}
+
 // editor.get.char(pos: Vec<usize>)
 fn get_char_at(lua: &mlua::Lua, tx: &crossbeam_channel::Sender<PluginAction>, get_table: &mlua::Table) -> Result<(), mlua::Error> {
     let responder = Arc::new(CharResponder {
@@ -142,6 +153,8 @@ pub fn integrate_editor(lua: &mlua::Lua, tx: &crossbeam_channel::Sender<PluginAc
     insert_str_at(lua, tx, &insert_table)?;
 
     set_char_at(lua, tx, &set_table)?;
+    set_str_at(lua, tx, &set_table)?;
+
     get_line(lua, tx, &get_table)?;
     get_str_at(lua, tx, &get_table)?;
     get_char_at(lua, tx, &get_table)?;
