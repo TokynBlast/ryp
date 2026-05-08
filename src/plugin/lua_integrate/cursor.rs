@@ -101,7 +101,7 @@ pub fn integrate_cursor_pos(lua: &mlua::Lua, tx: &crossbeam_channel::Sender<Plug
 
     get_cursor_pos(lua, tx, &cursor_table_pos, vec_responder)?;
     get_cursor_x(lua, tx, &cursor_table_x, &responder)?;
-    get_cursor_y(lua, tx, &cursor_table_pos, &responder)?;
+    get_cursor_y(lua, tx, &cursor_table_y, &responder)?;
 
     set_cursor_pos(lua, tx, &cursor_table_pos)?;
     set_cursor_x(lua, tx, &cursor_table_x)?;
