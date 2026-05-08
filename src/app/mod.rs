@@ -390,12 +390,10 @@ impl App {
                 match action {
                     PluginAction::MakeSetting { name, value } => {
                         self.config.insert(name, json!(value));
-                        self.dirty = true;
                     }
                     PluginAction::InsertStrAtCursor { txt } => {
                         if let Some(editor) = self.current_editor_mut() {
                             editor.lines[editor.cursor_x].insert_str(editor.cursor_y, &txt);
-                            self.dirty = true;
                         }
                     }
                     PluginAction::GetSettingValue { name, responder } => {
