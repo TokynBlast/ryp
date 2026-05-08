@@ -416,18 +416,15 @@ impl App {
                         // Since this is something dependent on the user, if they don't have Ryp focused,
                         // they can't type, so it's faster to give a value instea of get a value then
                         // give the value back to the plugin
-                        if self.focused {
-                            let val = self.key_pressed.lock().clone();
+                        let mut lock = responder.string.lock();
 
-                            let mut lock = responder.string.lock();
-                            *lock = val;
-                            responder.signal.notify_one();
-                            self.key_pressed = Mutex::new(CompactString::default());
+                        if self.focused {
+                            *lock = self.key_pressed.lock().take();
                         } else {
-                            let mut lock = responder.string.lock();
-                            *lock = CompactString::new("");
-                            responder.signal.notify_one();
+                            *lock = None;
                         }
+
+                        responder.signal.notify_one();
                     }
                     PluginAction::GetStrAt { from, to, responder } => {
                         if let Some(editor) = self.current_editor() {
