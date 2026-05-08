@@ -91,6 +91,16 @@ fn insert_char_at_cursor(lua: &mlua::Lua, tx: &crossbeam_channel::Sender<PluginA
         })?
     )
 }
+
+// editor.insert.str(pos: Vec<usize>)
+fn insert_str_at(lua: &mlua::Lua, tx: &crossbeam_channel::Sender<PluginAction>, insert_table: &mlua::Table) -> Result<(), mlua::Error> {
+    let tx = tx.clone();
+    insert_table.set("str",
+        lua.create_function(move |_lua, txt: String| {
+            let _ = tx.send(PluginAction::InsertStrAtCursor { txt: CompactString::from(txt) });
+            Ok(())
+        })?
+    )
 }
 
 pub fn integrate_editor(lua: &mlua::Lua, tx: &crossbeam_channel::Sender<PluginAction>) -> Result<(), mlua::Error> {
@@ -101,7 +111,8 @@ pub fn integrate_editor(lua: &mlua::Lua, tx: &crossbeam_channel::Sender<PluginAc
 
     insert_char_at_cursor(lua, tx, &insert_table)?;
     insert_char_at(lua, tx, &insert_table)?;
-    get_char_at(lua, tx, &get_table)?;
+    insert_str_at(lua, tx, &insert_table)?;
+
     set_char_at(lua, tx, &set_table)?;
     get_line(lua, tx, &get_table)?;
 
