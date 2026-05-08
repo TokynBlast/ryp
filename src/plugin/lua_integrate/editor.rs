@@ -117,6 +117,7 @@ pub fn integrate_editor(lua: &mlua::Lua, tx: &crossbeam_channel::Sender<PluginAc
 
     set_char_at(lua, tx, &set_table)?;
     get_line(lua, tx, &get_table)?;
+    get_str_at(lua, tx, &get_table)?;
 
     editor_table.set("insert", insert_table)?;
     editor_table.set("get", get_table)?;
