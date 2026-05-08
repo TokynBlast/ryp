@@ -59,12 +59,12 @@ fn get_line(lua: &mlua::Lua, tx: &crossbeam_channel::Sender<PluginAction>, get_t
     )
 }
 
-// editor.set.char(x: usize, y: usize, c: char)
+// editor.set.char(pos: Vec<usize>, c: char)
 fn set_char_at(lua: &mlua::Lua, tx: &crossbeam_channel::Sender<PluginAction>, set_table: &mlua::Table) -> Result<(), mlua::Error> {
     let tx = tx.clone();
     set_table.set("char",
-        lua.create_function(move |_lua, (pos, txt) : (Vec<usize>, String)| {
-              let _ = tx.send(PluginAction::SetStrAt { pos, txt: CompactString::from(txt) });
+        lua.create_function(move |_lua, (pos, c) : (Vec<usize>, char)| {
+              let _ = tx.send(PluginAction::SetCharAt { pos, c });
               Ok(())
           })?
     )
