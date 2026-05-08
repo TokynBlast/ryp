@@ -535,6 +535,54 @@ impl App {
                             }
                         }
                     }
+                    PluginAction::GetCharAtCursor { responder } => {
+                        if let Some(editor) = self.current_editor() {
+                            let val = Some(editor.lines[editor.cursor_y].as_bytes()[editor.cursor_x] as char);
+                            let mut lock = responder.c.lock();
+                            *lock = val;
+                            responder.signal.notify_one();
+                        }
+                    }
+                    PluginAction::GetCharAt { pos, responder } => {
+                        if let Some(editor) = self.current_editor() {
+                            let val: Option<char> = if editor.lines[pos[1]].len() <= pos[0] {
+                                Some(editor.lines[pos[1]].as_bytes()[pos[0]] as char)
+                            } else {
+                                None
+                            };
+                            let mut lock = responder.c.lock();
+                            *lock = val;
+                            responder.signal.notify_one();
+                        }
+                    }
+                    PluginAction::InsertCharAt { pos, c } => {
+                        if let Some(editor) = self.current_editor_mut() {
+                            if let Some(line) = editor.lines.get_mut(pos[1]) {
+                                line.insert(pos[0], c);
+                            }
+                        }
+                    }
+                    PluginAction::InsertCharAtCursor { c } => {
+                        if let Some(editor) = self.current_editor_mut() {
+                            if let Some(line) = editor.lines.get_mut(editor.cursor_y) {
+                                line.insert(editor.cursor_x, c);
+                            }
+                        }
+                    }
+                    PluginAction::SetCharAt { pos, c } => {
+                        if let Some(editor) = self.current_editor_mut() {
+                            if let Some(line) = editor.lines.get_mut(pos[1]) {
+                                // Find the byte range of the character at the given visual index
+                                let target_char = line.char_indices().nth(pos[0]);
+
+                                if let Some((idx, old_char)) = target_char {
+                                    // CompactString supports replace_range like a normal String
+                                    let end_idx = idx + old_char.len_utf8();
+                                    line.replace_range(idx..end_idx, &c.to_string());
+                                }
+                            }
+                        }
+                    }
                 }
             }
 

@@ -25,6 +25,12 @@ pub struct StrResponder {
     pub signal: Condvar
 }
 
+#[derive(Debug)]
+pub struct CharResponder {
+    pub c: Mutex<Option<char>>,
+    pub signal: Condvar,
+}
+
 #[derive(Debug, Clone)]
 pub enum PluginAction {
     MakeSetting { name: String, value: serde_json::Value },
@@ -43,5 +49,10 @@ pub enum PluginAction {
     SetLine { line: usize, contents: CompactString },
     SetStrAt { from: Vec<usize>, to: Vec<usize>, txt: CompactString },
     GetStrAt { from: Vec<usize>, to: Vec<usize>, responder: Arc<StrResponder> },
-    InsertStrAt { pos: Vec<usize>, txt: CompactString }
+    InsertStrAt { pos: Vec<usize>,txt: CompactString },
+    SetCharAt { pos: Vec<usize>, c: char },
+    GetCharAt { pos: Vec<usize>, responder: Arc<CharResponder> },
+    GetCharAtCursor { responder: Arc<CharResponder> },
+    InsertCharAt { pos: Vec<usize>, c: char },
+    InsertCharAtCursor { c: char },
 }
