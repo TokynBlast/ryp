@@ -42,7 +42,7 @@ fn spawn_lua_worker(plugin_path: PathBuf, action_tx: crossbeam_channel::Sender<P
                 return; // Can't continue if the script is broken
             }
 
-            // After compiling the script, it is useless. clearing it frees a variable amount of memory
+            // After compiling the script, the source is useless. clearing it frees a variable amount of memory
             drop(script);
             drop(plugin_policy);
 
