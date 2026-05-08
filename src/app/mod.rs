@@ -442,20 +442,14 @@ impl App {
                         }
                     }
                     PluginAction::GetCursorX { responder } => {
-                        if let Some(editor) = self.current_editor() {
-                            let val = editor.cursor_x;
-                            let mut lock = responder.number.lock();
-                            *lock = val;
-                            responder.signal.notify_one();
-                        }
+                        let mut lock = responder.number.lock();
+                        *lock = self.current_editor().map(|editor| editor.cursor_x);
+                        responder.signal.notify_one();
                     }
                     PluginAction::GetCursorY { responder } => {
-                        if let Some(editor) = self.current_editor() {
-                            let val = editor.cursor_y;
-                            let mut lock = responder.number.lock();
-                            *lock = val;
-                            responder.signal.notify_one();
-                        }
+                        let mut lock = responder.number.lock();
+                        *lock = self.current_editor().map(|editor| editor.cursor_y);
+                        responder.signal.notify_one();
                     }
                     PluginAction::SetCursorPos { pos } => {
                         if let Some(editor) = self.current_editor_mut() {
