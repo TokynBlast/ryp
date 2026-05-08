@@ -2,7 +2,7 @@ use compact_str::CompactString;
 use parking_lot::{Mutex, Condvar};
 use triomphe::Arc;
 use mlua::{self, LuaSerdeExt};
-use crate::plugin::action::{PluginAction, StrResponder};
+use crate::plugin::action::{CharResponder, PluginAction, StrResponder};
 
 // editor.get.at(x: usize, y: usize)
 fn get_char_at(lua: &mlua::Lua, tx: &crossbeam_channel::Sender<PluginAction>, get_table: &mlua::Table) -> Result<(), mlua::Error> {
