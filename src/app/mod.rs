@@ -499,16 +499,31 @@ impl App {
                             self.dirty = true;
                         }
                     }
-                    PluginAction::SetStrAt { pos, txt } => {
+                    PluginAction::SetStrAt { from, to, txt } => {
                         if let Some(editor) = self.current_editor_mut() {
-                            if let Some(line) = editor.lines.get_mut(pos[1]) {
-                                // Find the byte range of the character at the given visual index
-                                let target_char = line.char_indices().nth(pos[0]);
+                            let (start_x, start_y) = (from[0], from[1]);
+                            let (end_x, end_y) = (to[0], to[1]);
 
-                                if let Some((idx, old_char)) = target_char {
-                                    // CompactString supports replace_range like a normal String
-                                    let end_idx = idx + old_char.len_utf8();
-                                    line.replace_range(idx..end_idx, &txt.to_string());
+                            // Basic bounds check to prevent panics
+                            if start_y < editor.lines.len() && end_y < editor.lines.len() && start_y < end_y {
+
+                                // Calculate byte offsets for the start and end of the selection
+                                // We use char_indices to remain UTF-8 safe
+                                let start_byte = editor.lines[start_y].char_indices().nth(start_x).map(|(i, _)| i);
+                                let end_byte = editor.lines[end_y].char_indices().nth(end_x).map(|(i, c)| i + c.len_utf8());
+
+                                if let (Some(s_idx), Some(e_idx)) = (start_byte, end_byte) {
+                                    // Get the last line (incase only some was changed)
+                                    let line_suffix = editor.lines[end_y].split_off(e_idx);
+
+                                    // Modify the first line incase not all of it was changed
+                                    let first_line = &mut editor.lines[start_y];
+                                    first_line.truncate(s_idx);
+                                    first_line.push_str(&txt);
+                                    first_line.push_str(&line_suffix);
+
+                                    // Add in everything else
+                                    editor.lines.drain((start_y + 1)..=end_y);
                                 }
                             }
                         }

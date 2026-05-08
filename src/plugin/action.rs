@@ -41,7 +41,7 @@ pub enum PluginAction {
     SetCursorPos { pos: Vec<usize> },
     GetLine { line: usize, responder: Arc<StrResponder> },
     SetLine { line: usize, contents: CompactString },
-    SetStrAt { pos: Vec<usize>, txt: CompactString },
+    SetStrAt { from: Vec<usize>, to: Vec<usize>, txt: CompactString },
     GetStrAt { from: Vec<usize>, to: Vec<usize>, responder: Arc<StrResponder> },
     InsertStrAt { pos: Vec<usize>, txt: CompactString }
 }
