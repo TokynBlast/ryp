@@ -14,6 +14,11 @@
 - Better documentation
 - Better bindings (or make them more logical)
 - Resource limiting
+- Implement cursor versions of all setters and getters for Lua
+  - editor.str.get.cursor()
+  - editor.str.set.cursor(string)
+  - editor.str.get({x, y})
+  - editor.str.set({x, y}, string)
 
 # Internal
 - Add minimum cells size
