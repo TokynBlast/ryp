@@ -583,6 +583,18 @@ impl App {
                             }
                         }
                     }
+                    PluginAction::SetCharAtCursor { c } => {
+                        if let Some(editor) = self.current_editor_mut() {
+                            if let Some(line) = editor.lines.get_mut(editor.cursor_y) {
+                                let target_char = line.char_indices().nth(editor.cursor_x);
+
+                                if let Some((idx, old_char)) = target_char {
+                                    let end_idx = idx + old_char.len_utf8();
+                                    line.replace_range(idx..end_idx, &c.to_string());
+                                }
+                            }
+                        }
+                    }
                 }
             }
 

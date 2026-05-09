@@ -51,6 +51,7 @@ pub enum PluginAction {
     GetStrAt { from: Vec<usize>, to: Vec<usize>, responder: Arc<StrResponder> },
     InsertStrAt { pos: Vec<usize>,txt: CompactString },
     SetCharAt { pos: Vec<usize>, c: char },
+    SetCharAtCursor { c: char },
     GetCharAt { pos: Vec<usize>, responder: Arc<CharResponder> },
     GetCharAtCursor { responder: Arc<CharResponder> },
     InsertCharAt { pos: Vec<usize>, c: char },
