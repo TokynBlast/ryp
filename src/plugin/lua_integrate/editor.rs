@@ -5,6 +5,17 @@ use mlua::{self, LuaSerdeExt};
 use crate::plugin::action::{CharResponder, PluginAction, StrResponder};
 use crossbeam_channel::Sender;
 
+// editor.set.line
+fn set_line_at(lua: &mlua::Lua, tx: &Sender<PluginAction>, insert_table: &mlua::Table) -> Result<(), mlua::Error> {
+    let tx = tx.clone();
+    insert_table.set("line",
+        lua.create_function(move |_lua, (line, contents) : (usize, String)| {
+            let _ = tx.send(PluginAction::SetLine { line, contents: CompactString::from(contents) });
+            Ok(())
+        })?
+    )
+}
+
 // editor.set.str(from: Vec<usize>, to: Vec<usize>, txt: String)
 fn set_str_at(lua: &mlua::Lua, tx: &Sender<PluginAction>, set_table: &mlua::Table) -> Result<(), mlua::Error> {
     let tx = tx.clone();
