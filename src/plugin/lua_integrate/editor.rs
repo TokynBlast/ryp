@@ -121,7 +121,7 @@ fn insert_char_at(lua: &mlua::Lua, tx: &crossbeam_channel::Sender<PluginAction>,
 }
 
 // editor.insert.cursor(txt: char)
-fn insert_char_at_cursor(lua: &mlua::Lua, tx: &crossbeam_channel::Sender<PluginAction>, insert_table: &mlua::Table) -> Result<(), mlua::Error> {
+fn insert_str_at_cursor(lua: &mlua::Lua, tx: &crossbeam_channel::Sender<PluginAction>, insert_table: &mlua::Table) -> Result<(), mlua::Error> {
     let tx = tx.clone();
     insert_table.set("cursor",
         lua.create_function(move |_lua, txt: String| {
@@ -148,7 +148,7 @@ pub fn integrate_editor(lua: &mlua::Lua, tx: &crossbeam_channel::Sender<PluginAc
     let get_table = lua.create_table()?;
     let set_table = lua.create_table()?;
 
-    insert_char_at_cursor(lua, tx, &insert_table)?;
+    insert_str_at_cursor(lua, tx, &insert_table)?;
     insert_char_at(lua, tx, &insert_table)?;
     insert_str_at(lua, tx, &insert_table)?;
 
