@@ -120,6 +120,34 @@ fn insert_char_at(lua: &mlua::Lua, tx: &crossbeam_channel::Sender<PluginAction>,
     )
 }
 
+// editor.get.cursor
+fn get_char_at_cursor(lua: &mlua::Lua, tx: &crossbeam_channel::Sender<PluginAction>, get_table: &mlua::Table) -> Result<(), mlua::Error> {
+    let responder = Arc::new(CharResponder {
+        c: Mutex::new(None),
+        signal: Condvar::new(),
+    });
+
+    let responder_clone = responder.clone();
+    let tx = tx.clone();
+
+    get_table.set("cursor",
+        lua.create_function(move |lua, ()| {
+            let _ = tx.send(PluginAction::GetCharAtCursor { responder: responder_clone.clone() });
+            let mut lock = responder_clone.c.lock();
+            if lock.is_none() {
+                responder_clone.signal.wait(&mut lock);
+            }
+
+            let info = lock.clone();
+            if info.is_some() {
+                lua.to_value(&info.unwrap())
+            } else {
+                lua.to_value(&mlua::Nil)
+            }
+        })?
+    )
+}
+
 // editor.set.cursor
 fn set_char_at_cursor(lua: &mlua::Lua, tx: &crossbeam_channel::Sender<PluginAction>, set_table: &mlua::Table) -> Result<(), mlua::Error> {
     let tx = tx.clone();
@@ -170,6 +198,7 @@ pub fn integrate_editor(lua: &mlua::Lua, tx: &crossbeam_channel::Sender<PluginAc
     get_line(lua, tx, &get_table)?;
     get_str_at(lua, tx, &get_table)?;
     get_char_at(lua, tx, &get_table)?;
+    get_char_at_cursor(lua, tx, &get_table)?;
 
     editor_table.set("insert", insert_table)?;
     editor_table.set("get", get_table)?;
