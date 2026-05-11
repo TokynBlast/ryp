@@ -30,3 +30,47 @@ fn is_caps_lock_on() -> bool {
         (GetKeyState(VK_CAPITAL as i32) & 1) != 0
     }
 }
+
+#[cfg(target_os = "emscripten")]
+pub fn is_caps_lock_on() -> bool {
+    use std::sync::atomic::{AtomicBool, Ordering};
+    use std::ffi::c_void;
+    use std::os::raw::c_int;
+    use emscripten_functions_sys::html5::{
+        EmscriptenKeyboardEvent,
+        emscripten_set_keydown_callback_on_thread,
+        EMSCRIPTEN_EVENT_TARGET_WINDOW,
+    };
+
+    static CAPS_LOCK_ACTIVE: AtomicBool = AtomicBool::new(false);
+    static LISTENER_REGISTERED: AtomicBool = AtomicBool::new(false);
+
+    unsafe extern "C" fn on_keydown(
+        _event_type: c_int,
+        event: *const EmscriptenKeyboardEvent,
+        _user_data: *mut c_void,
+    ) -> bool {
+        let key = std::ffi::CStr::from_ptr((*event).key.as_ptr())
+            .to_str()
+            .unwrap_or("");
+        if key == "CapsLock" {
+            let active = CAPS_LOCK_ACTIVE.load(Ordering::Relaxed);
+            CAPS_LOCK_ACTIVE.store(!active, Ordering::Relaxed);
+        }
+        false
+    }
+
+    if LISTENER_REGISTERED.compare_exchange(false, true, Ordering::Relaxed, Ordering::Relaxed).is_ok() {
+        unsafe {
+            emscripten_set_keydown_callback_on_thread(
+                EMSCRIPTEN_EVENT_TARGET_WINDOW,
+                std::ptr::null_mut(),
+                false,
+                Some(on_keydown),
+                0 as _,
+            );
+        }
+    }
+
+    CAPS_LOCK_ACTIVE.load(Ordering::Relaxed)
+}
