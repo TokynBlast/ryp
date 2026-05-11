@@ -59,6 +59,7 @@ pub fn is_caps_lock_on() -> bool {
     }
 
     if LISTENER_REGISTERED.compare_exchange(false, true, Ordering::Relaxed, Ordering::Relaxed).is_ok() {
+        // NOTE: This is only unsafe, because it's a call to JS in the end
         unsafe {
             emscripten_set_keydown_callback_on_thread(
                 EMSCRIPTEN_EVENT_TARGET_WINDOW,
