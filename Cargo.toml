@@ -4,36 +4,67 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
-crossterm = "0.29.0"
-ratatui = "0.30.0"
 serde = { version = "1.0.228", features = ["derive"] }
 serde_json = { version = "1.0.149", features = ["preserve_order"] }
-syntect = "5.3.0"
-ignore = "0.4.25"
-portable-pty = "0.9.0"
-tokio = "1.52.0"
-crossbeam-channel = "0.5.15"
-vt100 = "0.16.2"
-aho-corasick = "1.1.4"
-console="0.16.3"
-mlua = { version = "0.11.6", features = ["lua55", "serialize", "serde", "vendored"] }
-indexmap = "2.14.0"
-parking_lot = "0.12.5"
-triomphe = "0.1.15"
-hashbrown = "0.17.0"
-compact_str = "0.9.0"
-rayon = "1.12.0"
-mimalloc = "0.1.50"
-arc-swap = "1.9.1"
-os_info = "3.14.0"
-arboard = "3.6.1"
+ignore = "0.4.25"               # Git ignore file usage
+crossbeam-channel = "0.5.15"    # Thread data sending
+vt100 = "0.16.2"                # Terminal output handling
+aho-corasick = "1.1.4"          # Efficient searching
+mlua = { version = "0.11.6", features = ["lua55", "serialize", "serde", "vendored"] } # lua
+indexmap = "2.14.0"             # Pair map
+parking_lot = "0.12.5"          # Thread pausing and other things
+hashbrown = "0.17.0"            # Hash map replacement
+compact_str = "0.9.0"           # SSO strings
+rayon = "1.12.0"                # Thread pooler
+arc-swap = "1.9.1"              # Arc pointer swapping
+mimalloc = "0.1.50"             # Global allocator
 
+# MacOS, Windows, Linux
+[target.'cfg(any(target_os="linux", target_os="windows", target_os="macos"))'.dependencies]
+gix="0.83.0"                    # git
+arboard = "3.6.1"               # Clip board
+ratatui = "0.30.0"              # Rendering
+triomphe = "0.1.15"             # Arc
+portable-pty = "0.9.0"          # Terminal; May support other OSes
+crossterm = "0.29.0"            # Keyboard input
+syntect = "5.3.0"               # Highlighting
+
+# Not Windows, MacOS, or Linux
+[target.'cfg(not(any(target_os="linux", target_os="windows", target_os="macos", target_os="freebsd")))'.dependencies]
+cursive = "0.21.1"              # Ratatui replacement
+
+# WASM
+[target.'cfg(any(target_arch="wasm32", target_arch="wasm64"))'.dependencies]
+shim-fs = "0.1.0"               # std::fs replacement
+gix="0.83.0"                    # git
+
+# FreeBSD
+[target.'cfg(target_os="freebsd")'.dependencies]
+syntect = "5.3.0"               # Syntax highlighting
+crossterm = "0.29.0"            # Keyboard input
+
+
+[target.'cfg(any(target_os="android", target_os="fuchsia", target_os="redox", target_os="haiku", target_os="solaris", target_os="illumos", target_os="nto", target_os="hurd", target_os="vxworks"))'.dependencies]
+ratatui = "0.30.0"
+crossterm = "0.29.0"
+
+# FreeBSD, OpenBSD, NetBSD, DragonflyBSD
+[target.'cfg(any(target_os="freebsd", target_os="openbsd", target_os="netbsd", target_os="dragonfly"))'.dependencies]
+git2 = "0.20.4"                 # git
+
+# Linux
 [target.'cfg(target_os = "linux")'.dependencies]
-evdev = "0.13.2"
-glob = "0.3.3"
+evdev = "0.13.2"                # Caps lock detection
+glob = "0.3.3"                  # File pattern searching
+os_info = "3.14.0"              # Determining Linux distro
 
+# Windows
 [target.'cfg(target_os = "windows")'.dependencies]
 windows-sys = { version = "0.61.2", features = ["Win32_UI_Input_KeyboardAndMouse"] }
+
+[target.'cfg(target_os = "uefi")'.dependencies]
+uefi = "0.37.0"                 # UEFI wrappers
+uefi-input2 = "36.1.16"         # UEFI keyboard input
 
 [profile.release]
 lto = "fat"
