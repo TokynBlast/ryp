@@ -164,10 +164,6 @@ impl App {
                     CompactString::new("Haiku")
                 } else if cfg!(target_os = "solaris") {
                     CompactString::new("Solaris ")
-                } else if cfg!(target_os = "cuda") {
-                    CompactString::new("Cuda ")
-                } else if cfg!(target_os = "aix") {
-                    CompactString::new("AIX")
                 } else if cfg!(target_os = "fuchsia") {
                     CompactString::new("Fuchsia")
                 } else if cfg!(target_os = "emscripten") {
