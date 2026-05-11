@@ -104,11 +104,7 @@ impl App {
                     CompactString::new("MacOS ")
                 } else if cfg!(target_os = "ios") {
                     CompactString::new("iOS ")
-                } else if cfg!(target_os = "watchos") {
-                    // This is here incase someone is insane enough to do this...
-                    CompactString::new("WatchOS ")
                 } else if cfg!(target_os = "tvos") {
-                    // Same as WatchOS... just incase...
                     CompactString::new("TVOS ")
                 } else if cfg!(target_os = "visionos") {
                     CompactString::new("VisionOS ")
@@ -150,8 +146,6 @@ impl App {
                     CompactString::new("Android ")
                 } else if cfg!(any(target_arch="wasm32", target_arch="wasm64")) {
                     CompactString::new("WebAssembly ")
-                } else if cfg!(target_os = "wasi") {
-                    CompactString::new("WASI ")
                 } else if cfg!(target_os = "freebsd") {
                     CompactString::new("FreeBSD ")
                 } else if cfg!(target_os = "openbsd") {
@@ -168,19 +162,13 @@ impl App {
                     CompactString::new("Fuchsia")
                 } else if cfg!(target_os = "emscripten") {
                     CompactString::new("Web 󰖟")
-                } else if cfg!(target_os = "hermit") {
-                    CompactString::new("Hermit")
                 } else if cfg!(target_os = "horizon") {
                     // This could technicallt be a 3DS, or a Switch
                     // But, the character for the Nintendo Logo is
                     // too small: 
                     CompactString::new("Nintendo 󰟡")
-                } else if cfg!(target_os = "hurd") {
-                    CompactString::new("GNU Hurd")
                 } else if cfg!(target_os = "illumos") {
                     CompactString::new("Illumos")
-                } else if cfg!(target_os = "l4re") {
-                    CompactString::new("L4 MicroKernel")
                 } else if cfg!(target_os = "nto") {
                     // This is usually an OS for medical equipment/cars...
                     CompactString::new("QNX Neutrino")
@@ -191,16 +179,8 @@ impl App {
                 } else if cfg!(target_os = "redox") {
                     // OS written in the same language this text editor is!
                     CompactString::new("Redox OS")
-                } else if cfg!(target_os = "solid_asp3") {
-                    CompactString::new("SOLID RTOS")
-                } else if cfg!(target_os = "teeos") {
-                    CompactString::new("TEEOS")
                 } else if cfg!(target_os = "vxworks") {
                     CompactString::new("Wind River VxWorks")
-                } else if cfg!(target_os = "zkvm") {
-                    CompactString::new("ZK VM")
-                } else if cfg!(target_os = "xous") {
-                    CompactString::new("Xous Microkernel")
                 } else if cfg!(target_os = "espidf") {
                     CompactString::new("ESP Board")
                 } else if cfg!(target_os = "uefi") {
