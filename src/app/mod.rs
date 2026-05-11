@@ -217,10 +217,8 @@ impl App {
                         CompactString::new("MIPS UEFI")
                     } else if cfg!(target_arch = "nvptx64") {
                         CompactString::new("NVIDIA PTX UEFI")
-                    } else if cfg!(any(target_arch = "powerpc")) {
+                    } else if cfg!(any(target_arch="powerpc", target_arch="powerpc64")) {
                         CompactString::new("PowerPC UEFI ⏻")
-                    } else if cfg!(target_arch = "powerpc64") {
-                        CompactString::new("PowerPC64 UEFI ⏻")
                     } else if cfg!(any(target_arch="riscv32", target_arch="riscv64")) {
                         // The  may be misleading, and may at some point need to be changed
                         CompactString::new("Risc-V UEFI ")
