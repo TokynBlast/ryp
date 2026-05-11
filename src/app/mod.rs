@@ -191,7 +191,7 @@ impl App {
                     } else if cfg!(any(target_arch="arm", target_arch="aarch64", target_arch="arm64ec")) {
                         CompactString::new("ARM UEFI 󰿗")
                     } else if cfg!(target_arch = "avr") {
-                        CompactString::new("AVR UEFI")
+                        CompactString::new("AVR UEFI ")
                     } else if cfg!(target_arch = "bpf") {
                         CompactString::new("BPF UEFI")
                     } else if cfg!(target_arch = "csky") {
@@ -210,7 +210,7 @@ impl App {
                         target_arch="msp430",
                         ))
                     {
-                        CompactString::new("MIPS UEFI")
+                        CompactString::new("MIPS UEFI ")
                     } else if cfg!(target_arch = "nvptx64") {
                         CompactString::new("NVIDIA PTX UEFI")
                     } else if cfg!(any(target_arch="powerpc", target_arch="powerpc64")) {
