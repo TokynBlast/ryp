@@ -48,7 +48,9 @@ fn main() -> Result<(), Box<dyn Error>> {
     let path = if cfg!(windows) {
         PathBuf::from(env::var("APPDATA")?).join("ryp")
     } else {
-        PathBuf::from(env::var("HOME")?).join(".ryp")
+        // This is a standard config location, and we can store plugins here too,
+        // so we can just delete our config folder and our application on uninstall
+        PathBuf::from(env::var("HOME")?).join(".config").join("ryp")
     };
 
     let (tx, rx) = crossbeam_channel::unbounded();
