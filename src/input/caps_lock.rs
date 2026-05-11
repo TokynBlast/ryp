@@ -19,7 +19,7 @@ pub fn is_caps_lock_on() -> bool {
 }
 
 #[cfg(target_os = "windows")]
-fn is_caps_lock_on() -> bool {
+pub fn is_caps_lock_on() -> bool {
     use windows_sys::Win32::UI::Input::KeyboardAndMouse::{GetKeyState, VK_CAPITAL};
     // NOTE: This should be safe, as long as the main thread is active.
     //       Which we can garuntee, since we only call it from the main thread.
