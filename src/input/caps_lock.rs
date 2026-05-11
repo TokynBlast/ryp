@@ -18,8 +18,6 @@ pub fn is_caps_lock_on() -> bool {
     false
 }
 
-
-
 #[cfg(target_os = "windows")]
 fn is_caps_lock_on() -> bool {
     use windows_sys::Win32::UI::Input::KeyboardAndMouse::{GetKeyState, VK_CAPITAL};
