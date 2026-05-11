@@ -170,8 +170,6 @@ impl App {
                 } else if cfg!(target_os = "nto") {
                     // This is usually an OS for medical equipment/cars...
                     CompactString::new("QNX Neutrino")
-                } else if cfg!(target_os = "psp") {
-                    CompactString::new("PlayStation Portable")
                 } else if cfg!(target_os = "vita") {
                     CompactString::new("PlayStation Vita")
                 } else if cfg!(target_os = "redox") {
