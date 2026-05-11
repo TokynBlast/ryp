@@ -73,3 +73,108 @@ pub fn is_caps_lock_on() -> bool {
 
     CAPS_LOCK_ACTIVE.load(Ordering::Relaxed)
 }
+
+#[cfg(target_os = "freebsd")]
+pub fn is_caps_lock_on() -> bool {
+    compile_error!("Caps lock detection for FreeBSD is not implemented yet.")
+}
+
+#[cfg(target_os = "openbsd")]
+pub fn is_caps_lock_on() -> bool {
+    compile_error!("Caps lock detection for OpenBSD is not implemented yet.")
+}
+
+#[cfg(target_os = "netbsd")]
+pub fn is_caps_lock_on() -> bool {
+    compile_error!("Caps lock detection for NetBSD is not implemented yet.")
+}
+
+#[cfg(target_os = "macos")]
+pub fn is_caps_lock_on() -> bool {
+    compile_error!("Caps lock detection for MacOS is not implemented yet.")
+}
+
+#[cfg(target_os = "ios")]
+pub fn is_caps_lock_on() -> bool {
+    compile_error!("Caps lock detection for iOS is not implemented yet.")
+}
+
+#[cfg(target_os = "watchos")]
+pub fn is_caps_lock_on() -> bool {
+    compile_error!("Caps lock detection for WatchOS is not implemented yet.")
+}
+
+#[cfg(target_os = "visionos")]
+pub fn is_caps_lock_on() -> bool {
+    compile_error!("Caps lock detection for VisionsOS is not implemented yet.")
+}
+
+#[cfg(target_os = "android")]
+pub fn is_caps_lock_on() -> bool {
+    compile_error!("Caps lock detection for Android is not implemented yet.")
+}
+
+#[cfg(target_os = "watchos")]
+pub fn is_caps_lock_on() -> bool {
+    compile_error!("Caps lock detection for WatchOS is not implemented yet.")
+}
+
+#[cfg(any(target_arch="wasm32", target_arch="wasm64"))]
+pub fn is_caps_lock_on() -> bool {
+    compile_error!("Caps lock detection for WASM is not implemented yet.")
+}
+
+#[cfg(target_os = "haiku")]
+pub fn is_caps_lock_on() -> bool {
+    compile_error!("Caps lock detection for Haiku is not implemented yet.")
+}
+
+#[cfg(target_os = "solaris")]
+pub fn is_caps_lock_on() -> bool {
+    compile_error!("Caps lock detection for Solaris is not implemented yet.")
+}
+
+#[cfg(target_os = "fuchsia")]
+pub fn is_caps_lock_on() -> bool {
+    compile_error!("Caps lock detection for Fuchsia is not implemented yet.")
+}
+
+#[cfg(target_os = "horizon")]
+pub fn is_caps_lock_on() -> bool {
+    compile_error!("Caps lock detection for Nintendo devices is not implemented yet.")
+}
+
+#[cfg(target_os = "illumos")]
+pub fn is_caps_lock_on() -> bool {
+    compile_error!("Caps lock detection for Illumos is not implemented yet.")
+}
+
+#[cfg(target_os = "nto")]
+pub fn is_caps_lock_on() -> bool {
+    compile_error!("Caps lock detection for the QNX Neutrino is not implemented yet.")
+}
+
+#[cfg(target_os = "vita")]
+pub fn is_caps_lock_on() -> bool {
+    compile_error!("Caps lock detection for the PS Vita is not implemented yet.")
+}
+
+#[cfg(target_os = "redox")]
+pub fn is_caps_lock_on() -> bool {
+    compile_error!("Caps lock detection for RedoxOS is not implemented yet.")
+}
+
+#[cfg(target_os = "vxworks")]
+pub fn is_caps_lock_on() -> bool {
+    compile_error!("Caps lock detection for Wind River VxWorks is not implemented yet.")
+}
+
+#[cfg(target_os = "espidf")]
+pub fn is_caps_lock_on() -> bool {
+    compile_error!("Caps lock detection for the ESP Board is not implemented yet.")
+}
+
+#[cfg(target_os = "uefi")]
+pub fn is_caps_lock_on() -> bool {
+    compile_error!("Caps lock detection for UEFI is not implemented yet.")
+}
