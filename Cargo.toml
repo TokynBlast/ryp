@@ -66,6 +66,9 @@ windows-sys = { version = "0.61.2", features = ["Win32_UI_Input_KeyboardAndMouse
 uefi = "0.37.0"                 # UEFI wrappers
 uefi-input2 = "36.1.16"         # UEFI keyboard input
 
+[target.'cfg(target_os = "emscripten")'.dependencies]
+emscripten-functions-sys = "5.0.401"
+
 [profile.release]
 lto = "fat"
 codegen-units = 1

@@ -670,6 +670,12 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "48c757948c5ede0e46177b7add2e67155f70e33c07fea8284df6576da70b3719"
 
 [[package]]
+name = "emscripten-functions-sys"
+version = "5.0.401"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "4c1f3aa9a59cdd296650e7ba9bb966ad418aa754c17a5af69860a51153106a95"
+
+[[package]]
 name = "encoding_rs"
 version = "0.8.35"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3496,6 +3502,7 @@ dependencies = [
  "crossbeam-channel",
  "crossterm 0.29.0",
  "cursive",
+ "emscripten-functions-sys",
  "evdev",
  "git2",
  "gix",
