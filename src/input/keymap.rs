@@ -73,7 +73,7 @@ pub fn map_key(key: KeyEvent, in_modal: bool, is_sidebar_focused: bool) -> Optio
                 // May need to use actual caps lock detection and
                 // check for lower case in the future to tell if it
                 // is shift (in rare cases)
-                c = if shift {
+                c = if shift && !caps_lock {
                     c.to_uppercase().next().take().unwrap()
                 } else {
                     c
