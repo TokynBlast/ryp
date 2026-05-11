@@ -188,12 +188,8 @@ impl App {
                         CompactString::new("x86_64 UEFI 󰻠")
                     } else if cfg!(target_arch = "x86") {
                         CompactString::new("x86 UEFI 󰻟")
-                    } else if cfg!(target_arch = "arm") {
+                    } else if cfg!(any(target_arch="arm", target_arch="aarch64", target_arch="arm64ec")) {
                         CompactString::new("ARM UEFI 󰿗")
-                    } else if cfg!(target_arch = "aarch64") {
-                        CompactString::new("ARM64 UEFI 󰿗")
-                    } else if cfg!(target_arch = "arm64ec") {
-                        CompactString::new("ARM64EC UEFI 󰿗󰻠")
                     } else if cfg!(target_arch = "avr") {
                         CompactString::new("AVR UEFI")
                     } else if cfg!(target_arch = "bpf") {
