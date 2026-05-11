@@ -95,9 +95,7 @@ impl App {
             host_terminal_height: 0,
             host_terminal_width: 0,
             debug_logs: VecDeque::with_capacity(40),
-            // The reason for having all of this, is for the case where someone modifies the code
-            // And compiles for these... Or, in the future, we may want to add support for these.
-            // This adds support to render the bottom bar appropriatley, built-in!
+            // If GNU Herd ever gets keyboard support, we can add it here.
             os: if cfg!(target_os = "windows") {
                    CompactString::new("Windows ")
                 } else if cfg!(target_os = "macos"){
