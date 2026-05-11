@@ -19,7 +19,7 @@ static GLOBAL: mimalloc::MiMalloc = mimalloc::MiMalloc;
 fn main() -> Result<(), Box<dyn Error>> {
 
     // Check if an argument is passed
-    let args: Vec<String> = std::env::args().collect(); // Would benifit slightly from compact strings
+    let args: Vec<String> = std::env::args().collect();
     let mut target = PathBuf::new();
     if args[1].starts_with("--") {
       if args.len() == 2 {
