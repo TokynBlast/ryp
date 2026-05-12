@@ -97,8 +97,7 @@ impl App {
             host_terminal_height: 0,
             host_terminal_width: 0,
             debug_logs: VecDeque::with_capacity(40),
-            // If GNU Herd ever gets keyboard support, we can add it here.
-            os: if cfg!(target_os = "windows") {
+            os: CompactString::const_new(if cfg!(target_os = "windows") {
                    CompactString::const_new("Windows ")
                 } else if cfg!(target_os = "macos"){
                     CompactString::const_new("MacOS ")
@@ -181,6 +180,9 @@ impl App {
                     CompactString::const_new("Wind River VxWorks")
                 } else if cfg!(target_os = "espidf") {
                     CompactString::const_new("ESP Board")
+                // When GNU Herd gets keyboard support, we can uncomment it.
+                // } else if cfg!(target_os = "hurd") {
+                //     CompactString::const_new("GNU Herd ")
                 } else if cfg!(target_os = "uefi") {
                     // Although this would be insane if it were happening,
                     // it would be pretty cool!
