@@ -658,17 +658,12 @@ impl App {
                         self.validate_new_file();
                     }
                 }
-                Action::ModalTab => {
-                    if modal.modal_type == ModalType::Replace {
-                        modal.toggle_focus();
-                    } else if modal.modal_type == ModalType::QuitPrompt {
-                        modal.active_button = (modal.active_button + 1) % 3;
-                    } else if modal.modal_type == ModalType::ConfirmExit {
-                        modal.active_button = (modal.active_button + 1) % 2;
-                    } else {
-                        self.find_next_match();
-                    }
-                }
+                Action::ModalTab => match modal.modal_type {
+                    ModalType::Replace => modal.toggle_focus(),
+                    ModalType::QuitPrompt => modal.active_button = (modal.active_button + 1) % 3,
+                    ModalType::ConfirmExit => modal.active_button = (modal.active_button + 1) % 2,
+                    _ => self.find_next_match(),
+                },
                 Action::ModalLeft => {
                     match modal.modal_type {
                         ModalType::ConfirmExit => {
