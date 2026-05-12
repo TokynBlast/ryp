@@ -17,7 +17,6 @@ use crossterm::{execute, event::{EnableFocusChange, DisableFocusChange}};
 static GLOBAL: mimalloc::MiMalloc = mimalloc::MiMalloc;
 
 fn main() -> Result<(), Box<dyn Error>> {
-
     // Check if an argument is passed
     let args: Vec<String> = std::env::args().collect();
     let mut target = PathBuf::new();
