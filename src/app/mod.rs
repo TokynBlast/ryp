@@ -99,111 +99,111 @@ impl App {
             debug_logs: VecDeque::with_capacity(40),
             // If GNU Herd ever gets keyboard support, we can add it here.
             os: if cfg!(target_os = "windows") {
-                   CompactString::new("Windows ")
+                   CompactString::const_new("Windows ")
                 } else if cfg!(target_os = "macos"){
-                    CompactString::new("MacOS ")
+                    CompactString::const_new("MacOS ")
                 } else if cfg!(target_os = "ios") {
-                    CompactString::new("iOS ")
+                    CompactString::const_new("iOS ")
                 } else if cfg!(target_os = "tvos") {
-                    CompactString::new("TVOS ")
+                    CompactString::const_new("TVOS ")
                 } else if cfg!(target_os = "visionos") {
-                    CompactString::new("VisionOS ")
+                    CompactString::const_new("VisionOS ")
                 } else if cfg!(target_os = "linux") {
                     use os_info::Type::*;
                     match os_info::get().os_type() {
-                        Pop => CompactString::new("!Pop_OS "),
-                        Arch => CompactString::new("Arch Linux 󰣇"),
-                        Fedora => CompactString::new("Fedora "),
-                        Gentoo => CompactString::new("Gentoo "),
+                        Pop => CompactString::const_new("!Pop_OS "),
+                        Arch => CompactString::const_new("Arch Linux 󰣇"),
+                        Fedora => CompactString::const_new("Fedora "),
+                        Gentoo => CompactString::const_new("Gentoo "),
                         Redhat
-                        | RedHatEnterprise => CompactString::new("Redhat "),
-                        AlmaLinux => CompactString::new("AlmaLinux "),
-                        AOSC => CompactString::new("AOSC "),
-                        Artix => CompactString::new("Artix "),
-                        CentOS => CompactString::new("CentOS "),
-                        Cygwin => CompactString::new("Cygwin "),
-                        Debian => CompactString::new("Debian "),
-                        Elementary => CompactString::new("ElementaryOS "),
-                        EndeavourOS => CompactString::new("EndeavourOS "),
-                        Garuda => CompactString::new("Garuda "),
-                        Illumos => CompactString::new("Illumos "),
-                        Kali => CompactString::new("Kali Linux "),
-                        Manjaro => CompactString::new("Manjaro "),
-                        Mint => CompactString::new("Linux Mint 󰣭"),
-                        NixOS => CompactString::new("NixOS "),
-                        Nobara => CompactString::new("Nobara "),
-                        Raspbian => CompactString::new("Raspbian "),
-                        RockyLinux => CompactString::new("RockyLinux "),
-                        openSUSE => CompactString::new("openSUSE "),
-                        SUSE => CompactString::new("SUSE "),
-                        Solus => CompactString::new("Solus "),
-                        Ubuntu => CompactString::new("Ubuntu 󰕈"),
-                        Void => CompactString::new("Void Linux "),
-                        Zorin => CompactString::new("Zorin "),
-                        _ => CompactString::new("")
+                        | RedHatEnterprise => CompactString::const_new("Redhat "),
+                        AlmaLinux => CompactString::const_new("AlmaLinux "),
+                        AOSC => CompactString::const_new("AOSC "),
+                        Artix => CompactString::const_new("Artix "),
+                        CentOS => CompactString::const_new("CentOS "),
+                        Cygwin => CompactString::const_new("Cygwin "),
+                        Debian => CompactString::const_new("Debian "),
+                        Elementary => CompactString::const_new("ElementaryOS "),
+                        EndeavourOS => CompactString::const_new("EndeavourOS "),
+                        Garuda => CompactString::const_new("Garuda "),
+                        Illumos => CompactString::const_new("Illumos "),
+                        Kali => CompactString::const_new("Kali Linux "),
+                        Manjaro => CompactString::const_new("Manjaro "),
+                        Mint => CompactString::const_new("Linux Mint 󰣭"),
+                        NixOS => CompactString::const_new("NixOS "),
+                        Nobara => CompactString::const_new("Nobara "),
+                        Raspbian => CompactString::const_new("Raspbian "),
+                        RockyLinux => CompactString::const_new("RockyLinux "),
+                        openSUSE => CompactString::const_new("openSUSE "),
+                        SUSE => CompactString::const_new("SUSE "),
+                        Solus => CompactString::const_new("Solus "),
+                        Ubuntu => CompactString::const_new("Ubuntu 󰕈"),
+                        Void => CompactString::const_new("Void Linux "),
+                        Zorin => CompactString::const_new("Zorin "),
+                        _ => CompactString::const_new("")
                     }
                 } else if cfg!(target_os="android") {
-                    CompactString::new("Android ")
+                    CompactString::const_new("Android ")
                 } else if cfg!(any(target_arch="wasm32", target_arch="wasm64")) {
-                    CompactString::new("WebAssembly ")
+                    CompactString::const_new("WebAssembly ")
                 } else if cfg!(target_os = "freebsd") {
-                    CompactString::new("FreeBSD ")
+                    CompactString::const_new("FreeBSD ")
                 } else if cfg!(target_os = "openbsd") {
-                    CompactString::new("OpenBSD ")
+                    CompactString::const_new("OpenBSD ")
                 } else if cfg!(target_os = "netbsd") {
-                    CompactString::new("NetBSD")
+                    CompactString::const_new("NetBSD")
                 } else if cfg!(target_os = "dragonfly") {
-                    CompactString::new("DragonFly BSD")
+                    CompactString::const_new("DragonFly BSD")
                 } else if cfg!(target_os = "haiku") {
-                    CompactString::new("Haiku")
+                    CompactString::const_new("Haiku")
                 } else if cfg!(target_os = "solaris") {
-                    CompactString::new("Solaris ")
+                    CompactString::const_new("Solaris ")
                 } else if cfg!(target_os = "fuchsia") {
-                    CompactString::new("Fuchsia")
+                    CompactString::const_new("Fuchsia")
                 } else if cfg!(target_os = "emscripten") {
-                    CompactString::new("Web 󰖟")
+                    CompactString::const_new("Web 󰖟")
                 } else if cfg!(target_os = "horizon") {
                     // This could technicallt be a 3DS, or a Switch
                     // But, the character for the Nintendo Logo is
                     // too small: 
-                    CompactString::new("Nintendo 󰟡")
+                    CompactString::const_new("Nintendo 󰟡")
                 } else if cfg!(target_os = "illumos") {
-                    CompactString::new("Illumos")
+                    CompactString::const_new("Illumos")
                 } else if cfg!(target_os = "nto") {
                     // This is usually an OS for medical equipment/cars...
-                    CompactString::new("QNX Neutrino")
+                    CompactString::const_new("QNX Neutrino")
                 } else if cfg!(target_os = "vita") {
-                    CompactString::new("PlayStation Vita")
+                    CompactString::const_new("PlayStation Vita")
                 } else if cfg!(target_os = "redox") {
                     // OS written in the same language this text editor is!
-                    CompactString::new("Redox OS")
+                    CompactString::const_new("Redox OS")
                 } else if cfg!(target_os = "vxworks") {
-                    CompactString::new("Wind River VxWorks")
+                    CompactString::const_new("Wind River VxWorks")
                 } else if cfg!(target_os = "espidf") {
-                    CompactString::new("ESP Board")
+                    CompactString::const_new("ESP Board")
                 } else if cfg!(target_os = "uefi") {
                     // Although this would be insane if it were happening,
                     // it would be pretty cool!
                     // And for that, I've decided to have some fun with these,
                     // and be literal or add fitting icons!
                     if cfg!(target_arch = "x86_64") {
-                        CompactString::new("x86_64 UEFI 󰻠")
+                        CompactString::const_new("x86_64 UEFI 󰻠")
                     } else if cfg!(target_arch = "x86") {
-                        CompactString::new("x86 UEFI 󰻟")
+                        CompactString::const_new("x86 UEFI 󰻟")
                     } else if cfg!(any(target_arch="arm", target_arch="aarch64", target_arch="arm64ec")) {
-                        CompactString::new("ARM UEFI 󰿗")
+                        CompactString::const_new("ARM UEFI 󰿗")
                     } else if cfg!(target_arch = "avr") {
-                        CompactString::new("AVR UEFI ")
+                        CompactString::const_new("AVR UEFI ")
                     } else if cfg!(target_arch = "bpf") {
-                        CompactString::new("BPF UEFI")
+                        CompactString::const_new("BPF UEFI")
                     } else if cfg!(target_arch = "csky") {
-                        CompactString::new("C-SKY UEFI ")
+                        CompactString::const_new("C-SKY UEFI ")
                     } else if cfg!(target_arch = "hexagon") {
-                        CompactString::new("Qualcom Hexago UEFI ")
+                        CompactString::const_new("Qualcom Hexago UEFI ")
                     } else if cfg!(target_arch = "loongarch64") {
-                        CompactString::new("LoongArch64 UEFI 󰻠")
+                        CompactString::const_new("LoongArch64 UEFI 󰻠")
                     } else if cfg!(target_arch = "m68k") {
-                        CompactString::new("Motorola 68000 UEFI ")
+                        CompactString::const_new("Motorola 68000 UEFI ")
                     } else if cfg!(any(
                         target_arch="mips",
                         target_arch="mips32r6",
@@ -212,28 +212,28 @@ impl App {
                         target_arch="msp430",
                         ))
                     {
-                        CompactString::new("MIPS UEFI ")
+                        CompactString::const_new("MIPS UEFI ")
                     } else if cfg!(target_arch = "nvptx64") {
-                        CompactString::new("NVIDIA PTX UEFI")
+                        CompactString::const_new("NVIDIA PTX UEFI")
                     } else if cfg!(any(target_arch="powerpc", target_arch="powerpc64")) {
-                        CompactString::new("PowerPC UEFI ⏻")
+                        CompactString::const_new("PowerPC UEFI ⏻")
                     } else if cfg!(any(target_arch="riscv32", target_arch="riscv64")) {
                         // The  may be misleading, and may at some point need to be changed
-                        CompactString::new("Risc-V UEFI ")
+                        CompactString::const_new("Risc-V UEFI ")
                     } else if cfg!(target_arch="s390x") {
-                        CompactString::new("IBM Z UEFI")
+                        CompactString::const_new("IBM Z UEFI")
                     } else if cfg!(any(target_arch="sparc", target_arch="sparc64")) {
-                        CompactString::new("Sparc UEFI ")
+                        CompactString::const_new("Sparc UEFI ")
                     } else if cfg!(target_arch = "xtensa") {
-                        CompactString::new("Xtensa")
+                        CompactString::const_new("Xtensa")
                     } else {
                         // Would be unreachable!(), but we can't garuntee that in the future
                         // there won't be more arch' that Rust supports, so we just use "UEFI"
                         // as a backup value for that case
-                        CompactString::new("UEFI")
+                        CompactString::const_new("UEFI")
                     }
                 } else {
-                    CompactString::new("Unknown ?")
+                    CompactString::const_new("Unknown ?")
                 },
             key_pressed: Mutex::new(None),
             focused: true,
