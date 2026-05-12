@@ -662,9 +662,16 @@ impl App {
                 }
                 Action::ModalTab => match modal.modal_type {
                     ModalType::Replace => modal.toggle_focus(),
-                    ModalType::QuitPrompt => modal.active_button = (modal.active_button + 1) % 3,
-                    ModalType::ConfirmExit => modal.active_button = (modal.active_button + 1) % 2,
-                    _ => self.find_next_match(),
+                    ModalType::QuitPrompt => {
+                        modal.active_button += 1;
+                        if modal.active_button >= 3 { modal.active_button = 0; }
+                    }
+                    ModalType::ConfirmExit => {
+                        modal.active_button += 1;
+                        if modal.active_button >= 2 { modal.active_button = 0; }
+                    }
+                    ModalType::Search => self.find_next_match(),
+                    _ => {}
                 },
                 Action::ModalLeft => {
                     match modal.modal_type {
