@@ -648,14 +648,16 @@ impl App {
                 }
                 Action::ModalInsert(c) => {
                     modal.insert_char(c);
-                    if modal.modal_type == ModalType::NewFile {
-                        self.validate_new_file();
+                    match modal.modal_type {
+                        ModalType::NewFile => self.validate_new_file(),
+                        _ => {},
                     }
                 }
                 Action::ModalDelete => {
                     modal.pop_char();
-                    if modal.modal_type == ModalType::NewFile {
-                        self.validate_new_file();
+                    match modal.modal_type {
+                        ModalType::NewFile => self.validate_new_file(),
+                        _ => {},
                     }
                 }
                 Action::ModalTab => match modal.modal_type {
