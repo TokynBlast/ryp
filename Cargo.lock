@@ -3498,6 +3498,7 @@ dependencies = [
  "aho-corasick",
  "arboard",
  "arc-swap",
+ "bumpalo",
  "compact_str 0.9.0",
  "crossbeam-channel",
  "crossterm 0.29.0",
