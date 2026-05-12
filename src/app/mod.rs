@@ -686,7 +686,6 @@ impl App {
                         _ => {}
                     }
                 }
-
                 Action::ModalRight => {
                     match modal.modal_type {
                         ModalType::Search => {
