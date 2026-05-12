@@ -19,29 +19,26 @@ static GLOBAL: mimalloc::MiMalloc = mimalloc::MiMalloc;
 fn main() -> Result<(), Box<dyn Error>> {
     // Check if an argument is passed
     let args: Vec<String> = std::env::args().collect();
-    let mut target = PathBuf::new();
-    if args[1].starts_with("--") {
-      if args.len() == 2 {
-          match args[1].as_str() {
-              "help" => {
-                  println!("Ryp is a text editor. By default, it will open to the current directory.\n--help - prints help text\n--version");
-                  exit(0);
-              },
-              "version" => {
-                  println!("0.1.0");
-                  exit(0);
-              },
-              _ => {},
-          }
-      } else {
-          panic!("Info getter does not expect any extra arguments.")
-      }
-    } else {
-        target = if args.len() > 1 {
-            Path::new(&args[1]).canonicalize().unwrap_or(PathBuf::from(&args[1]))
+    let target: PathBuf;
+
+    if let Some(arg) = args.get(1) {
+        if let Some(flag) = arg.strip_prefix("--") {
+            match flag {
+                "help" => {
+                    println!("Ryp is a text editor. By default, it will open to the current directory.\n--help - prints help text\n--version - prints the version");
+                    exit(0);
+                },
+                "version" => {
+                    println!("0.1.0");
+                    exit(0);
+                },
+                _ => panic!("Info getter does not expect any extra arguments."),
+            }
         } else {
-            PathBuf::from(".")
-        };
+            target = Path::new(arg).canonicalize().unwrap();
+        }
+    } else {
+        target = PathBuf::from(".").canonicalize().unwrap();
     }
 
     let path = if cfg!(windows) {
