@@ -731,7 +731,7 @@ impl App {
                         ModalType::ReplaceAll => {
                             // TODO: Implement better loop stopping
                             if let Some(modal) = self.modal.take() {
-                                while self.search_num_occurrences != 0 && modal.input != modal.replace_input {
+                                while self.search_num_occurrences != 0 {
                                     self.replace_match();
                                     self.find_next_match();
                                 }
