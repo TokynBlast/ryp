@@ -15,6 +15,7 @@ use aho_corasick::AhoCorasick;
 use serde_json::{json, Value};
 use compact_str::CompactString;
 use rayon::{self, prelude::*};
+use crate::core::{tree, git, terminal};
 
 mod ui;
 
@@ -25,73 +26,74 @@ pub struct SearchResult {
 }
 
 pub struct App {
-    pub editors: Vec<Editor>,
-    pub active_tab: usize,
-    pub config: Config,
-    pub modal: Option<Modal>,
-    pub should_quit: bool,
-    pub syntax_set: SyntaxSet,
-    pub theme_set: ThemeSet,
-    pub workspace: Option<crate::core::tree::FileTree>,
-    pub sidebar_category: SidebarCategory,
-    pub search_query: CompactString,
-    pub search_results: Vec<SearchResult>,
-    pub search_selected: usize,
-    pub search_scroll: usize,
-    pub search_num_files: usize,
-    pub search_num_occurrences: usize,
-    pub search_advanced: Vec<CompactString>,
-    pub git_manager: crate::core::git::GitManager,
-    pub git_changes: Vec<crate::core::git::GitFileChange>,
-    pub git_scroll: usize,
-    pub git_selected: usize,
-    pub settings_selected: usize,
-    pub settings_scroll: usize,
-    pub terminal: crate::core::terminal::Terminal,
-    pub terminal_visible: bool,
-    pub debug_console_visible: bool,
-    pub dirty: bool,
-    pub rx: crossbeam_channel::Receiver<PluginAction>,
-    pub whitespace_cache: Arc<RwLock<Vec<usize>>>,
-    pub host_terminal_height: u16,
-    pub host_terminal_width: u16,
-    pub debug_logs: VecDeque<CompactString>,
-    pub os: CompactString,
-    pub key_pressed: Mutex<Option<CompactString>>,
-    pub focused: bool,
+    pub editors: Vec<Editor>,                                                    // All open editors
+    pub active_tab: usize,                                                       // Current active tab
+    pub config: Config,                                                          // Configuration of editor(s) and plugin(s)
+    pub modal: Option<Modal>,                                                    // Selection windows (confirm leave, new file, etc.)
+    // TODO: Remove this, and return later
+    pub should_quit: bool,                                                       // Whether Ryp should quit or not
+    pub syntax_set: SyntaxSet,                                                   // Syntax set for languages
+    pub theme_set: ThemeSet,                                                     // Highlighting colors
+    pub workspace: Option<tree::FileTree>,                                       // Sidebar things
+    pub sidebar_category: SidebarCategory,                                       // Current sidebar piece open
+    pub search_query: CompactString,                                             // What to look for
+    pub search_results: Vec<SearchResult>,                                       // Results of a serarch
+    pub search_selected: usize,                                                  // Selected search result
+    pub search_scroll: usize,                                                    // Scroll amount on search results
+    pub search_num_files: usize,                                                 // Number of files with contents found
+    pub search_num_occurrences: usize,                                           // Number of times a query found
+    pub search_advanced: Vec<CompactString>,                                     // Advanced search input (*.f, /dev/, etc.)
+    pub git_manager: git::GitManager,                                            // Git
+    pub git_changes: Vec<git::GitFileChange>,                                    // Every change Git found
+    pub git_scroll: usize,                                                       // Scroll on Git
+    pub git_selected: usize,                                                     // File selected in Git view
+    pub settings_selected: usize,                                                // Selected setting
+    pub settings_scroll: usize,                                                  // Settings scroll
+    pub terminal: terminal::Terminal,                                            // Builtin terminal
+    pub terminal_visible: bool,                                                  // If the terminal is visible
+    pub debug_console_visible: bool,                                             // If the debug console is visible
+    pub dirty: bool,                                                             // If the terminal needs to be updated
+    pub rx: crossbeam_channel::Receiver<PluginAction>,                           // Lua plugin reciever
+    pub whitespace_cache: Arc<RwLock<Vec<usize>>>,                               // Where whitespace is in the editor
+    pub host_terminal_height: u16,                                               // True height of terminal we're running in
+    pub host_terminal_width: u16,                                                // True height of terminal we're running in
+    pub debug_logs: VecDeque<CompactString>,                                     // Lua plugin print function routed here
+    pub os: CompactString,                                                       // String of what the OS is (not OsString)
+    pub key_pressed: Mutex<Option<CompactString>>,                               // Which key was pressed
+    pub focused: bool,                                                           // Whether the terminal is focused or not
 }
 
 impl App {
     pub fn new(rx: crossbeam_channel::Receiver<PluginAction>) -> Self {
         Self {
-            editors: vec![],                                                    // All editors open
-            active_tab: 0,                                                      // Current active tab
-            config: crate::config::default(),                                   // Current configuration
-            modal: None,                                                        // Selection windows (confirm leave, new file, etc.)
-            should_quit: false,                                                 // Whether Ryp should quit or not
-            syntax_set: SyntaxSet::load_defaults_newlines(),                    // ???
-            theme_set: ThemeSet::load_defaults(),                               // The current theme
-            workspace: None,                                                    // Filetree, and other stuff
-            sidebar_category: SidebarCategory::FileTree,                        // Current sidebar piece
-            search_query: CompactString::default(),                             // Actual query to look for
-            search_results: vec![],                                             // All results of search
-            search_selected: 0,                                                 // Selected result in searches
-            search_scroll: 0,                                                   // Y index on scroll
-            search_num_files: 0,                                                // Number of files searched for query
-            search_num_occurrences: 0,                                          // Times a query has occured
-            search_advanced: vec![],                                            // Advanced features, like *.mi, etc.
-            git_manager: crate::core::git::GitManager::new(),                   // manager for git
-            git_changes: vec![],                                                // Changes in Git
-            git_scroll: 0,                                                      // Y index on git tab scroll
-            git_selected: 0,                                                    // Git diff file selected
-            settings_selected: 0,                                               // Setting selected
-            settings_scroll: 0,                                                 // Scroll on settings
-            terminal: crate::core::terminal::Terminal::new(PathBuf::from(".")), // The terminal; Defaults to current path
-            terminal_visible: false,                                            // Sets whether the terminal is currently visible or not
-            debug_console_visible: false,                                       // Whether plugin debug console is visible or not
-            dirty: true,                                                        // Whether there have been changes or not to the file(s)
-            rx,                                                                 // Crossbeam send and receive
-            whitespace_cache: Arc::new(RwLock::new(Vec::new())),                // Cache for where whitespace is, used in searching (performance increase)
+            editors: vec![],
+            active_tab: 0,
+            config: crate::config::default(),
+            modal: None,
+            should_quit: false,
+            syntax_set: SyntaxSet::load_defaults_newlines(),
+            theme_set: ThemeSet::load_defaults(),
+            workspace: None,
+            sidebar_category: SidebarCategory::FileTree,
+            search_query: CompactString::default(),
+            search_results: vec![],
+            search_selected: 0,
+            search_scroll: 0,
+            search_num_files: 0,
+            search_num_occurrences: 0,
+            search_advanced: vec![],
+            git_manager: git::GitManager::new(),
+            git_changes: vec![],
+            git_scroll: 0,
+            git_selected: 0,
+            settings_selected: 0,
+            settings_scroll: 0,
+            terminal: terminal::Terminal::new(PathBuf::from(".")),
+            terminal_visible: false,
+            debug_console_visible: false,
+            dirty: true,
+            rx,
+            whitespace_cache: Arc::new(RwLock::new(Vec::new())),
             host_terminal_height: 0,
             host_terminal_width: 0,
             debug_logs: VecDeque::with_capacity(40),
