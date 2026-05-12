@@ -213,10 +213,25 @@ pub fn draw_modal(f: &mut Frame, app: &App, area: Rect) {
                 .borders(Borders::ALL)
                 .style(Style::default().bg(Color::Rgb(50, 50, 50)));
 
-            let text = vec![
+            let mut text: Vec<Line<'_>> = vec![];
+
+            #[cfg(not(any(
+                target_os = "uefi",
+                target_os = "horizon",
+                target_os = "vita",
+                target_os = "redox",
+                target_os = "espidf",
+                target_os = "emscripten",
+                target_arch = "wasm32",
+                target_arch = "wasm64",
+            )))]
+            text.extend([
                 Line::from(" [ NOTE ] "),
                 Line::from(" Ryp requires a nerd font to be viewed properly. "),
-                Line::from(" They include special characters that Ryp uses."),
+                Line::from(" They include special characters that Ryp uses. "),
+            ]);
+
+            text.extend([
                 Line::from(" [ NAVIGATION ] "),
                 Line::from(" Arrows          : Move Cursor "),
                 Line::from(" Shift+Arrow     : Visual Select "),
@@ -237,7 +252,7 @@ pub fn draw_modal(f: &mut Frame, app: &App, area: Rect) {
                     " Press ESC to close ",
                     Style::default().fg(Color::Yellow),
                 )]),
-            ];
+            ]);
 
             let p = Paragraph::new(text)
                 .block(block)
