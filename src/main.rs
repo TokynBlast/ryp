@@ -49,7 +49,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         PathBuf::from(env::var("HOME")?).join(".config").join("ryp")
     };
 
-    let (tx, rx) = crossbeam_channel::unbounded();
+    let (plugin_tx, plugin_rx) = crossbeam_channel::unbounded();
 
     if path.exists() {
         if fs::read_dir(&path.join("plugins"))
@@ -64,13 +64,13 @@ fn main() -> Result<(), Box<dyn Error>> {
 
             // Load in the lua plugins
             // We pass in the plugins, to minimize thrown away work, and minimize mistakes
-            let _ = crate::plugin::plugin_main::load_plugins(path.join("plugins"), tx);
+            let _ = crate::plugin::plugin_main::load_plugins(path.join("plugins"), plugin_tx);
         } else {
-            drop(tx);
+            drop(plugin_tx);
         }
     } else {
         fs::create_dir_all(&path)?;
-        drop(tx);
+        drop(plugin_tx);
     }
 
     execute!(std::io::stdout(), EnableFocusChange)?;
@@ -78,7 +78,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     let mut terminal = ratatui::init();
 
     // Create app and run it
-    let mut app = App::new(rx);
+    let mut app = App::new(plugin_rx);
 
     if target.is_dir() {
         app.load_workspace(&target);
