@@ -33,10 +33,10 @@ fn draw_activity_bar(f: &mut Frame, app: &App, area: Rect) {
     f.render_widget(Block::default().style(background_style), area);
 
     let categories = [
-        (SidebarCategory::FileTree, " 󰉓 "), // File icon
-        (SidebarCategory::Search, " 󰍉 "),   // Search icon
-        (SidebarCategory::Git, " 󰊢 "),      // Git icon
-        (SidebarCategory::Settings, "  "), // Gear icon
+        (SidebarCategory::FileTree, "  "),    // File icon
+        (SidebarCategory::Search, "  "),      // Search icon
+        (SidebarCategory::Git, "  "),         // Git icon
+        (SidebarCategory::Settings, "  "),    // Gear icon
     ];
 
     let mut lines = vec![];
