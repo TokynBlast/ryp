@@ -19,6 +19,9 @@ rayon = "1.12.0"                # Thread pooler
 arc-swap = "1.9.1"              # Arc pointer swapping
 mimalloc = "0.1.50"             # Global allocator
 bumpalo = "3.20.2"              # Grouped allocation
+pgp = "0.19.0"                  # Marketplace PGP verification
+reqwest = { version = "0.13.3", features = ["blocking", "json"] } # Networking
+tokio = "1.52.3"                # Async for networking
 
 # MacOS, Windows, Linux
 [target.'cfg(any(target_os="linux", target_os="windows", target_os="macos"))'.dependencies]
@@ -29,6 +32,7 @@ triomphe = "0.1.15"             # Arc
 portable-pty = "0.9.0"          # Terminal; May support other OSes
 crossterm = "0.29.0"            # Keyboard input
 syntect = "5.3.0"               # Highlighting
+termimad = "0.34.1"             # MD Rendering
 
 # Not Windows, MacOS, or Linux
 [target.'cfg(not(any(target_os="linux", target_os="windows", target_os="macos", target_os="freebsd")))'.dependencies]
