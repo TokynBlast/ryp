@@ -78,36 +78,40 @@ impl Editor {
             self.filepath = Some(path.to_path_buf());
             self.dirty = false;
             self.is_diff = false;
-            self.lang = if let Some(path) = &self.filepath {
-                match path.extension().and_then(|e| e.to_str()) {
-                    Some("cpp") => CompactString::const_new("C++ 󰙲"),
-                    Some("hpp") => CompactString::const_new("C++ Header 󰙲"),
-                    Some("rs") => CompactString::const_new("Rust 󱘗"),
-                    Some("lua") => CompactString::const_new("Lua "),
-                    Some("ll") => CompactString::const_new("LLVM "),
+            self.lang = CompactString::const_new(
+                if let Some(path) = &self.filepath {
+                match path.extension()
+                    .and_then(|e| e.to_str())
+                    .or_else(|| path.file_name().and_then(|n| n.to_str()))
+                    {
+                    Some("cpp") => "C++ 󰙲",
+                    Some("hpp") => "C++ Header 󰙲",
+                    Some("rs") => "Rust 󱘗",
+                    Some("lua") => "Lua ",
+                    Some("ll") => "LLVM ",
                       Some("asm")
-                    | Some("s") => CompactString::const_new("Assembly"),
-                    Some("c") => CompactString::const_new("C 󰙱"),
-                    Some("h")=> CompactString::const_new("C Header 󰙱"),
-                    Some("js") => CompactString::const_new("JavaScript "),
+                    | Some("s") => "Assembly",
+                    Some("c") => "C 󰙱",
+                    Some("h")=> "C Header 󰙱",
+                    Some("js") => "JavaScript ",
                       Some("ml")
-                    | Some("mli") => CompactString::const_new("OCaml "),
-                    Some("html") => CompactString::const_new("HTML "),
-                    Some("md") => CompactString::const_new("MarkDown 󰍔"),
-                    Some("css") => CompactString::const_new("CSS "),
-                    Some("mi") => CompactString::const_new("Minis"),
-                    Some("cs") => CompactString::const_new("C# 󰌛"),
-                    Some("gd") => CompactString::const_new("Godot Script "),
-                    Some("py") => CompactString::const_new("Python 󰌠"),
-                    Some("java") => CompactString::const_new("Java 󰬷"),
-                    Some("fs") => CompactString::const_new("F#"),
-                    Some("fsx") => CompactString::const_new("F# Script"),
-                    Some("bat") => CompactString::const_new("Bash "),
-                    Some("sh") => CompactString::const_new("Shell "),
-                    Some("go") => CompactString::const_new("Go 󰟓"),
-                    Some("php") => CompactString::const_new("PHP 󰌟"),
-                    Some("rb") => CompactString::const_new("Ruby "),
-                    Some("ts") => CompactString::const_new("TypeScript 󰛦"),
+                    | Some("mli") => "OCaml ",
+                    Some("html") => "HTML ",
+                    Some("md") => "MarkDown 󰍔",
+                    Some("css") => "CSS ",
+                    Some("mi") => "Minis",
+                    Some("cs") => "C# 󰌛",
+                    Some("gd") => "Godot Script ",
+                    Some("py") => "Python 󰌠",
+                    Some("java") => "Java 󰬷",
+                    Some("fs") => "F#",
+                    Some("fsx") => "F# Script",
+                    Some("bat") => "Bash ",
+                    Some("sh") => "Shell ",
+                    Some("go") => "Go 󰟓",
+                    Some("php") => "PHP 󰌟",
+                    Some("rb") => "Ruby ",
+                    Some("ts") => "TypeScript 󰛦",
                       Some("f")
                     | Some("for")
                     | Some("f08")
@@ -117,29 +121,31 @@ impl Editor {
                     | Some("F90")
                     | Some("F")
                     | Some("f15")
-                    | Some("f20") => CompactString::const_new("Fortran 󱈚"),
-                    Some("m") => CompactString::const_new("Objective-C "),
-                    Some("mm") => CompactString::const_new("Objective-C++"),
-                    Some("adb") => CompactString::const_new("Ada"),
-                    Some("d") => CompactString::const_new("D "),
-                    Some("mod") => CompactString::const_new("Modula"),
-                    Some("cob") => CompactString::const_new("COBOL"),
-                    Some("a68") => CompactString::const_new("ALGOL"),
-                    Some("ipynb") => CompactString::const_new("Jupyter Notebook"),
-                    Some("red") => CompactString::const_new("Red"),
-                    Some("json") => CompactString::const_new("JSON "),
-                    Some("r") => CompactString::const_new("R "),
-                    Some("lhs") => CompactString::const_new("Haskel "),
-                    Some("xaml") => CompactString::const_new("XAML 󰙳"),
-                    Some("yaml") => CompactString::const_new("YAML "),
-                    Some("kt") => CompactString::const_new("Kotlin "),
-                    Some("kts") => CompactString::const_new("Kotlin Script "),
-                    Some("txt") => CompactString::const_new("Plain Text "),
-                    _ => CompactString::const_new("Unknown"),
+                    | Some("f20") => "Fortran 󱈚",
+                    Some("m") => "Objective-C ",
+                    Some("mm") => "Objective-C++",
+                    Some("adb") => "Ada",
+                    Some("d") => "D ",
+                    Some("mod") => "Modula",
+                    Some("cob") => "COBOL",
+                    Some("a68") => "ALGOL",
+                    Some("ipynb") => "Jupyter Notebook",
+                    Some("red") => "Red",
+                    Some("json") => "JSON ",
+                    Some("r") => "R ",
+                    Some("lhs") => "Haskel ",
+                    Some("xaml") => "XAML 󰙳",
+                    Some("yaml") => "YAML ",
+                    Some("kt") => "Kotlin ",
+                    Some("kts") => "Kotlin Script ",
+                    Some("txt") => "Plain Text ",
+                    Some("toml") => "TOML ",
+                    Some(".gitignore") => "GITIGNORE ",
+                    _ => "Unknown",
                 }
             } else {
-                CompactString::const_new("Unknown")
-            };
+                "Unknown"
+            });
             true
         } else {
             false
