@@ -1,7 +1,7 @@
 # Tools
 - MarkDown previewer
 - Auto file reload on changes
-- Lua plugins
+- Complete marketplace integration
 
 # Bugs
 - Too many lines in the builtin terminal causes a crash
@@ -14,11 +14,6 @@
 - Better documentation
 - Better bindings (or make them more logical)
 - Resource limiting
-- Implement cursor versions of all setters and getters for Lua
-  - editor.str.get.cursor()
-  - editor.str.set.cursor(string)
-  - editor.str.get({x, y})
-  - editor.str.set({x, y}, string)
 
 # Internal
 - Add minimum cells size
