@@ -247,7 +247,7 @@ impl App {
     pub fn load_workspace(&mut self, path: &Path) {
         let path = &path.canonicalize().unwrap_or(path.to_path_buf());
 
-        self.workspace = Some(crate::core::tree::FileTree::new(
+        self.workspace = Some(tree::FileTree::new(
             path.to_path_buf()
         ));
         self.git_manager.set_root(path);
