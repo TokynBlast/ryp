@@ -141,6 +141,7 @@ impl Editor {
                     Some("txt") => "Plain Text ",
                     Some("toml") => "TOML ",
                     Some(".gitignore") => "GITIGNORE ",
+                    Some("lock") => "LOCK file",
                     _ => "Unknown",
                 }
             } else {
