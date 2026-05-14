@@ -15,6 +15,7 @@ use aho_corasick::AhoCorasick;
 use serde_json::{json, Value};
 use compact_str::CompactString;
 use rayon::{self, prelude::*};
+use crossbeam_channel::{Receiver, Sender};
 use crate::core::{tree, git, terminal};
 
 mod ui;
@@ -53,7 +54,7 @@ pub struct App {
     pub terminal_visible: bool,                                                  // If the terminal is visible
     pub debug_console_visible: bool,                                             // If the debug console is visible
     pub dirty: bool,                                                             // If the terminal needs to be updated
-    pub plugin_rx: crossbeam_channel::Receiver<PluginAction>,                    // Lua plugin reciever
+    pub plugin_rx: Receiver<PluginAction>,                                       // Lua plugin reciever
     pub whitespace_cache: Arc<RwLock<Vec<usize>>>,                               // Where whitespace is in the editor
     pub host_terminal_height: u16,                                               // True height of terminal we're running in
     pub host_terminal_width: u16,                                                // True height of terminal we're running in
@@ -64,7 +65,7 @@ pub struct App {
 }
 
 impl App {
-    pub fn new( plugin_rx: crossbeam_channel::Receiver<PluginAction>) -> Self {
+    pub fn new( plugin_rx: Receiver<PluginAction>) -> Self {
         Self {
             editors: vec![],
             active_tab: 0,
