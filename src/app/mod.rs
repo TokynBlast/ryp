@@ -53,7 +53,7 @@ pub struct App {
     pub terminal_visible: bool,                                                  // If the terminal is visible
     pub debug_console_visible: bool,                                             // If the debug console is visible
     pub dirty: bool,                                                             // If the terminal needs to be updated
-    pub rx: crossbeam_channel::Receiver<PluginAction>,                           // Lua plugin reciever
+    pub plugin_rx: crossbeam_channel::Receiver<PluginAction>,                    // Lua plugin reciever
     pub whitespace_cache: Arc<RwLock<Vec<usize>>>,                               // Where whitespace is in the editor
     pub host_terminal_height: u16,                                               // True height of terminal we're running in
     pub host_terminal_width: u16,                                                // True height of terminal we're running in
@@ -64,7 +64,7 @@ pub struct App {
 }
 
 impl App {
-    pub fn new(rx: crossbeam_channel::Receiver<PluginAction>) -> Self {
+    pub fn new( plugin_rx: crossbeam_channel::Receiver<PluginAction>) -> Self {
         Self {
             editors: vec![],
             active_tab: 0,
@@ -92,7 +92,7 @@ impl App {
             terminal_visible: false,
             debug_console_visible: false,
             dirty: true,
-            rx,
+            plugin_rx,
             whitespace_cache: Arc::new(RwLock::new(Vec::new())),
             host_terminal_height: 0,
             host_terminal_width: 0,
@@ -358,7 +358,7 @@ impl App {
 
     pub fn run(&mut self, term: &mut ratatui::DefaultTerminal) -> std::io::Result<()> {
         while !self.should_quit {
-            while let Ok(action) = self.rx.try_recv() {
+            while let Ok(action) = self.plugin_rx.try_recv() {
                 match action {
                     PluginAction::MakeSetting { name, value } => {
                         self.config.insert(name, json!(value));
