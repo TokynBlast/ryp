@@ -14,6 +14,7 @@
 - Better documentation
 - Better bindings (or make them more logical)
 - Resource limiting
+- Explanation boxes for settings on hover
 
 # Internal
 - Add minimum cells size
