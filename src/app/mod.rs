@@ -956,7 +956,9 @@ impl App {
                                 self.git_selected.saturating_sub(1);
                         }
                         SidebarCategory::Settings => {
-                            self.settings_selected = self.settings_selected.saturating_sub(1)
+                            self.settings_selected =
+                                self.settings_selected.saturating_sub(1)
+                        },
                         },
                     },
                     Action::MoveDown(_) => match self.sidebar_category {
