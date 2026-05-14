@@ -17,8 +17,10 @@ use compact_str::CompactString;
 use rayon::{self, prelude::*};
 use crossbeam_channel::{Receiver, Sender};
 use crate::core::{tree, git, terminal};
+use crate::app::marketplace::{MarketplacePlugin, MarketResult};
 
 mod ui;
+pub mod marketplace;
 
 pub struct SearchResult {
     pub filepath: PathBuf,
@@ -62,10 +64,21 @@ pub struct App {
     pub os: CompactString,                                                       // String of what the OS is (not OsString)
     pub key_pressed: Mutex<Option<CompactString>>,                               // Which key was pressed
     pub focused: bool,                                                           // Whether the terminal is focused or not
+    pub marketplace_item_selected: usize,                                        // Number of selected item
+    pub marketplace_plugins: Vec<MarketplacePlugin>,                             // Title and description of every plugin
+    pub marketplace_error: Option<String>,                                       // The error (if any) from reqwest
+    pub market_search_query: CompactString,                                      // Plugin search
+    pub marketplace_listed_items: Vec<MarketplacePlugin>,                        // Every marketplace item listed
+    pub market_rx: Receiver<MarketResult>,                                       // Result of accessing the internet for plugins
+    pub market_tx: Sender<MarketResult>,                                         // Result of accessing the internet for plugins
+    pub online: bool,                                                            // Whether the user has internet or not
 }
 
 impl App {
-    pub fn new( plugin_rx: Receiver<PluginAction>) -> Self {
+    pub fn new( plugin_rx: Receiver<PluginAction>,
+        market_tx: Sender<MarketResult>,
+        market_rx: Receiver<MarketResult>,
+        ) -> Self {
         Self {
             editors: vec![],
             active_tab: 0,
@@ -242,6 +255,14 @@ impl App {
             ),
             key_pressed: Mutex::new(None),
             focused: true,
+            marketplace_item_selected: 0,
+            marketplace_plugins: Vec::new(),
+            marketplace_error: None,
+            market_search_query: CompactString::default(),
+            marketplace_listed_items: vec![],
+            market_rx,
+            market_tx,
+            online: false,
         }
     }
 
@@ -359,6 +380,44 @@ impl App {
 
     pub fn run(&mut self, term: &mut ratatui::DefaultTerminal) -> std::io::Result<()> {
         while !self.should_quit {
+            let market_tx = self.market_tx.clone();
+            let is_online = self.online.clone();
+            rayon::spawn(move || {
+                if online::check(None).is_ok() {
+                    if is_online == false {
+                        let _ = market_tx.send(MarketResult::OnlineSet(true));
+                    }
+                    let result = match reqwest::blocking::get("https://market.ryp.app/search/json") {
+                        Ok(resp) => match resp.json::<Vec<crate::app::MarketplacePlugin>>() {
+                            Ok(plugins) => MarketResult::Results(plugins),
+                            Err(_) => MarketResult::Error(String::from("The list of plugins might be corrupted")),
+                        },
+                        Err(e) if e.is_connect() => MarketResult::Error(String::from("The website might be down")),
+                        Err(e) if e.is_timeout() => MarketResult::Error(String::from("Connection timed out")),
+                        Err(_) => MarketResult::Error(String::from("An unknown error occured")),
+                    };
+                    let _ = market_tx.send(result);
+                } else {
+                    if is_online == true {
+                        let _ = market_tx.send(MarketResult::OnlineSet(false));
+                    }
+                    let _ = market_tx.send(MarketResult::Error(String::from("No internet connection")));
+                }
+            });
+
+            while let Ok(market_result) = self.market_rx.try_recv() {
+                match market_result {
+                    MarketResult::Error(msg) =>
+                        self.marketplace_error = Some(msg),
+                    MarketResult::Results(values) => {
+                        self.marketplace_error = None;
+                        self.marketplace_plugins = values;
+                    },
+                    MarketResult::OnlineSet(online) =>
+                        self.online = online,
+                }
+            }
+
             while let Ok(action) = self.plugin_rx.try_recv() {
                 match action {
                     PluginAction::MakeSetting { name, value } => {
@@ -840,7 +899,8 @@ impl App {
                     SidebarCategory::FileTree => SidebarCategory::Search,
                     SidebarCategory::Search => SidebarCategory::Git,
                     SidebarCategory::Git => SidebarCategory::Settings,
-                    SidebarCategory::Settings => SidebarCategory::FileTree,
+                    SidebarCategory::Settings => SidebarCategory::MarketPlace,
+                    SidebarCategory::MarketPlace => SidebarCategory::FileTree,
                 };
                 if self.sidebar_category == SidebarCategory::Git {
                     self.refresh_git();
@@ -855,10 +915,11 @@ impl App {
                 // TODO: Turn this into a VecDeque so that it is easier to expand later,
                 //       and it becomes a pointer move instead of an if branch
                 self.sidebar_category = match self.sidebar_category {
-                    SidebarCategory::FileTree => SidebarCategory::Settings,
+                    SidebarCategory::FileTree => SidebarCategory::MarketPlace,
+                    SidebarCategory::Settings => SidebarCategory::Git,
                     SidebarCategory::Git => SidebarCategory::Search,
                     SidebarCategory::Search => SidebarCategory::FileTree,
-                    SidebarCategory::Settings => SidebarCategory::Git,
+                    SidebarCategory::MarketPlace => SidebarCategory::Settings,
                 };
                 if self.sidebar_category == SidebarCategory::Git {
                     self.refresh_git();
@@ -933,15 +994,27 @@ impl App {
                 // TODO: Implement move left and right for single file search
                 match action {
                     Action::InsertChar(c) => {
-                        if self.sidebar_category == SidebarCategory::Search {
-                            self.search_query.push(c);
-                            self.perform_search();
+                        match self.sidebar_category {
+                            SidebarCategory::Search => {
+                                self.search_query.push(c);
+                                self.perform_search();
+                            }
+                            SidebarCategory::MarketPlace => {
+                                self.market_search_query.push(c);
+                            }
+                            _ => {}
                         }
                     }
                     Action::BackSpace => {
-                        if self.sidebar_category == SidebarCategory::Search {
-                            self.search_query.pop();
-                            self.perform_search();
+                        match self.sidebar_category {
+                            SidebarCategory::Search => {
+                                self.search_query.pop();
+                                self.perform_search();
+                            }
+                            SidebarCategory::MarketPlace => {
+                                self.market_search_query.pop();
+                            }
+                            _ => {}
                         }
                     }
                     Action::MoveUp(_) => match self.sidebar_category {
@@ -960,6 +1033,9 @@ impl App {
                             self.settings_selected =
                                 self.settings_selected.saturating_sub(1)
                         },
+                        SidebarCategory::MarketPlace => {
+                            self.marketplace_item_selected =
+                                self.marketplace_item_selected.saturating_sub(1)
                         },
                     },
                     Action::MoveDown(_) => match self.sidebar_category {
@@ -982,6 +1058,11 @@ impl App {
                         SidebarCategory::Settings => {
                             if self.settings_selected < self.config.len().saturating_sub(1) {
                                 self.settings_selected += 1;
+                            }
+                        },
+                        SidebarCategory::MarketPlace => {
+                            if self.marketplace_item_selected < self.marketplace_listed_items.len().saturating_sub(1) {
+                                self.marketplace_item_selected += 1;
                             }
                         },
                     },
@@ -1025,6 +1106,9 @@ impl App {
                                     self.dispatch(Action::ChangeSettings);
                                 }
                             },
+                            SidebarCategory::MarketPlace => {
+                                todo!("Implement choosing a marketplace item, and loading the README.md of it, or a \"no README.md found\" note :)\nIt should use termimad, and eventually our own implementation so we can build it up to other OSes more easiy, with a consistent background")
+                            }
                         }
                     }
                     Action::SwitchFocus => {

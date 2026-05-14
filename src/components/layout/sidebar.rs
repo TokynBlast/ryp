@@ -37,6 +37,7 @@ fn draw_activity_bar(f: &mut Frame, app: &App, area: Rect) {
         (SidebarCategory::Search, "  "),      // Search icon
         (SidebarCategory::Git, "  "),         // Git icon
         (SidebarCategory::Settings, "  "),    // Gear icon
+        (SidebarCategory::MarketPlace, "  "), // Market stall icon
     ];
 
     let mut lines = vec![];
@@ -63,6 +64,7 @@ fn draw_sidebar_content(f: &mut Frame, app: &App, area: Rect) {
         SidebarCategory::Search => draw_search_view(f, app, area),
         SidebarCategory::Git => draw_git_view(f, app, area),
         SidebarCategory::Settings => draw_settings_view(f, app, area),
+        SidebarCategory::MarketPlace => draw_marketplace_view(f, app, area),
     }
 }
 
@@ -371,6 +373,113 @@ fn draw_settings_view(f: &mut Frame, app: &App, area: Rect) {
 
         if is_selected {
             f.set_cursor_position((chunks[i].x + 1, chunks[i].y + 1));
+        }
+    }
+}
+
+fn draw_marketplace_view(f: &mut Frame, app: &App, area: Rect) {
+    // TODO: Implement X scrolling when hovering on a plugin with a description
+    //       longer than current view
+    let is_focused =
+        app.workspace.as_ref()
+        .map_or(false, |w| w.focused);
+    let active_style = if is_focused {
+        Style::default()
+            .fg(Color::Yellow)
+            .add_modifier(Modifier::BOLD)
+    } else {
+        Style::default()
+            .fg(Color::Gray)
+            .add_modifier(Modifier::BOLD)
+    };
+
+
+
+    let block = Block::default()
+        .title(" Marketplace ")
+        .borders(Borders::ALL)
+        .border_style(active_style);
+
+    let inner_area = block.inner(area);
+    let marketplace_layout = Layout::default()
+        .direction(Direction::Vertical)
+        .constraints([
+            Constraint::Length(2), // Header (ID + Title + description)
+            Constraint::Min(0),    // Results
+        ])
+        .split(inner_area);
+
+    f.render_widget(block, area);
+
+    // Search input display
+    let search_line = Line::from(vec![
+        Span::styled(" Search: ", Style::default().fg(Color::DarkGray)),
+        Span::styled(&app.market_search_query, Style::default().fg(Color::White)),
+    ]);
+
+
+    // if nothing in query, use a gray "type to search..."
+    let search_query = Paragraph::new(vec![
+        search_line,
+        Line::from(Span::styled("─".repeat(marketplace_layout[0].width as usize), Style::default().fg(Color::Rgb(50, 50, 50))))
+    ]);
+    f.render_widget(search_query, marketplace_layout[0]);
+
+    f.render_widget(Paragraph::new(
+        if app.online {
+            if app.marketplace_listed_items.is_empty() {
+                if !app.market_search_query.is_empty() {
+                    String::from(" No results found.")
+                } else {
+                  String::from(" Loading plugins...")
+                }
+            } else {
+                String::from(" Here are some hot plugins:")
+            }
+        } else {
+          app.marketplace_error.clone().unwrap_or(String::from(" Trying to connect..."))
+        }
+    ), marketplace_layout[1]);
+
+    let mut lines = vec![];
+    for (i, result) in app.marketplace_listed_items.iter().enumerate() {
+        let style = if is_focused && app.marketplace_item_selected == i {
+            Style::default().bg(Color::Rgb(60, 60, 60)).fg(Color::White)
+        } else {
+            Style::default().fg(Color::Gray)
+        };
+
+        let title = result.title
+            .split_once(' ')
+            .map(|(_, rest)| rest)
+            .unwrap_or(&result.title);
+
+        lines.push(Line::from(Span::styled(
+            format!(" {} ", title),
+            style.clone().fg(Color::Cyan)
+        )));
+        lines.push(Line::from(Span::styled(
+            format!(" {} ", result.desc.chars().take(5).collect::<String>()),
+            style
+        )));
+    }
+
+    let height = marketplace_layout[1].height as usize;
+    let scroll_y = if app.marketplace_item_selected * 2 >= height {
+        (app.marketplace_item_selected * 2) - height + 2
+    } else {
+        0
+    };
+
+    // Paragraph::scroll takes (vertical, horizontal)
+    let p = Paragraph::new(lines).scroll((scroll_y as u16, 0));
+    f.render_widget(p, marketplace_layout[1]);
+
+    if is_focused {
+        // Position cursor on selected result
+        let rel_y = (app.marketplace_item_selected * 2) as i32 - scroll_y as i32;
+        if rel_y >= 0 && rel_y < height as i32 {
+            f.set_cursor_position((marketplace_layout[1].x + 1, marketplace_layout[1].y + rel_y as u16));
         }
     }
 }

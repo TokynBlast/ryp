@@ -4,6 +4,7 @@ pub enum SidebarCategory {
     Search,
     Git,
     Settings,
+    MarketPlace,
 }
 
 #[derive(Debug, Clone, PartialEq)]
