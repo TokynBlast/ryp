@@ -651,7 +651,7 @@ impl App {
                 }
             }
 
-            if crossterm::event::poll(Duration::from_millis(10))? {
+            if event::poll(Duration::from_millis(10))? {
                 let event = event::read()?;
                 match event {
                     Event::Key(key) => self.handle_key(key),
