@@ -913,6 +913,7 @@ impl App {
             }
             Action::ToggleDebugConsole => {
                 self.debug_console_visible = !self.debug_console_visible;
+                return;
             }
             _ => {}
         }
