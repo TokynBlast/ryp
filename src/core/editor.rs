@@ -133,7 +133,7 @@ impl Editor {
                     Some("red") => "Red",
                     Some("json") => "JSON ",
                     Some("r") => "R ",
-                    Some("lhs") => "Haskel ",
+                    Some("lhs") => "Haskell ",
                     Some("xaml") => "XAML 󰙳",
                     Some("yaml") => "YAML ",
                     Some("kt") => "Kotlin ",
