@@ -18,3 +18,4 @@
 # Internal
 - Add minimum cells size
 - Implement function pointers for Lua tx detection
+- Fetch a couple of hot items for start of marketplace, then when searching, only request the next 50 items on search, and not typing for one second
