@@ -34,7 +34,7 @@ crossterm = "0.29.0"            # Keyboard input
 syntect = "5.3.0"               # Highlighting
 termimad = "0.34.1"             # MD Rendering
 
-# Not Windows, MacOS, or Linux
+# Not Windows, MacOS, Linux, or FreeBSD
 [target.'cfg(not(any(target_os="linux", target_os="windows", target_os="macos", target_os="freebsd")))'.dependencies]
 cursive = "0.21.1"              # Ratatui replacement
 
