@@ -72,6 +72,7 @@ pub struct App {
     pub market_rx: Receiver<MarketResult>,                                       // Result of accessing the internet for plugins
     pub market_tx: Sender<MarketResult>,                                         // Result of accessing the internet for plugins
     pub online: bool,                                                            // Whether the user has internet or not
+    pub cursor_pos: usize,                                                       // Curosor position for use in sidebar
 }
 
 impl App {
@@ -263,6 +264,7 @@ impl App {
             market_rx,
             market_tx,
             online: false,
+            cursor_pos: 0,
         }
     }
 
@@ -999,8 +1001,12 @@ impl App {
                                 self.search_query.push(c);
                                 self.perform_search();
                             }
-                            SidebarCategory::MarketPlace => {
-                                self.market_search_query.push(c);
+                            SidebarCategory::MarketPlace  => {
+                                if self.cursor_pos == self.search_query.len() {
+                                    self.market_search_query.push(c);
+                                } else {
+                                    self.search_query.insert(self.cursor_pos, c);
+                                }
                             }
                             _ => {}
                         }
@@ -1017,55 +1023,83 @@ impl App {
                             _ => {}
                         }
                     }
-                    Action::MoveUp(_) => match self.sidebar_category {
-                        SidebarCategory::FileTree => {
-                            ws.selected = ws.selected.saturating_sub(1);
-                        }
+                    Action::MoveLeft(shift, ctrl) => match self.sidebar_category {
+                        SidebarCategory::Search | SidebarCategory::MarketPlace | SidebarCategory::Settings =>
+                            self.cursor_pos =
+                                self.cursor_pos.saturating_sub(1),
+                        _ => {}
+                    }
+                    Action::MoveRight(shift, ctrl) => match self.sidebar_category {
                         SidebarCategory::Search => {
-                            self.search_selected =
-                                self.search_selected.saturating_sub(1);
+                            if self.cursor_pos < self.search_query.len() {
+                                self.cursor_pos += 1;
+                            }
                         }
-                        SidebarCategory::Git => {
-                            self.git_selected =
-                                self.git_selected.saturating_sub(1);
-                        }
-                        SidebarCategory::Settings => {
-                            self.settings_selected =
-                                self.settings_selected.saturating_sub(1)
-                        },
                         SidebarCategory::MarketPlace => {
-                            self.marketplace_item_selected =
-                                self.marketplace_item_selected.saturating_sub(1)
-                        },
-                    },
-                    Action::MoveDown(_) => match self.sidebar_category {
-                        SidebarCategory::FileTree => {
-                            let max = ws.flatten().len().saturating_sub(1);
-                            if ws.selected < max {
-                                ws.selected += 1;
-                            }
-                        }
-                        SidebarCategory::Search => {
-                            if self.search_selected < self.search_results.len().saturating_sub(1) {
-                                self.search_selected += 1;
-                            }
-                        }
-                        SidebarCategory::Git => {
-                            if self.git_selected < self.git_changes.len().saturating_sub(1) {
-                                self.git_selected += 1;
+                            if self.cursor_pos < self.market_search_query.len() {
+                                self.cursor_pos += 1;
                             }
                         }
                         SidebarCategory::Settings => {
-                            if self.settings_selected < self.config.len().saturating_sub(1) {
-                                self.settings_selected += 1;
+                            todo!("Implement moving right on settings")
+                        }
+                        _ => {}
+                    }
+                    Action::MoveUp(_) => {
+                        match self.sidebar_category {
+                            SidebarCategory::FileTree => {
+                                ws.selected = ws.selected.saturating_sub(1);
                             }
-                        },
-                        SidebarCategory::MarketPlace => {
-                            if self.marketplace_item_selected < self.marketplace_listed_items.len().saturating_sub(1) {
-                                self.marketplace_item_selected += 1;
+                            SidebarCategory::Search => {
+                                self.search_selected =
+                                    self.search_selected.saturating_sub(1);
                             }
-                        },
-                    },
+                            SidebarCategory::Git => {
+                                self.git_selected =
+                                    self.git_selected.saturating_sub(1);
+                            }
+                            SidebarCategory::Settings => {
+                                self.settings_selected =
+                                    self.settings_selected.saturating_sub(1)
+                            },
+                            SidebarCategory::MarketPlace => {
+                                self.marketplace_item_selected =
+                                    self.marketplace_item_selected.saturating_sub(1)
+                            },
+                        }
+                        self.cursor_pos = 0;
+                    }
+                    Action::MoveDown(_) => {
+                        match self.sidebar_category {
+                            SidebarCategory::FileTree => {
+                                let max = ws.flatten().len().saturating_sub(1);
+                                if ws.selected < max {
+                                    ws.selected += 1;
+                                }
+                            }
+                            SidebarCategory::Search => {
+                                if self.search_selected < self.search_results.len().saturating_sub(1) {
+                                    self.search_selected += 1;
+                                }
+                            }
+                            SidebarCategory::Git => {
+                                if self.git_selected < self.git_changes.len().saturating_sub(1) {
+                                    self.git_selected += 1;
+                                }
+                            }
+                            SidebarCategory::Settings => {
+                                if self.settings_selected < self.config.len().saturating_sub(1) {
+                                    self.settings_selected += 1;
+                                }
+                            },
+                            SidebarCategory::MarketPlace => {
+                                if self.marketplace_item_selected < self.marketplace_listed_items.len().saturating_sub(1) {
+                                    self.marketplace_item_selected += 1;
+                                }
+                            },
+                        }
+                        self.cursor_pos = 0;
+                    }
                     Action::InsertNewline | Action::ModalConfirmForceNewTab => {
                         match self.sidebar_category {
                             SidebarCategory::FileTree => {
