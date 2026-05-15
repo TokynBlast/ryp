@@ -76,7 +76,7 @@ pub struct App {
 }
 
 impl App {
-    pub fn new( plugin_rx: Receiver<PluginAction>,
+    pub fn new(plugin_rx: Receiver<PluginAction>,
         market_tx: Sender<MarketResult>,
         market_rx: Receiver<MarketResult>,
         ) -> Self {
