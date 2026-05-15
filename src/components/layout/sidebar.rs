@@ -158,7 +158,20 @@ fn draw_search_view(f: &mut Frame, app: &App, area: Rect) {
     // Search input display
     let query_line = Line::from(vec![
         Span::styled(" Query: ", Style::default().fg(Color::DarkGray)),
-        Span::styled(&app.search_query, Style::default().fg(Color::White)),
+        Span::styled(
+            app.search_query
+            .char_indices()
+            .rev()
+            .skip(
+                app.search_query
+                .len()
+                .saturating_sub(app.cursor_pos)
+            )
+            .nth(26)
+            .map(|(i, _)| &app.search_query[i..])
+            .unwrap_or(&app.search_query),
+            Style::default().fg(Color::White)
+        ),
     ]);
     let metrics_line = Line::from(vec![
         Span::styled(format!(" Hits: {} in {} files ", app.search_num_occurrences, app.search_num_files), Style::default().fg(Color::Green).bg(Color::Rgb(40, 40, 40))),
@@ -170,6 +183,9 @@ fn draw_search_view(f: &mut Frame, app: &App, area: Rect) {
         Line::from(Span::styled("─".repeat(search_layout[0].width as usize), Style::default().fg(Color::Rgb(50, 50, 50))))
     ]);
     f.render_widget(query_p, search_layout[0]);
+
+
+    f.set_cursor_position((app.cursor_pos.clamp(0, 27) as u16 + 13, 1));
 
     if app.search_results.is_empty() {
         if !app.search_query.is_empty() {
@@ -213,14 +229,6 @@ fn draw_search_view(f: &mut Frame, app: &App, area: Rect) {
     // Paragraph::scroll takes (vertical, horizontal)
     let p = Paragraph::new(lines).scroll((scroll_y as u16, 0));
     f.render_widget(p, search_layout[1]);
-
-    if is_focused {
-        // Position cursor on selected result
-        let rel_y = (app.search_selected * 2) as i32 - scroll_y as i32;
-        if rel_y >= 0 && rel_y < height as i32 {
-            f.set_cursor_position((search_layout[1].x + 1, search_layout[1].y + rel_y as u16));
-        }
-    }
 }
 
 fn draw_git_view(f: &mut Frame, app: &App, area: Rect) {
@@ -287,10 +295,8 @@ fn draw_git_view(f: &mut Frame, app: &App, area: Rect) {
     let p = Paragraph::new(lines).block(block).scroll((scroll_y as u16, 0));
     f.render_widget(p, area);
 
-    if is_focused {
-        // Approximate position for cursor
-        f.set_cursor_position((area.x + 1, area.y + 1));
-    }
+      // Top left of box
+      f.set_cursor_position((area.x + 1, area.y + 1));
 }
 
 //TODO: Make it so that we do less throwing away work, such as the flattened settings
@@ -412,7 +418,20 @@ fn draw_marketplace_view(f: &mut Frame, app: &App, area: Rect) {
     // Search input display
     let search_line = Line::from(vec![
         Span::styled(" Search: ", Style::default().fg(Color::DarkGray)),
-        Span::styled(&app.market_search_query, Style::default().fg(Color::White)),
+        Span::styled(
+            app.market_search_query
+            .char_indices()
+            .rev()
+            .skip(
+                app.market_search_query
+                .len()
+                .saturating_sub(app.cursor_pos)
+            )
+            .nth(24)
+            .map(|(i, _)| &app.market_search_query[i..])
+            .unwrap_or(&app.market_search_query),
+            Style::default().fg(Color::White)
+        ),
     ]);
 
 
@@ -438,6 +457,8 @@ fn draw_marketplace_view(f: &mut Frame, app: &App, area: Rect) {
           app.marketplace_error.clone().unwrap_or(String::from(" Trying to connect..."))
         }
     ), marketplace_layout[1]);
+
+    f.set_cursor_position((app.cursor_pos.clamp(0, 25) as u16 + 14, 1));
 
     let mut lines = vec![];
     for (i, result) in app.marketplace_listed_items.iter().enumerate() {
@@ -472,12 +493,4 @@ fn draw_marketplace_view(f: &mut Frame, app: &App, area: Rect) {
     // Paragraph::scroll takes (vertical, horizontal)
     let p = Paragraph::new(lines).scroll((scroll_y as u16, 0));
     f.render_widget(p, marketplace_layout[1]);
-
-    if is_focused {
-        // Position cursor on selected result
-        let rel_y = (app.marketplace_item_selected * 2) as i32 - scroll_y as i32;
-        if rel_y >= 0 && rel_y < height as i32 {
-            f.set_cursor_position((marketplace_layout[1].x + 1, marketplace_layout[1].y + rel_y as u16));
-        }
-    }
 }

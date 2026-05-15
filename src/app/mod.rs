@@ -709,7 +709,7 @@ impl App {
                     }
                 }
                 Action::ModalDelete => {
-                    modal.pop_char();
+                    modal.remove_char(self.cursor_pos + 1);
                     match modal.modal_type {
                         ModalType::NewFile => self.validate_new_file(),
                         _ => {},
@@ -876,6 +876,7 @@ impl App {
 
         match action {
             Action::SwitchSidebarCategory(category) => {
+                self.cursor_pos = 0;
                 self.sidebar_category = category;
                 if let Some(ws) = &mut self.workspace {
                     ws.focused = true;
@@ -884,6 +885,7 @@ impl App {
                 return;
             }
             Action::NextSidebarCategory => {
+                self.cursor_pos = 0;
                 // TODO: Turn this into a VecDeque so that it is easier to expand later,
                 //       and it becomes a pointer move instead of an if branch
                 self.sidebar_category = match self.sidebar_category {
@@ -903,6 +905,7 @@ impl App {
                 return;
             }
             Action::PrevSidebarCategory => {
+                self.cursor_pos = 0;
                 // TODO: Turn this into a VecDeque so that it is easier to expand later,
                 //       and it becomes a pointer move instead of an if branch
                 self.sidebar_category = match self.sidebar_category {
@@ -987,35 +990,104 @@ impl App {
                     Action::InsertChar(c) => {
                         match self.sidebar_category {
                             SidebarCategory::Search => {
-                                self.search_query.push(c);
+                                self.search_query.insert(self.cursor_pos, c);
                                 self.perform_search();
                             }
-                            SidebarCategory::MarketPlace  => {
-                                if self.cursor_pos == self.search_query.len() {
-                                    self.market_search_query.push(c);
-                                } else {
-                                    self.search_query.insert(self.cursor_pos, c);
-                                }
-                            }
+                            SidebarCategory::MarketPlace => self.market_search_query.insert(self.cursor_pos, c),
                             _ => {}
                         }
+                        self.cursor_pos += 1;
                     }
                     Action::BackSpace => {
                         match self.sidebar_category {
                             SidebarCategory::Search => {
-                                self.search_query.pop();
+                                if self.cursor_pos > 0 && self.search_query.len() > 0 {
+                                    let byte_idx = self.search_query
+                                        .char_indices()
+                                        .nth(self.cursor_pos.saturating_sub(1))
+                                        .map(|(i, _)| i)
+                                        .unwrap();
+                                    self.search_query.remove(byte_idx);
+                                }
                                 self.perform_search();
                             }
                             SidebarCategory::MarketPlace => {
-                                self.market_search_query.pop();
+                                if self.cursor_pos > 0 && self.market_search_query.len() > 0 {
+                                    let byte_idx = self.market_search_query
+                                        .char_indices()
+                                        .nth(self.cursor_pos.saturating_sub(1))
+                                        .map(|(i, _)| i)
+                                        .unwrap();
+                                    self.market_search_query.remove(byte_idx);
+                                }
+                            }
+                            SidebarCategory::Settings => {
+                                todo!("Implement setting backspace on settings")
                             }
                             _ => {}
                         }
+                        self.cursor_pos = self.cursor_pos.saturating_sub(1);
+                    }
+                    Action::DeleteChar => {
+                        match self.sidebar_category {
+                            SidebarCategory::MarketPlace => {
+                                if self.cursor_pos < self.market_search_query.chars().count() {
+                                    let byte_idx = self.market_search_query
+                                        .char_indices()
+                                        .nth(self.cursor_pos)
+                                        .map(|(i, _)| i)
+                                        .unwrap();
+                                    self.market_search_query.remove(byte_idx);
+                                }
+                            }
+                            SidebarCategory::Settings => {
+                                if self.cursor_pos < self.search_query.chars().count() {
+                                    let byte_idx = self.search_query
+                                        .char_indices()
+                                        .nth(self.cursor_pos)
+                                        .map(|(i, _)| i)
+                                        .unwrap();
+                                    self.search_query.remove(byte_idx);
+                                }
+                                self.perform_search();
+                            }
+                            SidebarCategory::Search => {
+                                if self.cursor_pos < self.search_query.chars().count() {
+                                    let byte_idx = self.search_query
+                                        .char_indices()
+                                        .nth(self.cursor_pos)
+                                        .map(|(i, _)| i)
+                                        .unwrap();
+                                    self.search_query.remove(byte_idx);
+                                }
+                            }
+                            SidebarCategory::FileTree => {
+                                todo!("Implement deleting files");
+                            }
+                            _ => {}
+                        }
+                        if self.cursor_pos < self.search_query.chars().count() {
+                          let byte_idx = self.search_query
+                              .char_indices()
+                              .nth(self.cursor_pos)
+                              .map(|(i, _)| i)
+                              .unwrap();
+                          self.search_query.remove(byte_idx);
+                      }
                     }
                     Action::MoveLeft(shift, ctrl) => match self.sidebar_category {
-                        SidebarCategory::Search | SidebarCategory::MarketPlace | SidebarCategory::Settings =>
+                        SidebarCategory::Search => {
                             self.cursor_pos =
-                                self.cursor_pos.saturating_sub(1),
+                                self.cursor_pos.saturating_sub(1);
+                        }
+                        SidebarCategory::MarketPlace => {
+                            self.cursor_pos =
+                                self.cursor_pos.saturating_sub(1);
+                        }
+                        SidebarCategory::Settings => {
+                            self.cursor_pos =
+                                self.cursor_pos.saturating_sub(1);
+                        }
                         _ => {}
                     }
                     Action::MoveRight(shift, ctrl) => match self.sidebar_category {
