@@ -15,9 +15,10 @@ use aho_corasick::AhoCorasick;
 use serde_json::{json, Value};
 use compact_str::CompactString;
 use rayon::{self, prelude::*};
-use crossbeam_channel::{Receiver, Sender};
+use crossbeam_channel::Receiver;
 use crate::core::{tree, git, terminal};
-use crate::app::marketplace::{MarketplacePlugin, MarketResult};
+use crate::app::marketplace::MarketplacePlugin;
+use std::sync::OnceLock;
 
 mod ui;
 pub mod marketplace;
