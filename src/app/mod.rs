@@ -1091,6 +1091,7 @@ impl App {
                         _ => {}
                     }
                     Action::MoveRight(shift, ctrl) => match self.sidebar_category {
+                        // TODO: Implement selection movement
                         SidebarCategory::Search => {
                             if self.cursor_pos < self.search_query.len() {
                                 self.cursor_pos += 1;
