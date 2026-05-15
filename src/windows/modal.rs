@@ -87,6 +87,14 @@ impl Modal {
         }
     }
 
+    pub fn remove_char(&mut self, idx: usize) {
+        if self.focus_replace {
+            self.replace_input.remove(idx);
+        } else {
+            self.input.remove(idx);
+        }
+    }
+
     pub fn toggle_focus(&mut self) {
         if let ModalType::Replace = self.modal_type {
             self.focus_replace = !self.focus_replace;
