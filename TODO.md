@@ -8,6 +8,7 @@
 - Terminal ANSI escape sequences are incomplete
 - Make terminal not cover cursor or bottom info
 - Saving while in Git, saves the Git info to the actual file
+- Search memory, not disk for project search
 
 # QOL
 - Implement larger terminal size (full screen?)
