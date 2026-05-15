@@ -76,10 +76,7 @@ pub struct App {
 }
 
 impl App {
-    pub fn new(plugin_rx: Receiver<PluginAction>,
-        market_tx: Sender<MarketResult>,
-        market_rx: Receiver<MarketResult>,
-        ) -> Self {
+    pub fn new(plugin_rx: Receiver<PluginAction>) -> Self {
         Self {
             editors: vec![],
             active_tab: 0,
@@ -259,10 +256,9 @@ impl App {
             marketplace_item_selected: 0,
             marketplace_plugins: Vec::new(),
             marketplace_error: None,
+            market_state: Arc::new(OnceLock::new()),
             market_search_query: CompactString::default(),
             marketplace_listed_items: vec![],
-            market_rx,
-            market_tx,
             online: false,
             cursor_pos: 0,
         }
@@ -382,42 +378,32 @@ impl App {
 
     pub fn run(&mut self, term: &mut ratatui::DefaultTerminal) -> std::io::Result<()> {
         while !self.should_quit {
-            let market_tx = self.market_tx.clone();
-            let is_online = self.online.clone();
+            let cell = Arc::clone(&self.market_state);
             rayon::spawn(move || {
                 if online::check(None).is_ok() {
-                    if is_online == false {
-                        let _ = market_tx.send(MarketResult::OnlineSet(true));
-                    }
-                    let result = match reqwest::blocking::get("https://market.ryp.app/search/json") {
-                        Ok(resp) => match resp.json::<Vec<crate::app::MarketplacePlugin>>() {
-                            Ok(plugins) => MarketResult::Results(plugins),
-                            Err(_) => MarketResult::Error(String::from("The list of plugins might be corrupted")),
+                    let result = match reqwest::blocking::get("https://market.ryp.app/search/") {
+                        Ok(resp) => match resp.json::<Vec<MarketplacePlugin>>() {
+                            Ok(plugins) => Ok(plugins),
+                            Err(_) => Err(String::from("The list of plugins might be corrupted")),
                         },
-                        Err(e) if e.is_connect() => MarketResult::Error(String::from("The website might be down")),
-                        Err(e) if e.is_timeout() => MarketResult::Error(String::from("Connection timed out")),
-                        Err(_) => MarketResult::Error(String::from("An unknown error occured")),
+                        Err(e) if e.is_connect() => Err(String::from("The website might be down")),
+                        Err(e) if e.is_timeout() => Err(String::from("Connection timed out")),
+                        Err(_) => Err(String::from("An unknown error occured")),
                     };
-                    let _ = market_tx.send(result);
+                    let _ = cell.set((true, result));
                 } else {
-                    if is_online == true {
-                        let _ = market_tx.send(MarketResult::OnlineSet(false));
-                    }
-                    let _ = market_tx.send(MarketResult::Error(String::from("No internet connection")));
+                    let _ = cell.set((false, Err(String::from("No internet connection"))));
                 }
             });
 
-            while let Ok(market_result) = self.market_rx.try_recv() {
-                match market_result {
-                    MarketResult::Error(msg) =>
-                        self.marketplace_error = Some(msg),
-                    MarketResult::Results(values) => {
-                        self.marketplace_error = None;
-                        self.marketplace_plugins = values;
-                    },
-                    MarketResult::OnlineSet(online) =>
-                        self.online = online,
+            if let Some((online, result)) = self.market_state.get() {
+                self.online = *online;
+                match result {
+                    Ok(plugins) => self.marketplace_plugins = plugins.clone(),
+                    Err(msg) => self.marketplace_error = Some(msg.clone()),
                 }
+                // reset for next fetch:
+                self.market_state = Arc::new(OnceLock::new());
             }
 
             while let Ok(action) = self.plugin_rx.try_recv() {

@@ -52,7 +52,6 @@ fn main() -> Result<(), Box<dyn Error>> {
     };
 
     let (plugin_tx, plugin_rx) = crossbeam_channel::unbounded();
-    let (market_tx, market_rx) = crossbeam_channel::unbounded();
 
     if path.exists() {
         if fs::read_dir(&path.join("plugins"))
@@ -81,7 +80,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     let mut terminal = ratatui::init();
 
     // Create app and run it
-    let mut app = App::new(plugin_rx, market_tx, market_rx);
+    let mut app = App::new(plugin_rx);
 
     if target.is_dir() {
         app.load_workspace(&target);
