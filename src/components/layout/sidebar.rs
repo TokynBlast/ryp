@@ -313,8 +313,8 @@ fn draw_settings_view(f: &mut Frame, app: &App, area: Rect) {
     };
 
     struct Setting {
-      title: String,
-      value: String,
+        title: String,
+        value: String,
     }
 
     let mut settings: Vec<Setting> = Vec::new();
