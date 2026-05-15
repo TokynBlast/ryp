@@ -393,8 +393,6 @@ fn draw_marketplace_view(f: &mut Frame, app: &App, area: Rect) {
             .add_modifier(Modifier::BOLD)
     };
 
-
-
     let block = Block::default()
         .title(" Marketplace ")
         .borders(Borders::ALL)

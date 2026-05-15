@@ -724,7 +724,7 @@ impl App {
                     }
                     ModalType::Search => self.find_next_match(),
                     _ => {}
-                },
+                }
                 Action::ModalLeft => {
                     match modal.modal_type {
                         ModalType::ConfirmExit => {
