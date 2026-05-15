@@ -198,7 +198,7 @@ fn draw_search_view(f: &mut Frame, app: &App, area: Rect) {
 
     let mut lines = vec![];
     for (i, result) in app.search_results.iter().enumerate() {
-        let style = if is_focused && app.search_selected == i {
+        let style = if app.search_selected == i {
             Style::default().bg(Color::Rgb(60, 60, 60)).fg(Color::White)
         } else {
             Style::default().fg(Color::Gray)
