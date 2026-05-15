@@ -388,7 +388,7 @@ impl App {
                             Ok(plugins) => Ok(plugins),
                             Err(_) => Err(String::from("The list of plugins might be corrupted")),
                         },
-                        Err(e) if e.is_connect() => Err(String::from("The website might be down")),
+                        Err(e) if e.is_connect() => Err(String::from("The website may be down, or it is blocked")),
                         Err(e) if e.is_timeout() => Err(String::from("Connection timed out")),
                         Err(_) => Err(String::from("An unknown error occured")),
                     };
