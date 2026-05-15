@@ -29,50 +29,50 @@ pub struct SearchResult {
 }
 
 pub struct App {
-    pub editors: Vec<Editor>,                                                    // All open editors
-    pub active_tab: usize,                                                       // Current active tab
-    pub config: Config,                                                          // Configuration of editor(s) and plugin(s)
-    pub modal: Option<Modal>,                                                    // Selection windows (confirm leave, new file, etc.)
+    pub editors: Vec<Editor>,                                                         // All open editors
+    pub active_tab: usize,                                                            // Current active tab
+    pub config: Config,                                                               // Configuration of editor(s) and plugin(s)
+    pub modal: Option<Modal>,                                                         // Selection windows (confirm leave, new file, etc.)
     // TODO: Remove this, and return later
-    pub should_quit: bool,                                                       // Whether Ryp should quit or not
-    pub syntax_set: SyntaxSet,                                                   // Syntax set for languages
-    pub theme_set: ThemeSet,                                                     // Highlighting colors
-    pub workspace: Option<tree::FileTree>,                                       // Sidebar things
-    pub sidebar_category: SidebarCategory,                                       // Current sidebar piece open
-    pub search_query: CompactString,                                             // What to look for
-    pub search_results: Vec<SearchResult>,                                       // Results of a serarch
-    pub search_selected: usize,                                                  // Selected search result
-    pub search_scroll: usize,                                                    // Scroll amount on search results
-    pub search_num_files: usize,                                                 // Number of files with contents found
-    pub search_num_occurrences: usize,                                           // Number of times a query found
-    pub search_advanced: Vec<CompactString>,                                     // Advanced search input (*.f, /dev/, etc.)
-    pub git_manager: git::GitManager,                                            // Git
-    pub git_changes: Vec<git::GitFileChange>,                                    // Every change Git found
-    pub git_scroll: usize,                                                       // Scroll on Git
-    pub git_selected: usize,                                                     // File selected in Git view
-    pub settings_selected: usize,                                                // Selected setting
-    pub settings_scroll: usize,                                                  // Settings scroll
-    pub terminal: terminal::Terminal,                                            // Builtin terminal
-    pub terminal_visible: bool,                                                  // If the terminal is visible
-    pub debug_console_visible: bool,                                             // If the debug console is visible
-    pub dirty: bool,                                                             // If the terminal needs to be updated
-    pub plugin_rx: Receiver<PluginAction>,                                       // Lua plugin reciever
-    pub whitespace_cache: Arc<RwLock<Vec<usize>>>,                               // Where whitespace is in the editor
-    pub host_terminal_height: u16,                                               // True height of terminal we're running in
-    pub host_terminal_width: u16,                                                // True height of terminal we're running in
-    pub debug_logs: VecDeque<CompactString>,                                     // Lua plugin print function routed here
-    pub os: CompactString,                                                       // String of what the OS is (not OsString)
-    pub key_pressed: Mutex<Option<CompactString>>,                               // Which key was pressed
-    pub focused: bool,                                                           // Whether the terminal is focused or not
-    pub marketplace_item_selected: usize,                                        // Number of selected item
-    pub marketplace_plugins: Vec<MarketplacePlugin>,                             // Title and description of every plugin
-    pub marketplace_error: Option<String>,                                       // The error (if any) from reqwest
-    pub market_search_query: CompactString,                                      // Plugin search
-    pub marketplace_listed_items: Vec<MarketplacePlugin>,                        // Every marketplace item listed
-    pub market_rx: Receiver<MarketResult>,                                       // Result of accessing the internet for plugins
-    pub market_tx: Sender<MarketResult>,                                         // Result of accessing the internet for plugins
-    pub online: bool,                                                            // Whether the user has internet or not
-    pub cursor_pos: usize,                                                       // Curosor position for use in sidebar
+    pub should_quit: bool,                                                            // Whether Ryp should quit or not
+    pub syntax_set: SyntaxSet,                                                        // Syntax set for languages
+    pub theme_set: ThemeSet,                                                          // Highlighting colors
+    pub workspace: Option<tree::FileTree>,                                            // Sidebar things
+    pub sidebar_category: SidebarCategory,                                            // Current sidebar piece open
+    pub search_query: CompactString,                                                  // What to look for
+    pub search_results: Vec<SearchResult>,                                            // Results of a serarch
+    pub search_selected: usize,                                                       // Selected search result
+    pub search_scroll: usize,                                                         // Scroll amount on search results
+    pub search_num_files: usize,                                                      // Number of files with contents found
+    pub search_num_occurrences: usize,                                                // Number of times a query found
+    pub search_advanced: Vec<CompactString>,                                          // Advanced search input (*.f, /dev/, etc.)
+    pub git_manager: git::GitManager,                                                 // Git
+    pub git_changes: Vec<git::GitFileChange>,                                         // Every change Git found
+    pub git_scroll: usize,                                                            // Scroll on Git
+    pub git_selected: usize,                                                          // File selected in Git view
+    pub settings_selected: usize,                                                     // Selected setting
+    pub settings_scroll: usize,                                                       // Settings scroll
+    pub terminal: terminal::Terminal,                                                 // Builtin terminal
+    pub terminal_visible: bool,                                                       // If the terminal is visible
+    pub debug_console_visible: bool,                                                  // If the debug console is visible
+    pub dirty: bool,                                                                  // If the terminal needs to be updated
+    pub plugin_rx: Receiver<PluginAction>,                                            // Lua plugin reciever
+    pub whitespace_cache: Arc<RwLock<Vec<usize>>>,                                    // Where whitespace is in the editor
+    pub host_terminal_height: u16,                                                    // True height of terminal we're running in
+    pub host_terminal_width: u16,                                                     // True height of terminal we're running in
+    pub debug_logs: VecDeque<CompactString>,                                          // Lua plugin print function routed here
+    pub os: CompactString,                                                            // String of what the OS is (not OsString)
+    pub key_pressed: Mutex<Option<CompactString>>,                                    // Which key was pressed
+    pub focused: bool,                                                                // Whether the terminal is focused or not
+    pub marketplace_item_selected: usize,                                             // Number of selected item
+    pub marketplace_plugins: Vec<MarketplacePlugin>,                                  // Title and description of every plugin
+    pub marketplace_error: Option<String>,                                            // The error (if any) from reqwest
+    pub market_state: Arc<OnceLock<(bool, Result<Vec<MarketplacePlugin>, String>)>>,  // The state of the maket
+    pub market_search_query: CompactString,                                           // Plugin search
+    pub marketplace_listed_items: Vec<MarketplacePlugin>,                             // Every marketplace item listed
+    pub online: bool,                                                                 // Whether the user has internet or not
+    pub cursor_pos: usize,                                                            // Curosor position for use in sidebar
+    pub resized: bool,                                                                // Whether the terminal has been resized
 }
 
 impl App {
