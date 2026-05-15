@@ -383,7 +383,7 @@ impl App {
             let cell = Arc::clone(&self.market_state);
             rayon::spawn(move || {
                 if online::check(None).is_ok() {
-                    let result = match reqwest::blocking::get("https://market.ryp.app/search/") {
+                    let result = match reqwest::blocking::get("https://json.ryp.app/search/") {
                         Ok(resp) => match resp.json::<Vec<MarketplacePlugin>>() {
                             Ok(plugins) => Ok(plugins),
                             Err(_) => Err(String::from("The list of plugins might be corrupted")),
