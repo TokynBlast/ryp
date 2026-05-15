@@ -1425,7 +1425,32 @@ impl App {
             rayon::spawn(move || {
                 let result: Vec<usize> = lines.par_iter()
                     .enumerate()
-                    .filter(|(_, line)| line.as_bytes().iter().any(|&c| c == b' ' || c == b'\t' || c == b'\n'))
+                    .filter(|(_, line)| line.chars()
+                        .any(|c| matches!(c,
+                            ' ' | '\t' | '\n' | '\r'
+                            | '\u{00A0}' // non-breaking space
+                            | '\u{2002}' // en space
+                            | '\u{2003}' // em space
+                            | '\u{2009}' // thin space
+                            | '\u{200A}' // hair space
+                            | '\u{202F}' // narrow no-break space
+                            | '\u{3000}' // ideographic space
+                            | '\u{000B}' // line tabulation
+                            | '\u{000C}' // form feed
+                            | '\u{0085}' // line feed
+                            | '\u{1680}' // ogham space mark
+                            | '\u{2000}' // en quad
+                            | '\u{2001}' // em quad
+                            | '\u{2004}' // three-per-em space
+                            | '\u{2005}' // four-per-em space
+                            | '\u{2006}' // six-per-em space
+                            | '\u{2007}' // figure space
+                            | '\u{2008}' // punctuation space
+                            | '\u{2028}' // line seperator
+                            | '\u{2029}' // paragraph space
+                            | '\u{205F}' // medium mathematical space
+                        )
+                    ))
                     .map(|(i, _)| i)
                     .collect();
                 let mut guard = cache.write();
