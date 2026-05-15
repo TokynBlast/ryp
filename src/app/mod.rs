@@ -262,6 +262,7 @@ impl App {
             marketplace_listed_items: vec![],
             online: false,
             cursor_pos: 0,
+            resized: false,
         }
     }
 
@@ -619,14 +620,16 @@ impl App {
                 }
             }
 
-            if self.focused {
+            self.resized = term.autoresize().is_ok();
+
+            if self.focused || self.resized {
                 self.dirty = if !self.dirty {
                     self.terminal_visible && self.terminal.update()
                 } else {
-                    term.autoresize().is_ok()
+                    false
                 };
 
-                if self.dirty {
+                if self.dirty || self.focused {
                     // Since dirty is now only triggered on changes, including height,
                     // we set it here to give the most accurate info, with anything that
                     // might access it in the future :)
@@ -635,6 +638,7 @@ impl App {
 
                     term.draw(|f| ui::draw(f, self))?;
                     self.dirty = false;
+                    self.resized = false;
                 }
             }
 
