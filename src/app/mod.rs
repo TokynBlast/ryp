@@ -623,11 +623,9 @@ impl App {
             self.resized = term.autoresize().is_ok();
 
             if self.focused || self.resized {
-                self.dirty = if !self.dirty {
-                    self.terminal_visible && self.terminal.update()
-                } else {
-                    false
-                };
+                if !self.dirty {
+                    self.dirty = self.terminal_visible && self.terminal.update();
+                }
 
                 if self.dirty || self.focused {
                     // Since dirty is now only triggered on changes, including height,
