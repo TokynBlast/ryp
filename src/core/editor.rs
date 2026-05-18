@@ -81,6 +81,8 @@ impl Editor {
             self.lang = CompactString::const_new(
                 if let Some(path) = &self.filepath {
                 // TODO: Implement Naive Bayes algorithm for file detection, rather than rely purely on file ending
+                //       Once we implement that, we can then remove `#[allow(unreachable_patterns)]`
+                #[allow(unreachable_patterns)]
                 match path.extension()
                     .and_then(|e| e.to_str())
                     .or_else(|| path.file_name().and_then(|n| n.to_str())).unwrap()
