@@ -1067,14 +1067,6 @@ impl App {
                             }
                             _ => {}
                         }
-                        if self.cursor_pos < self.search_query.chars().count() {
-                          let byte_idx = self.search_query
-                              .char_indices()
-                              .nth(self.cursor_pos)
-                              .map(|(i, _)| i)
-                              .unwrap();
-                          self.search_query.remove(byte_idx);
-                      }
                     }
                     Action::MoveLeft(shift, ctrl) => match self.sidebar_category {
                         SidebarCategory::Search => {
