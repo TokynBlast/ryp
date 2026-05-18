@@ -377,7 +377,7 @@ fn draw_settings_view(f: &mut Frame, app: &App, area: Rect) {
             .borders(Borders::ALL)
             .border_style(style);
 
-        f.render_widget(Paragraph::new(setting.value.clone()).block(block), chunks[i]);
+        f.render_widget(Paragraph::new(setting.value.as_str()).block(block), chunks[i]);
 
         if is_selected {
             f.set_cursor_position((chunks[i].x + 1, chunks[i].y + 1));
