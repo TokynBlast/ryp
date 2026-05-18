@@ -65,7 +65,7 @@ pub fn draw_modal(f: &mut Frame, app: &App, area: Rect) {
             f.render_widget(p, modal_area);
 
             f.set_cursor_position((
-                modal_area.x + 1 + modal.input.len() as u16,
+                modal_area.x + 1 + app.cursor_pos as u16,
                 modal_area.y + 1,
             ));
         }
