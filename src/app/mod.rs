@@ -293,34 +293,6 @@ impl App {
         }
     }
 
-    // This is just an example, and meant to show it works, since actual logic will be much more complex...
-    pub fn change_settings(&mut self) {
-        if let Some((_, val)) = self.config.get_index_mut(self.settings_selected) {
-            match val {
-                //TODO: Make it a box, that is on or off, like an HTML checkbox
-                Value::Bool(b) => *b = !*b,
-                // TODO: Make it a continuous typing input,
-                //       and escape on enter press, or esc.
-                //
-                //TODO: Also allow for up and down arrow movement
-                //      to change and affect the number
-                //      (Left and right should move cursor)
-                Value::Number(n) => {
-                    if let Some(i) = n.as_i64() {
-                        *val = serde_json::json!(i + 1);
-                    }
-                },
-                // TODO: Make it a continuous typing input,
-                //       and escape on enter press, or esc
-                Value::String(s) => {
-                    *val = Value::String(s.to_string() + "a")
-                }
-
-                _ => return,
-            }
-        }
-    }
-
     pub fn open_file(&mut self, path: &Path, force_new_tab: bool) {
         // Check if file is already open
         let already_open = self.editors.iter().position(|e| {
@@ -948,10 +920,6 @@ impl App {
             }
             Action::OpenDiff(idx) => {
                 self.open_diff(idx);
-                return;
-            }
-            Action::ChangeSettings => {
-                self.change_settings();
                 return;
             }
             Action::OpenNewFileModal => {
