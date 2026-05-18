@@ -126,7 +126,7 @@ impl Editor {
                     "adb" => "Ada",
                     "d" => "D ",
                     "mod" => "Modula",
-                    "cob" => "COBOL",
+                    "cob" | "cbl" | "cpy" | "pco" => "COBOL",
                     "a68" => "ALGOL",
                     "ipynb" => "Jupyter Notebook",
                     "red" => "Red",
