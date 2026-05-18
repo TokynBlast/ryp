@@ -674,13 +674,22 @@ impl App {
                 }
                 Action::ModalInsert(c) => {
                     modal.insert_char(c);
+                    self.cursor_pos += 1;
+                    match modal.modal_type {
+                        ModalType::NewFile => self.validate_new_file(),
+                        _ => {},
+                    }
+                }
+                Action::ModalBackspace => {
+                    self.cursor_pos = self.cursor_pos.saturating_sub(1);
+                    modal.remove_char(self.cursor_pos);
                     match modal.modal_type {
                         ModalType::NewFile => self.validate_new_file(),
                         _ => {},
                     }
                 }
                 Action::ModalDelete => {
-                    modal.remove_char(self.cursor_pos + 1);
+                    modal.remove_char(self.cursor_pos);
                     match modal.modal_type {
                         ModalType::NewFile => self.validate_new_file(),
                         _ => {},
@@ -706,8 +715,8 @@ impl App {
                                 modal.active_button.saturating_sub(1);
                         }
                         ModalType::Search => {
-                            modal.active_button =
-                                modal.active_button.saturating_sub(1);
+                            self.cursor_pos =
+                                self.cursor_pos.saturating_sub(1);
                         }
                         _ => {}
                     }
@@ -715,8 +724,15 @@ impl App {
                 Action::ModalRight => {
                     match modal.modal_type {
                         ModalType::Search => {
-                          // Active button for the search modal is just the cursor position
-                          modal.active_button += 1;
+                            if modal.focus_replace {
+                                if modal.replace_input.len() > self.cursor_pos {
+                                    self.cursor_pos += 1;
+                                }
+                            } else {
+                                if modal.input.len() > self.cursor_pos {
+                                    self.cursor_pos += 1;
+                                }
+                            }
                         }
                         ModalType::ConfirmExit => {
                             if modal.active_button < 1 {
@@ -952,7 +968,6 @@ impl App {
             {
                 let ws = self.workspace.as_mut().unwrap();
                 // TODO: Make these expandable
-                // TODO: Implement move left and right for single file search
                 match action {
                     Action::InsertChar(c) => {
                         match self.sidebar_category {
