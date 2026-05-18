@@ -380,7 +380,7 @@ fn draw_settings_view(f: &mut Frame, app: &App, area: Rect) {
         f.render_widget(Paragraph::new(setting.value.as_str()).block(block), chunks[i]);
 
         if is_selected {
-            f.set_cursor_position((chunks[i].x + 1, chunks[i].y + 1));
+            f.set_cursor_position((chunks[i].x + 1 + app.cursor_pos as u16, chunks[i].y + 1));
         }
     }
 }
