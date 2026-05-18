@@ -1,4 +1,4 @@
-## What Is Ryp
+# What Is Ryp
 
 Ryp is a highly customizable text editor, with the user in mind, running in the temrinal!<br>
 It's lightweight, feature rich, safe, and extensible!<br>
@@ -14,7 +14,7 @@ There are all sorts of features, such as git, plugins, and support for TONS of O
 > [!NOTE]
 > There is currently a Ryp plugin hub being developed, to ease the installing of plugins.
 
-## Requirements
+# Requirements
 ## OS
 `Windows` and `Linux` are the only tested OSes. `Mac`, `Android`, and so on, may have limited, full, or no support at all.<br>
 Currently, suppport for other OSes is being developed.
