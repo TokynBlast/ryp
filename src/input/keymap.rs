@@ -19,7 +19,8 @@ pub fn map_key(key: KeyEvent, in_modal: bool, is_sidebar_focused: bool) -> Optio
                     None
                 }
             }
-            KeyCode::Backspace => Some(Action::ModalDelete),
+            KeyCode::Delete => Some(Action::ModalDelete),
+            KeyCode::Backspace => Some(Action::ModalBackspace),
             KeyCode::Tab => Some(Action::ModalTab),
             KeyCode::Left => Some(Action::ModalLeft),
             KeyCode::Right => Some(Action::ModalRight),

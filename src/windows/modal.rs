@@ -92,9 +92,13 @@ impl Modal {
 
     pub fn remove_char(&mut self, idx: usize) {
         if self.focus_replace {
-            self.replace_input.remove(idx);
+            if idx < self.replace_input.len() {
+                self.replace_input.remove(idx);
+            }
         } else {
-            self.input.remove(idx);
+            if idx < self.input.len() {
+                self.input.remove(idx);
+            }
         }
     }
 

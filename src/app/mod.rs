@@ -989,6 +989,16 @@ impl App {
                                 self.perform_search();
                             }
                             SidebarCategory::MarketPlace => self.market_search_query.insert(self.cursor_pos, c),
+                            SidebarCategory::Settings => {
+                                let setting = self.config
+                                    .get_index(self.settings_selected)
+                                    .map(|(k, _)| k.clone())
+                                    .unwrap_or_default();
+
+                                if let Some(Value::String(s)) = self.config.get_mut(&setting) {
+                                    s.insert(self.cursor_pos, c);
+                                }
+                            }
                             _ => {}
                         }
                         self.cursor_pos += 1;
@@ -1017,7 +1027,21 @@ impl App {
                                 }
                             }
                             SidebarCategory::Settings => {
-                                todo!("Implement setting backspace on settings")
+                                let setting = self.config
+                                    .get_index(self.settings_selected)
+                                    .map(|(k, _)| k.clone())
+                                    .unwrap_or_default();
+
+                                if let Some(Value::String(s)) = self.config.get_mut(&setting) {
+                                    if self.cursor_pos != 0 {
+                                        let byte_idx = s
+                                            .char_indices()
+                                            .nth(self.cursor_pos.saturating_sub(1))
+                                            .map(|(i, _)| i)
+                                            .unwrap();
+                                        s.remove(byte_idx);
+                                    }
+                                }
                             }
                             _ => {}
                         }
@@ -1036,15 +1060,21 @@ impl App {
                                 }
                             }
                             SidebarCategory::Settings => {
-                                if self.cursor_pos < self.search_query.chars().count() {
-                                    let byte_idx = self.search_query
-                                        .char_indices()
-                                        .nth(self.cursor_pos)
-                                        .map(|(i, _)| i)
-                                        .unwrap();
-                                    self.search_query.remove(byte_idx);
+                                let setting = self.config
+                                    .get_index(self.settings_selected)
+                                    .map(|(k, _)| k.clone())
+                                    .unwrap_or_default();
+
+                                if let Some(Value::String(s)) = self.config.get_mut(&setting) {
+                                    if self.cursor_pos < s.chars().count() {
+                                        let byte_idx = s
+                                            .char_indices()
+                                            .nth(self.cursor_pos)
+                                            .map(|(i, _)| i)
+                                            .unwrap();
+                                        s.remove(byte_idx);
+                                    }
                                 }
-                                self.perform_search();
                             }
                             SidebarCategory::Search => {
                                 if self.cursor_pos < self.search_query.chars().count() {
@@ -1097,7 +1127,15 @@ impl App {
                             }
                         }
                         SidebarCategory::Settings => {
-                            todo!("Implement moving right on settings")
+                            let setting = self.config
+                                .get_index(self.settings_selected)
+                                .and_then(|(_, v)| v.as_str())
+                                .unwrap_or_default()
+                                .to_string();
+
+                            if self.cursor_pos < setting.len() {
+                                self.cursor_pos += 1;
+                            }
                         }
                         _ => {}
                     }

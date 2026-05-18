@@ -31,6 +31,7 @@ pub enum Action {
     Quit,
     ModalInsert(char),
     ModalDelete,
+    ModalBackspace,
     ModalTab,
     ModalLeft,
     ModalRight,
