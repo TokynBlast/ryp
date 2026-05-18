@@ -1069,6 +1069,7 @@ impl App {
                         }
                     }
                     Action::MoveLeft(shift, ctrl) => match self.sidebar_category {
+                        // TODO: Implement selection movement
                         SidebarCategory::Search => {
                             self.cursor_pos =
                                 self.cursor_pos.saturating_sub(1);
