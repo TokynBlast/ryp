@@ -2,7 +2,7 @@ use crate::app::App;
 use crate::windows::modal::ModalType;
 use ratatui::{
     Frame,
-    layout::{Constraint, Direction, Layout, Rect},
+    layout::{Alignment, Constraint, Direction, Layout, Rect},
     style::{Color, Modifier, Style},
     text::{Line, Span},
     widgets::{Block, Borders, Clear, Paragraph},
@@ -333,11 +333,11 @@ pub fn draw_modal(f: &mut Frame, app: &App, area: Rect) {
 
             let p = Paragraph::new(text)
                 .block(block)
-                .alignment(modal.modal_type.alignment());
+                .alignment(Alignment::Left);
             f.render_widget(p, modal_area);
 
             f.set_cursor_position((
-                modal_area.x + 8 + modal.input.len() as u16,
+                modal_area.x + 8 + app.cursor_pos as u16,
                 modal_area.y + 2,
             ));
         }
