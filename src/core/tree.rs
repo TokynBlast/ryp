@@ -105,6 +105,33 @@ impl FileTree {
         result
     }
 
+    pub fn delete_file(&mut self) {
+        let flat = self.flatten();
+        if flat.is_empty() || self.selected >= flat.len() {
+            return;
+        }
+
+        let (node_idx, _depth) = flat[self.selected];
+        let path = self.nodes[node_idx].path.clone();
+
+        // Delete from disk
+        if self.nodes[node_idx].is_dir {
+            let _ = std::fs::remove_dir_all(&path);
+        } else {
+            let _ = std::fs::remove_file(&path);
+        }
+
+        // Remove from parent's children list
+        for node in &mut self.nodes {
+            node.children.retain(|&c| c != node_idx);
+        }
+
+        // Adjust selected index
+        if self.selected >= flat.len().saturating_sub(1) {
+            self.selected = self.selected.saturating_sub(1);
+        }
+    }
+
     fn flatten_recursive(&self, node_idx: usize, depth: usize, result: &mut Vec<(usize, usize)>) {
         result.push((node_idx, depth));
         let node = &self.nodes[node_idx];

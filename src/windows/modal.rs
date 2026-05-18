@@ -16,6 +16,7 @@ pub enum ModalType {
     Help,
     NewFile,
     CloseTabPrompt,
+    DeleteFile,
 }
 
 impl ModalType {
@@ -26,13 +27,14 @@ impl ModalType {
             | ModalType::ConfirmExit
             | ModalType::Help
             | ModalType::NewFile
-            | ModalType::CloseTabPrompt => ModalLayout::Popup,
+            | ModalType::CloseTabPrompt
+            | ModalType::DeleteFile => ModalLayout::Popup,
         }
     }
 
     pub fn alignment(&self) -> Alignment {
         match self {
-            ModalType::QuitPrompt | ModalType::ConfirmExit | ModalType::NewFile | ModalType::CloseTabPrompt => Alignment::Center,
+            ModalType::QuitPrompt | ModalType::ConfirmExit | ModalType::NewFile | ModalType::CloseTabPrompt | ModalType::DeleteFile => Alignment::Center,
             _ => Alignment::Left,
         }
     }
@@ -58,6 +60,7 @@ impl Modal {
                 ModalType::ReplaceAll => 0,
                 ModalType::Search => 0,
                 ModalType::NewFile => 0,
+                ModalType::DeleteFile => 0,
                 _ => 0
             };
 

@@ -744,7 +744,7 @@ impl App {
                 }
                 Action::ModalUp => {
                     match modal.modal_type {
-                        ModalType::QuitPrompt | ModalType::CloseTabPrompt => {
+                        ModalType::QuitPrompt | ModalType::CloseTabPrompt | ModalType::DeleteFile => {
                             modal.active_button =
                                 modal.active_button.saturating_sub(1);
                         }
@@ -755,6 +755,11 @@ impl App {
                     match modal.modal_type {
                         ModalType::QuitPrompt | ModalType::CloseTabPrompt => {
                             if modal.active_button < 2 {
+                                modal.active_button += 1;
+                            }
+                        }
+                        ModalType::DeleteFile => {
+                            if modal.active_button < 1 {
                                 modal.active_button += 1;
                             }
                         }
@@ -779,6 +784,14 @@ impl App {
                                 }
                                 self.modal = Some(modal);
                             }
+                        }
+                        ModalType::DeleteFile => {
+                            match modal.active_button {
+                                0 => self.workspace.as_mut().unwrap().delete_file(),
+                                1 => self.modal = None,
+                                _ => {}
+                            }
+                            self.modal = None;
                         }
                         ModalType::QuitPrompt => {
                             match modal.active_button {
@@ -1044,7 +1057,13 @@ impl App {
                                 }
                             }
                             SidebarCategory::FileTree => {
-                                todo!("Implement deleting files");
+                                let ask = serde_json::from_value(self.config.get("Ask Before Delete").clone()
+                                    .unwrap_or(&serde_json::Value::Bool(true)).clone()).unwrap_or(true);
+                                if ask {
+                                    self.modal = Some(crate::windows::modal::Modal::new(ModalType::DeleteFile));
+                                } else {
+                                    ws.delete_file();
+                                }
                             }
                             _ => {}
                         }

@@ -96,6 +96,54 @@ pub fn draw_modal(f: &mut Frame, app: &App, area: Rect) {
             }
         }
         ModalType::ReplaceAll => todo!(),
+        ModalType::DeleteFile => {
+            let block = Block::default()
+                .title(" Deleting ")
+                .borders(Borders::ALL)
+                .style(Style::default().bg(Color::Rgb(50, 50, 50)));
+            let text = vec![
+                Line::from(" Are you sure you want to delete these files? "),
+                Line::from(" Choose an action: "),
+                Line::from(""),
+                Line::from(""),
+                Line::from(""),
+                Line::from(vec![Span::styled(
+                    if modal.active_button == 0 {
+                        " > Delete "
+                    } else {
+                        "   Delete "
+                    },
+                    if modal.active_button == 0 {
+                        Style::default()
+                            .bg(Color::Red)
+                            .fg(Color::White)
+                            .add_modifier(Modifier::BOLD)
+                    } else {
+                        Style::default().fg(Color::Gray)
+                    },
+                )]),
+                Line::from(vec![Span::styled(
+                    if modal.active_button == 1 {
+                        " > Cancel "
+                    } else {
+                        "   Cancel "
+                    },
+                    if modal.active_button == 1 {
+                        Style::default()
+                            .bg(Color::Cyan)
+                            .fg(Color::Black)
+                            .add_modifier(Modifier::BOLD)
+                    } else {
+                        Style::default().fg(Color::Gray)
+                    },
+                )]),
+            ];
+
+            let p = Paragraph::new(text)
+                .block(block)
+                .alignment(modal.modal_type.alignment());
+            f.render_widget(p, modal_area);
+        }
         ModalType::QuitPrompt | ModalType::CloseTabPrompt => {
             let block = Block::default()
                 .title(" Unsaved Changes ")
