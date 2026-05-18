@@ -650,7 +650,6 @@ impl App {
         if let Some(action) = keymap::map_key(key, in_modal, is_tree_focused) {
             self.dispatch(action);
         }
-        // TODO: There might be a simpler way to do this
         self.key_pressed = Mutex::new(Some(CompactString::from(key.code.to_string())));
         self.dirty = true;
     }
