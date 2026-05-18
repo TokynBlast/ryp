@@ -320,7 +320,10 @@ fn draw_settings_view(f: &mut Frame, app: &App, area: Rect) {
     for (key, value) in &app.config {
         settings.push(Setting {
             title: key.clone(),
-            value: value.to_string(),
+            value: match value {
+                serde_json::Value::String(s) => s.clone(),
+                _ => value.to_string(),
+            },
         });
     }
 
