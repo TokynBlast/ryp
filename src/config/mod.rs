@@ -9,8 +9,10 @@ pub fn default() -> Config {
         "Tab Size": 4, // Number of spaces to insert when pressing tab
         "Auto Save": false, // Whether to autosave
         "Time To Auto Save": 30_000, // How long between autosaves
-        "Tab BG Color": "#333333", // The color of the tabs (default is #333333)
-        "Active Tab BG Color": "#2E7D32", // Color of tab currently in (default is #2E7D32)
+        "Tab BG Color": "#A9A9A9", // The color of the tabs
+        "Tab FG Color": "#FFFFFF", // Color of tab foreground
+        "Active Tab FG Color": "#FFFFFF", // Color of the text of the current tab
+        "Active Tab BG Color": "#2E7D32", // Color of tab currently in
         "Highlighting Theme": "base16-ocean.dark", // Highlighting theme for languages
         "Search": "Ctrl+F", // Shortcut to search
         "Help": "Ctrl+K", // Shortcut to open help modal
