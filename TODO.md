@@ -13,7 +13,6 @@
 # QOL
 - Implement larger terminal size (full screen?)
 - Better documentation
-- Better bindings (or make them more logical)
 - Resource limiting
 - Explanation boxes for settings on hover
 

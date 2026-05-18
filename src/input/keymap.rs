@@ -84,7 +84,7 @@ pub fn map_key(key: KeyEvent, in_modal: bool, is_sidebar_focused: bool) -> Optio
                     'r' => Some(Action::OpenReplace),
                     'k' => Some(Action::OpenHelp),
                     'b' => Some(Action::ToggleSidebar),
-                    // TODO: Make CTRL+SHIFT+A/D to tab movement
+                    // TODO: Make CTRL+SHIFT+A/D to tab movement, and CTRL+A select all text
                     'a' | 'A' => Some(Action::PrevTab),
                     'd' | 'D' => Some(Action::NextTab),
                     'w' => Some(Action::CloseTab),

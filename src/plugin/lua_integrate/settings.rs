@@ -75,7 +75,7 @@ pub fn integrate_settings(lua: &mlua::Lua, tx: &crossbeam_channel::Sender<Plugin
         internal_clone.get::<mlua::Value>(key)
     })?)?;
 
-    // TODO: Implement this. This is a safety feature.
+    // TODO: Implement this (shutdown). This is a safety feature.
     //       When a dev tries to modify the table, they become suspicous, and we shouldn't let them continue.
 
     // let tx_shutdown = tx.clone();
