@@ -110,7 +110,18 @@ fn draw_terminal(f: &mut ratatui::Frame, app: &App, area: ratatui::layout::Rect)
     let block = Block::default()
         .title(" Terminal (CTRL+T / F5 / ESC to Hide) ")
         .borders(Borders::ALL)
-        .border_style(Style::default().fg(Color::Cyan));
+        .border_style(Style::default()
+        .fg({
+            let hex = app.config.get("Terminal Outline Color")
+                .and_then(|v| v.as_str())
+                .map(|s| s.trim_start_matches('#'))
+                .filter(|s| s.len() == 6)
+                .unwrap_or("00FFFF");
+            let r = u8::from_str_radix(&hex[0..2], 16).unwrap_or(0);
+            let g = u8::from_str_radix(&hex[2..4], 16).unwrap_or(0);
+            let b = u8::from_str_radix(&hex[4..6], 16).unwrap_or(0);
+            Color::Rgb(r, g, b)
+        }));
 
     // show scrollback + grid rows as lines
     let mut content: Vec<ratatui::text::Line> = Vec::new();
