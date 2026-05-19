@@ -1442,7 +1442,8 @@ impl App {
             let start_x = editor.cursor_x + 1;
 
             for i in 0..total_lines {
-                let y = (start_y + i) % total_lines;
+                let mut y = start_y + i;
+                y = if y >= total_lines { y - total_lines } else { y };
                 let line = &editor.lines[y];
                 let x_offset = if i == 0 { start_x } else { 0 };
 
