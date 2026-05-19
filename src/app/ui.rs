@@ -189,8 +189,18 @@ fn draw_debug(f: &mut ratatui::Frame, app: &App, area: ratatui::layout::Rect) {
     for log in &app.debug_logs {
         content.push(Line::from(vec![
             // Both because it looks cool, and to see where each log starts :)
-            Span::styled(" λ ", Style::default().fg(Color::Gray)),
-            Span::raw(log),
+            Span::styled(format!(" {} {}", app.config.get("Debug Console Character").and_then(|v| v.as_str()).unwrap_or("λ"), log), Style::default()
+            .fg({
+                let hex = app.config.get("Debug Console Font Color")
+                    .and_then(|v| v.as_str())
+                    .map(|s| s.trim_start_matches('#'))
+                    .filter(|s| s.len() == 6)
+                    .unwrap_or("BEBEBE");
+                let r = u8::from_str_radix(&hex[0..2], 16).unwrap_or(0);
+                let g = u8::from_str_radix(&hex[2..4], 16).unwrap_or(0);
+                let b = u8::from_str_radix(&hex[4..6], 16).unwrap_or(0);
+                Color::Rgb(r, g, b)
+            })),
         ]));
     }
 
