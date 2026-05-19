@@ -134,12 +134,16 @@ pub fn draw_editor(f: &mut Frame, app: &App, area: Rect) {
 
         let text_start_x = area.x + 7;
 
-        let mut search_matches = vec![];
+        let mut search_matches: Vec<usize> = vec![];
+        let mut match_starts: Vec<usize> = vec![];
+        let match_len = search_term.as_ref().map(|s| s.chars().count()).unwrap_or(0);
+
         if let Some(ref st) = search_term {
             if !st.is_empty() {
                 for (byte_idx, _) in line.match_indices(st.as_str()) {
                     let c_start = line[0..byte_idx].chars().count();
-                    for c_off in 0..st.chars().count() {
+                    match_starts.push(c_start);
+                    for c_off in 0..match_len {
                         search_matches.push(c_start + c_off);
                     }
                 }
@@ -176,11 +180,20 @@ pub fn draw_editor(f: &mut Frame, app: &App, area: Rect) {
                     if editor.is_selected(char_idx, scroll_y + i) {
                         b_bg = Color::LightBlue;
                         b_fg = Color::Black;
-                    } else if search_matches.contains(&char_idx) {
-                        // TODO: Add different color for current found item
-                        b_bg = Color::LightCyan;
-                        b_fg = Color::Black;
-                        modifier = Modifier::BOLD;
+                      } else if search_matches.contains(&char_idx) {
+                        // find which match this char is part of
+                        let in_selected = match_starts.iter()
+                            .any(|&s| char_idx >= s && char_idx < s + match_len && s == editor.cursor_x && scroll_y + i == editor.cursor_y);
+
+                        if in_selected {
+                            b_bg = Color::Yellow;
+                            b_fg = Color::Black;
+                            modifier = Modifier::BOLD;
+                        } else {
+                            b_bg = Color::Cyan;
+                            b_fg = Color::White;
+                            modifier = Modifier::BOLD;
+                        }
                     }
 
                     let cell = &mut buf[(x, y)];
