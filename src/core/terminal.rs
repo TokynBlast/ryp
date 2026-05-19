@@ -138,9 +138,8 @@ impl Terminal {
                           }
                       }
                       '\x08' => {
-                          if self.grid.cursor_col > 0 {
-                              self.grid.cursor_col -= 1;
-                          }
+                          self.grid.cursor_col =
+                              self.grid.cursor_col.saturating_sub(1);
                       }
                       c => {
                           self.grid.cells[self.grid.cursor_row][self.grid.cursor_col].c = c;

@@ -468,12 +468,12 @@ impl Editor {
         }
 
         if self.cursor_x > 0 {
-            self.cursor_x -= 1;
+            self.cursor_x = self.cursor_x.saturating_sub(1);
             let idx = Self::char_to_byte_idx(&self.lines[self.cursor_y], self.cursor_x);
             self.lines[self.cursor_y].remove(idx);
         } else if self.cursor_y > 0 {
             let current_line = self.lines.remove(self.cursor_y);
-            self.cursor_y -= 1;
+            self.cursor_y = self.cursor_y.saturating_sub(1);
             self.cursor_x = self.lines[self.cursor_y].chars().count();
             self.lines[self.cursor_y].push_str(&current_line);
         }
@@ -575,7 +575,7 @@ impl Editor {
     pub fn move_up(&mut self, shift: bool) {
         self.update_selection(shift);
         if self.cursor_y > 0 {
-            self.cursor_y -= 1;
+            self.cursor_y = self.cursor_y.saturating_sub(1);
             self.cursor_x = self.target_x.min(self.lines[self.cursor_y].len());
         }
     }
@@ -597,19 +597,19 @@ impl Editor {
 
                 // Skip all whitespace
                 while self.cursor_x > 0 && bytes[self.cursor_x - 1] == b' ' {
-                    self.cursor_x -= 1;
+                    self.cursor_x = self.cursor_x.saturating_sub(1);
                 }
 
                 // Skip what isn't whitespace
                 while self.cursor_x > 0 && bytes[self.cursor_x - 1] != b' ' {
-                    self.cursor_x -= 1;
+                    self.cursor_x = self.cursor_x.saturating_sub(1);
                 }
             } else {
-                self.cursor_x -= 1;
+                self.cursor_x = self.cursor_x.saturating_sub(1);
             }
         } else if self.cursor_y > 0 {
             // Move to the end of the previous line
-            self.cursor_y -= 1;
+            self.cursor_y = self.cursor_y.saturating_sub(1);
             self.cursor_x = self.lines[self.cursor_y].len();
         }
         self.target_x = self.cursor_x;
