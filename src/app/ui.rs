@@ -115,7 +115,6 @@ fn draw_terminal(f: &mut ratatui::Frame, app: &App, area: ratatui::layout::Rect)
     // show scrollback + grid rows as lines
     let mut content: Vec<ratatui::text::Line> = Vec::new();
 
-
     // then the active grid
     for (r, row) in app.terminal.grid.cells.iter().enumerate() {
         let line: CompactString = row.iter().map(|c| c.c).collect();
