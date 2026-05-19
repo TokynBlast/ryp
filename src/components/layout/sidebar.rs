@@ -300,14 +300,62 @@ fn draw_git_view(f: &mut Frame, app: &App, area: Rect) {
 }
 
 fn draw_settings_view(f: &mut Frame, app: &App, area: Rect) {
+    let active_bg_color = {
+        let hex = app.config.get("Active Sidebar BG Color")
+            .and_then(|v| v.as_str())
+            .map(|s| s.trim_start_matches('#'))
+            .filter(|s| s.len() == 6)
+            .unwrap_or("FFFF00");
+        let r = u8::from_str_radix(&hex[0..2], 16).unwrap_or(0);
+        let g = u8::from_str_radix(&hex[2..4], 16).unwrap_or(0);
+        let b = u8::from_str_radix(&hex[4..6], 16).unwrap_or(0);
+        Color::Rgb(r, g, b)
+    };
+
+    let inactive_bg_color = {
+        let hex = app.config.get("Sidebar BG Color")
+            .and_then(|v| v.as_str())
+            .map(|s| s.trim_start_matches('#'))
+            .filter(|s| s.len() == 6)
+            .unwrap_or("808080");
+        let r = u8::from_str_radix(&hex[0..2], 16).unwrap_or(0);
+        let g = u8::from_str_radix(&hex[2..4], 16).unwrap_or(0);
+        let b = u8::from_str_radix(&hex[4..6], 16).unwrap_or(0);
+        Color::Rgb(r, g, b)
+    };
+
+    let active_fg_color = {
+        let hex = app.config.get("Active Sidebar FG Color")
+            .and_then(|v| v.as_str())
+            .map(|s| s.trim_start_matches('#'))
+            .filter(|s| s.len() == 6)
+            .unwrap_or("FFFF10");
+        let r = u8::from_str_radix(&hex[0..2], 16).unwrap_or(0);
+        let g = u8::from_str_radix(&hex[2..4], 16).unwrap_or(0);
+        let b = u8::from_str_radix(&hex[4..6], 16).unwrap_or(0);
+        Color::Rgb(r, g, b)
+    };
+
+    let inactive_fg_color = {
+        let hex = app.config.get("Sidebar FG Color")
+            .and_then(|v| v.as_str())
+            .map(|s| s.trim_start_matches('#'))
+            .filter(|s| s.len() == 6)
+            .unwrap_or("898989");
+        let r = u8::from_str_radix(&hex[0..2], 16).unwrap_or(0);
+        let g = u8::from_str_radix(&hex[2..4], 16).unwrap_or(0);
+        let b = u8::from_str_radix(&hex[4..6], 16).unwrap_or(0);
+        Color::Rgb(r, g, b)
+    };
+
     let is_focused = app.workspace.as_ref().map_or(false, |w| w.focused);
     let active_style = if is_focused {
         Style::default()
-            .fg(Color::Yellow)
+            .fg(active_bg_color)
             .add_modifier(Modifier::BOLD)
     } else {
         Style::default()
-            .fg(Color::Gray)
+            .fg(inactive_bg_color)
             .add_modifier(Modifier::BOLD)
     };
 
@@ -367,9 +415,9 @@ fn draw_settings_view(f: &mut Frame, app: &App, area: Rect) {
         let is_selected = is_focused && app.settings_selected == setting_idx;
 
         let style = if is_selected {
-            Style::default().bg(Color::Rgb(60, 60, 60)).fg(Color::White)
+            Style::default().bg(Color::Rgb(60, 60, 60)).fg(active_fg_color)
         } else {
-            Style::default().fg(Color::Gray)
+            Style::default().fg(inactive_fg_color)
         };
 
         let block = Block::default()
