@@ -421,6 +421,8 @@ impl Editor {
                     "zpl" => "ZPL",
                     "zig" => "Zig ",
                     "zon" => "Zonnon",
+                    "sass" => "Sass ",
+                    "hell" => "Malbolge",
                     _ => "Unknown",
                 }
             } else {
