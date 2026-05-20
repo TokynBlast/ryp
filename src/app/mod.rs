@@ -1326,6 +1326,12 @@ impl App {
                 }
                 return;
             }
+            Action::Redo => {
+                todo!("Implement redoing")
+            }
+            Action::Undo => {
+                todo!("Implement undoing")
+            }
             Action::CloseTab => {
                 if self.editors.is_empty() {
                     self.should_quit = true;
