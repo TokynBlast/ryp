@@ -58,4 +58,5 @@ pub enum Action {
     ToggleDebugConsole,
     Undo,
     Redo,
+    OpenCommandPallete,
 }

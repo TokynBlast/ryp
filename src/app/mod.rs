@@ -73,6 +73,13 @@ pub struct App {
     pub online: bool,                                                                 // Whether the user has internet or not
     pub cursor_pos: usize,                                                            // Curosor position for use in sidebar
     pub resized: bool,                                                                // Whether the terminal has been resized
+    pub commands: Vec<&'static str>,                                                  // Commands, and what to do
+    pub plugin_commands: Vec<(String, mlua::Function)>,                                // Funcitons provided by plugins for commands to run
+}
+
+pub fn fuzzy_match(haystack: &str, needle: &str) -> bool {
+  let mut chars = haystack.chars();
+  needle.chars().all(|n| chars.any(|h| h.eq_ignore_ascii_case(&n)))
 }
 
 impl App {
@@ -262,6 +269,8 @@ impl App {
             online: false,
             cursor_pos: 0,
             resized: false,
+            commands: vec!["Open settings window", "Go to end of file", "Go to start of file", "Close Ryp", "Open terminal", "Help"],
+            plugin_commands: vec![],
         }
     }
 
@@ -385,10 +394,13 @@ impl App {
             while let Ok(action) = self.plugin_rx.try_recv() {
                 match action {
                     PluginAction::MakeCommand { name, func } => {
-                        todo!("Implement making commands")
+                        self.plugin_commands.push((name, func));
                     }
                     PluginAction::RemoveCommand { name } => {
-                        todo!("Implement removing commands")
+                        self.plugin_commands
+                            .iter()
+                            .position(|command_name| command_name.0 == name)
+                            .and_then(|pos| Some(self.plugin_commands.remove(pos)));
                     }
                     PluginAction::MakeSetting { name, value } => {
                         self.config.insert(name, json!(value));
@@ -776,6 +788,31 @@ impl App {
                 }
                 Action::ModalConfirm => {
                     match modal.modal_type {
+                        ModalType::CommandPallete => {
+                            let query = modal.input.trim().to_owned();
+
+                            let chosen_command = self.commands
+                                .iter()
+                                .find(|cmd| {
+                                    query.is_empty() || fuzzy_match(cmd, &query)  // free fn, no self
+                                });
+
+                            match chosen_command.unwrap_or(&&"") {
+                                &"Close Ryp" => self.should_quit = true,
+                                &"Open settings window" => todo!("Implement opening the settings window command"),
+                                &"Go to end of file" => todo!("Implement going to end of file"),
+                                &"Go to start of file" => todo!("Implement going to start of file"),
+                                &"Open terminal" => todo!("Implement opening the terminal"),
+                                &"Help" => self.modal = Some(Modal::new(ModalType::Help)),
+                                _ => {
+                                    for command in &self.plugin_commands {
+                                        if Some(&command.0.as_str()) == chosen_command {
+                                            command.1.call::<()>(()).unwrap();
+                                        }
+                                    }
+                                }
+                            }
+                        }
                         ModalType::Search => {
                             self.find_next_match();
                         }
@@ -1358,6 +1395,10 @@ impl App {
                         ws.focused = false;
                     }
                 }
+                return;
+            }
+            Action::OpenCommandPallete => {
+                self.modal = Some(Modal::new(ModalType::CommandPallete));
                 return;
             }
             Action::OpenSearch => {

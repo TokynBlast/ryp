@@ -96,6 +96,56 @@ pub fn draw_modal(f: &mut Frame, app: &App, area: Rect) {
             }
         }
         ModalType::ReplaceAll => todo!(),
+        ModalType::CommandPallete => {
+            let commands_height = modal_area.height;
+            let commands_area = Rect {
+                x: modal_area.x,
+                y: modal_area.y.saturating_sub(commands_height),
+                width: modal_area.width,
+                height: commands_height,
+            };
+
+            let commands_block = Block::default()
+                .borders(Borders::ALL)
+                .merge_borders(MergeStrategy::Exact)
+                .style(Style::default().bg(Color::Rgb(50, 50, 50)));
+
+                let commands_text: Vec<Line> = app.commands
+                    .iter()
+                    .filter(|cmd| {
+                        let query = modal.input.trim();
+                        query.is_empty() || crate::app::fuzzy_match(cmd, query)
+                    })
+                    .map(|cmd| Line::from(format!(" {}", cmd)))
+                    .collect();
+
+            let commands_list = Paragraph::new(commands_text)
+                .block(commands_block);
+
+            f.render_widget(commands_list, commands_area);
+
+            let input_area = Rect {
+                x: modal_area.x,
+                y: modal_area.y,
+                width: modal_area.width,
+                height: 4,
+            };
+
+            let block = Block::default()
+                .title(" Command Pallete ")
+                .borders(Borders::ALL)
+                .merge_borders(MergeStrategy::Exact)
+                .style(Style::default().bg(Color::Rgb(50, 50, 50)));
+            let p = Paragraph::new(modal.input.to_string())
+                .block(block)
+                .alignment(modal.modal_type.alignment());
+            f.render_widget(p, input_area);
+
+            f.set_cursor_position((
+                input_area.x + 1 + app.cursor_pos as u16,
+                input_area.y + 1,
+            ));
+        }
         ModalType::DeleteFile => {
             let block = Block::default()
                 .title(" Deleting ")

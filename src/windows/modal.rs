@@ -17,12 +17,18 @@ pub enum ModalType {
     NewFile,
     CloseTabPrompt,
     DeleteFile,
+    CommandPallete,
 }
 
 impl ModalType {
     pub fn layout(&self) -> ModalLayout {
         match self {
-            ModalType::Search | ModalType::Replace | ModalType::ReplaceAll => ModalLayout::Island,
+            ModalType::Search
+            | ModalType::Replace
+            | ModalType::ReplaceAll
+            | ModalType::CommandPallete
+            => ModalLayout::Island,
+
             ModalType::QuitPrompt
             | ModalType::ConfirmExit
             | ModalType::Help

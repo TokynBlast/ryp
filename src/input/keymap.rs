@@ -101,6 +101,7 @@ pub fn map_key(key: KeyEvent, in_modal: bool, is_sidebar_focused: bool) -> Optio
                     'v' | 'V' => Some(Action::Paste()),
                     'z' | 'Z' => Some(Action::Undo),
                     'y' | 'Y' => Some(Action::Redo),
+                    'p' => Some(Action::OpenCommandPallete),
                     _ => None,
                 }
             } else {
