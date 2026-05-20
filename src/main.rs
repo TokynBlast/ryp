@@ -54,26 +54,37 @@ fn main() -> Result<(), Box<dyn Error>> {
     let (plugin_tx, plugin_rx) = crossbeam_channel::unbounded();
 
     if path.exists() {
-        if fs::read_dir(&path.join("plugins"))
-              .map(|mut entries| entries.next().is_some()) // Check if at least one file exists
-              .unwrap_or(false) {
+        if path.join("config").exists() {
+            if fs::read_dir(&path.join("plugins"))
+                  .map(|mut entries| entries.next().is_some()) // Check if at least one file exists
+                  .unwrap_or(false) {
 
 
+                rayon::ThreadPoolBuilder::new()
+                    .num_threads(3)
+                    .build_global()
+                    .unwrap();
+
+                // Load in the lua plugins
+                // We pass in the plugins, to minimize thrown away work, and minimize mistakes
+                let _ = crate::plugin::plugin_main::load_plugins(path.join("plugins"), plugin_tx);
+            } else {
+                drop(plugin_tx);
+            }
+        } else {
             rayon::ThreadPoolBuilder::new()
-                .num_threads(3)
+                .num_threads(2)
                 .build_global()
                 .unwrap();
-
-            // Load in the lua plugins
-            // We pass in the plugins, to minimize thrown away work, and minimize mistakes
-            let _ = crate::plugin::plugin_main::load_plugins(path.join("plugins"), plugin_tx);
-        } else {
+            fs::create_dir_all(&path.join("plugins"))?;
             drop(plugin_tx);
         }
     } else {
-        fs::create_dir_all(&path)?;
+        fs::create_dir_all(&path.join("plugins"))?;
         drop(plugin_tx);
     }
+
+    fs::File::create(&path.join("config.json"))?;
 
     execute!(std::io::stdout(), EnableFocusChange)?;
 
@@ -88,7 +99,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         app.open_file(&target, false);
     }
 
-    let res = app.run(&mut terminal);
+    let res = app.run(&mut terminal, path);
 
     ratatui::restore();
 

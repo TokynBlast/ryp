@@ -18,7 +18,6 @@ use rayon::{self, prelude::*};
 use crossbeam_channel::Receiver;
 use crate::core::{tree, git, terminal};
 use crate::app::marketplace::MarketplacePlugin;
-use std::sync::OnceLock;
 
 mod ui;
 pub mod marketplace;
@@ -68,7 +67,7 @@ pub struct App {
     pub marketplace_item_selected: usize,                                             // Number of selected item
     pub marketplace_plugins: Vec<MarketplacePlugin>,                                  // Title and description of every plugin
     pub marketplace_error: Option<String>,                                            // The error (if any) from reqwest
-    pub market_state: Arc<OnceLock<(bool, Result<Vec<MarketplacePlugin>, String>)>>,  // The state of the maket
+    pub market_state: Arc<RwLock<(bool, Result<Vec<MarketplacePlugin>, String>)>>,      // The state of the maket
     pub market_search_query: CompactString,                                           // Plugin search
     pub marketplace_listed_items: Vec<MarketplacePlugin>,                             // Every marketplace item listed
     pub online: bool,                                                                 // Whether the user has internet or not
@@ -257,7 +256,7 @@ impl App {
             marketplace_item_selected: 0,
             marketplace_plugins: Vec::new(),
             marketplace_error: None,
-            market_state: Arc::new(OnceLock::new()),
+            market_state: Arc::new(RwLock::new((false, Result::Err(String::from("Attempting to connect..."))))),
             market_search_query: CompactString::default(),
             marketplace_listed_items: vec![],
             online: false,
@@ -350,7 +349,8 @@ impl App {
         }
     }
 
-    pub fn run(&mut self, term: &mut ratatui::DefaultTerminal) -> std::io::Result<()> {
+    pub fn run(&mut self, term: &mut ratatui::DefaultTerminal, config_path: PathBuf) -> std::io::Result<()> {
+        //let cell = Arc::clone(&self.market_state);
         while !self.should_quit {
             let cell = Arc::clone(&self.market_state);
             rayon::spawn(move || {
@@ -364,21 +364,23 @@ impl App {
                         Err(e) if e.is_timeout() => Err(String::from("Connection timed out")),
                         Err(_) => Err(String::from("An unknown error occured")),
                     };
-                    let _ = cell.set((true, result));
+                    *cell.write() = (true, result);
                 } else {
-                    let _ = cell.set((false, Err(String::from("No internet connection"))));
+                    *cell.write() = (false, Err(String::from("No internet connection")));
                 }
             });
 
-            if let Some((online, result)) = self.market_state.get() {
-                self.online = *online;
-                match result {
-                    Ok(plugins) => self.marketplace_plugins = plugins.clone(),
-                    Err(msg) => self.marketplace_error = Some(msg.clone()),
-                }
-                // reset for next fetch:
-                self.market_state = Arc::new(OnceLock::new());
+            let state = self.market_state.read();
+            let (online, result) = &*state;
+            self.online = *online;
+            match result {
+                Ok(plugins) => self.marketplace_plugins = plugins.clone(),
+                Err(msg) => self.marketplace_error = Some(msg.clone()),
             }
+            drop(state);
+
+            let file = std::fs::File::open(config_path.join("config.json"))?;
+            file.try_lock_exclusive()?;
 
             while let Ok(action) = self.plugin_rx.try_recv() {
                 match action {
