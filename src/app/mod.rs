@@ -67,7 +67,7 @@ pub struct App {
     pub marketplace_item_selected: usize,                                             // Number of selected item
     pub marketplace_plugins: Vec<MarketplacePlugin>,                                  // Title and description of every plugin
     pub marketplace_error: Option<String>,                                            // The error (if any) from reqwest
-    pub market_state: Arc<RwLock<(bool, Result<Vec<MarketplacePlugin>, String>)>>,      // The state of the maket
+    pub market_state: Arc<RwLock<(bool, Result<Vec<MarketplacePlugin>, String>)>>,    // The state of the maket
     pub market_search_query: CompactString,                                           // Plugin search
     pub marketplace_listed_items: Vec<MarketplacePlugin>,                             // Every marketplace item listed
     pub online: bool,                                                                 // Whether the user has internet or not
