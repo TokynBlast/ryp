@@ -12,9 +12,20 @@ pub fn default() -> Config {
         "Tab BG Color": "#A9A9A9", // The color of the tabs
         "Tab FG Color": "#FFFFFF", // Color of tab foreground
         "Active Tab FG Color": "#FFFFFF", // Color of the text of the current tab
-        "Active Tab BG Color": "#2E7D32", // Color of tab currently in
+        "Active Tab BG Color": "#EE7101", // Color of tab currently in
+        "Inactive Sidebar BG Color": "#808080", // Color of sidebar when not active
+        "Active Sidebar BG Color": "#EE7101", // Color of sidebar BG when active
+        "Inactive Sidebar Text Color": "#808080", // Color of sidebar FG when inactive
+        "Active Sidebar Text Color": "#EE7101", // Color of sidebar FG when active
+        "Selected Text Font Color": "#000000", // Color of selected text
+        "Highlighted Text BG": "#0084FF", // Color of selected text BG
+        "Editor BG Color": "#323232", // Background color of entire editor
         "Highlighting Theme": "base16-ocean.dark", // Highlighting theme for languages
         "Search": "Ctrl+F", // Shortcut to search
+        "Search Highlight Selected Color BG": "#FFFF00", // BG of current chosen item when searching (modal, !sidebar)
+        "Search Highlight Unselected Color BG": "#00FFFF", // BG of any item not chosen when searching (modal, !sidebar)
+        "Search Highlight Selected Font Color": "#000000", // Font color of selected search item
+        "Search Highlight Unselected Font Color": "#FFFFFF", // Font color of unselected items when searching
         "Help": "Ctrl+K", // Shortcut to open help modal
         "Sidebar Toggle": "Ctrl+B", // Shortcut for opening or closing sidebar
         "Previous Sidebar Tab": "Ctrl+A", // Shortcut to go to the previous tab
@@ -26,6 +37,8 @@ pub fn default() -> Config {
         "Save File": "Ctrl+S", // Shortcut to save current open file
         "Open Terminal": "Ctrl+T", // Shortcut to open the builtin terminal
         "Open Debug Console": "Ctrl+E", // Shortcut to open the plugin debug console
+        "Debug Character": "λ", // Character put next to plugin print outputs
+        "Debug Console": true, // Whether the debug console "exists" or not
     });
 
     // Convert the JSON into an object for IndexMap
