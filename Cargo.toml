@@ -10,7 +10,7 @@ ignore = "0.4.25"               # Git ignore file usage
 crossbeam-channel = "0.5.15"    # Thread data sending
 vt100 = "0.16.2"                # Terminal output handling
 aho-corasick = "1.1.4"          # Efficient searching
-mlua = { version = "0.11.6", features = ["lua55", "serialize", "serde", "vendored"] } # lua
+mlua = { version = "0.11.6", features = ["lua55", "serialize", "serde", "vendored", "send"] } # lua
 indexmap = "2.14.0"             # Pair map
 parking_lot = "0.12.5"          # Thread pausing and other things
 hashbrown = "0.17.0"            # Hash map replacement
