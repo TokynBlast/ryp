@@ -99,7 +99,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         app.open_file(&target, false);
     }
 
-    let res = app.run(&mut terminal, path);
+    let res = app.run(&mut terminal);
 
     ratatui::restore();
 

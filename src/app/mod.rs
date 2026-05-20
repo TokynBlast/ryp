@@ -358,7 +358,7 @@ impl App {
         }
     }
 
-    pub fn run(&mut self, term: &mut ratatui::DefaultTerminal, config_path: PathBuf) -> std::io::Result<()> {
+    pub fn run(&mut self, term: &mut ratatui::DefaultTerminal) -> std::io::Result<()> {
         //let cell = Arc::clone(&self.market_state);
         while !self.should_quit {
             let cell = Arc::clone(&self.market_state);
@@ -387,9 +387,6 @@ impl App {
                 Err(msg) => self.marketplace_error = Some(msg.clone()),
             }
             drop(state);
-
-            let file = std::fs::File::open(config_path.join("config.json"))?;
-            file.try_lock_exclusive()?;
 
             while let Ok(action) = self.plugin_rx.try_recv() {
                 match action {
