@@ -1132,7 +1132,7 @@ impl App {
                                 let ask = serde_json::from_value(self.config.get("Ask Before Delete").clone()
                                     .unwrap_or(&serde_json::Value::Bool(true)).clone()).unwrap_or(true);
                                 if ask {
-                                    self.modal = Some(crate::windows::modal::Modal::new(ModalType::DeleteFile));
+                                    self.modal = Some(Modal::new(ModalType::DeleteFile));
                                 } else {
                                     ws.delete_file();
                                 }
@@ -1345,7 +1345,7 @@ impl App {
                     // For now, reuse QuitPrompt but it leads to quitting the app.
                     // In a future refactor we might want to distinguish.
                     // But the user's primary request is about the non-dirty last tab.
-                    self.modal = Some(crate::windows::modal::Modal::new(ModalType::CloseTabPrompt));
+                    self.modal = Some(Modal::new(ModalType::CloseTabPrompt));
                 } else {
                     self.close_current_editor();
                 }
@@ -1367,9 +1367,9 @@ impl App {
 
                 if any_dirty {
                     if self.editors.len() > 1 {
-                        self.modal = Some(crate::windows::modal::Modal::new(ModalType::ConfirmExit));
+                        self.modal = Some(Modal::new(ModalType::ConfirmExit));
                     } else {
-                        self.modal = Some(crate::windows::modal::Modal::new(ModalType::QuitPrompt));
+                        self.modal = Some(Modal::new(ModalType::QuitPrompt));
                     }
                 } else {
                     self.should_quit = true;
