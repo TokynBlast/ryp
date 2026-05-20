@@ -1,4 +1,3 @@
-use compact_str::CompactString;
 use mlua::{Lua, Result, StdLib};
 use crate::plugin::action::PluginAction;
 use std::{fs, path::PathBuf};
@@ -32,13 +31,13 @@ fn spawn_lua_worker(plugin_path: PathBuf, action_tx: crossbeam_channel::Sender<P
             // Especially in the future
             if let Err(e) = lua.set_memory_limit(10 * 1024 * 1024) {
                 let _ = action_tx.send(PluginAction::DebugLog {
-                    message: CompactString::from(format!("Memory limit error: {}", e))
+                    message: format!("Memory limit error: {}", e)
                 });
             }
 
             // Compile the script
             if let Err(e) = lua.load(&script).exec() {
-                let _ = action_tx.send(PluginAction::DebugLog { message: CompactString::from(format!("Script Load Error: {}", e)) });
+                let _ = action_tx.send(PluginAction::DebugLog { message: format!("Script Load Error: {}", e) });
                 return; // Can't continue if the script is broken
             }
 
@@ -56,7 +55,7 @@ fn spawn_lua_worker(plugin_path: PathBuf, action_tx: crossbeam_channel::Sender<P
             loop {
                 if let Some(ref f) = run_fn {
                     if let Err(e) = f.call::<()>(()) {
-                        let _ = action_tx.send(PluginAction::DebugLog { message: CompactString::from(e.to_string()) });
+                        let _ = action_tx.send(PluginAction::DebugLog { message: e.to_string() });
                     }
                 }
 

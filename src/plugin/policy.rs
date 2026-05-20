@@ -92,7 +92,7 @@ pub fn apply_restrictions(lua: &Lua, tx: crossbeam_channel::Sender<crate::plugin
             .collect::<Vec<_>>()
             .join(" ");
 
-        let _ = tx.send(PluginAction::DebugLog { message: compact_str::CompactString::from(msg) });
+        let _ = tx.send(PluginAction::DebugLog { message: msg });
 
         Ok(())
     })?;

@@ -398,7 +398,7 @@ impl App {
                         responder.signal.notify_one();
                     }
                     PluginAction::DebugLog { message } => {
-                        self.debug_logs.push_back(message);
+                        self.debug_logs.push_back(CompactString::from(message));
                         if self.debug_console_visible {
                             self.dirty = true;
                         }
@@ -413,7 +413,7 @@ impl App {
                         let mut lock = responder.string.lock();
 
                         if self.focused {
-                            *lock = self.key_pressed.lock().take();
+                            *lock = self.key_pressed.lock().take().map(|key| key.to_string());
                         } else {
                             *lock = None;
                         }
@@ -431,7 +431,7 @@ impl App {
                                 CompactString::default()
                             };
                             let mut lock = responder.string.lock();
-                            *lock = Some(val);
+                            *lock = Some(String::from(val));
                             responder.signal.notify_one();
                         }
                     }
@@ -480,14 +480,14 @@ impl App {
                                 CompactString::default()
                             };
                             let mut lock = responder.string.lock();
-                            *lock = Some(val);
+                            *lock = Some(String::from(val));
                             responder.signal.notify_one();
                         }
                     }
                     PluginAction::SetLine { line, contents } => {
                         if let Some(editor) = self.current_editor_mut() {
                             if line <= editor.lines.len() {
-                                editor.lines[line] = contents;
+                                editor.lines[line] = CompactString::from(contents);
                                 editor.dirty = true;
                             }
                             self.dirty = true;

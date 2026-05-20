@@ -1,6 +1,5 @@
 use parking_lot::{Mutex, Condvar};
 use triomphe::Arc;
-use compact_str::CompactString;
 
 #[derive(Debug)]
 pub struct SerdeResponder {
@@ -21,7 +20,7 @@ pub struct UsizeVecResponder {
 
 #[derive(Debug)]
 pub struct StrResponder {
-    pub string: Mutex<Option<CompactString>>,
+    pub string: Mutex<Option<String>>,
     pub signal: Condvar
 }
 
@@ -35,9 +34,9 @@ pub struct CharResponder {
 pub enum PluginAction {
     MakeSetting { name: String, value: serde_json::Value },
     GetSettingValue { name: String, responder: Arc<SerdeResponder> },
-    DebugLog { message: CompactString },
+    DebugLog { message: String },
     SetSetting { name: String, value: serde_json::Value },
-    InsertStrAtCursor { txt: CompactString },
+    InsertStrAtCursor { txt: String },
     GetKeyPress { responder: Arc<StrResponder> },
     GetCursorPos { responder: Arc<UsizeVecResponder> },
     GetCursorX { responder: Arc<UsizeResponder> },
@@ -46,14 +45,16 @@ pub enum PluginAction {
     SetCursorY { y: usize },
     SetCursorPos { pos: Vec<usize> },
     GetLine { line: usize, responder: Arc<StrResponder> },
-    SetLine { line: usize, contents: CompactString },
-    SetStrAt { from: Vec<usize>, to: Vec<usize>, txt: CompactString },
+    SetLine { line: usize, contents: String },
+    SetStrAt { from: Vec<usize>, to: Vec<usize>, txt: String },
     GetStrAt { from: Vec<usize>, to: Vec<usize>, responder: Arc<StrResponder> },
-    InsertStrAt { pos: Vec<usize>,txt: CompactString },
+    InsertStrAt { pos: Vec<usize>,txt: String },
     SetCharAt { pos: Vec<usize>, c: char },
     SetCharAtCursor { c: char },
     GetCharAt { pos: Vec<usize>, responder: Arc<CharResponder> },
     GetCharAtCursor { responder: Arc<CharResponder> },
     InsertCharAt { pos: Vec<usize>, c: char },
     InsertCharAtCursor { c: char },
+    MakeCommand { name: String, func: mlua::Function },
+    RemoveCommand { name: String },
 }

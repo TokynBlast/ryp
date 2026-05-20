@@ -1,4 +1,3 @@
-use compact_str::CompactString;
 use parking_lot::{Mutex, Condvar};
 use triomphe::Arc;
 use mlua::{self, LuaSerdeExt};
@@ -10,7 +9,7 @@ fn set_line_at(lua: &mlua::Lua, tx: &Sender<PluginAction>, insert_table: &mlua::
     let tx = tx.clone();
     insert_table.set("line",
         lua.create_function(move |_lua, (line, contents) : (usize, String)| {
-            let _ = tx.send(PluginAction::SetLine { line, contents: CompactString::from(contents) });
+            let _ = tx.send(PluginAction::SetLine { line, contents: contents });
             Ok(())
         })?
     )
@@ -21,7 +20,7 @@ fn set_str_at(lua: &mlua::Lua, tx: &Sender<PluginAction>, set_table: &mlua::Tabl
     let tx = tx.clone();
     set_table.set("str",
         lua.create_function(move |_lua, (from, to, txt) : (Vec<usize>, Vec<usize>, String)| {
-            let _ = tx.send(PluginAction::SetStrAt { from, to, txt: CompactString::from(txt) });
+            let _ = tx.send(PluginAction::SetStrAt { from, to, txt: txt });
             Ok(())
         })?
     )
@@ -126,7 +125,7 @@ fn insert_char_at(lua: &mlua::Lua, tx: &Sender<PluginAction>, insert_table: &mlu
     let tx = tx.clone();
     insert_table.set("char",
         lua.create_function(move |_lua, (pos, txt) : (Vec<usize>, String)| {
-            let _ = tx.send(PluginAction::InsertStrAt { pos, txt: CompactString::from(txt) });
+            let _ = tx.send(PluginAction::InsertStrAt { pos, txt: txt });
             Ok(())
         })?
     )
@@ -176,7 +175,7 @@ fn insert_str_at_cursor(lua: &mlua::Lua, tx: &Sender<PluginAction>, insert_table
     let tx = tx.clone();
     insert_table.set("cursor",
         lua.create_function(move |_lua, txt: String| {
-            let _ = tx.send(PluginAction::InsertStrAtCursor { txt: CompactString::from(txt) });
+            let _ = tx.send(PluginAction::InsertStrAtCursor { txt: txt });
             Ok(())
         })?
     )
@@ -187,7 +186,7 @@ fn insert_str_at(lua: &mlua::Lua, tx: &Sender<PluginAction>, insert_table: &mlua
     let tx = tx.clone();
     insert_table.set("str",
         lua.create_function(move |_lua, txt: String| {
-            let _ = tx.send(PluginAction::InsertStrAtCursor { txt: CompactString::from(txt) });
+            let _ = tx.send(PluginAction::InsertStrAtCursor { txt: txt });
             Ok(())
         })?
     )
