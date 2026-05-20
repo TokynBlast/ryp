@@ -6,6 +6,7 @@ use ratatui::{
     style::{Color, Modifier, Style},
     text::{Line, Span},
     widgets::{Block, Borders, Clear, Paragraph},
+    symbols::merge::MergeStrategy,
 };
 
 pub fn draw_modal(f: &mut Frame, app: &App, area: Rect) {
