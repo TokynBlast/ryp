@@ -146,6 +146,7 @@ pub fn draw_modal(f: &mut Frame, app: &App, area: Rect) {
                 input_area.y + 1,
             ));
         }
+        ModalType::Settings => todo!("Implement larger popout settings modal"),
         ModalType::DeleteFile => {
             let block = Block::default()
                 .title(" Deleting ")

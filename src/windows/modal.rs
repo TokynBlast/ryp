@@ -18,6 +18,7 @@ pub enum ModalType {
     CloseTabPrompt,
     DeleteFile,
     CommandPallete,
+    Settings,
 }
 
 impl ModalType {
@@ -34,7 +35,9 @@ impl ModalType {
             | ModalType::Help
             | ModalType::NewFile
             | ModalType::CloseTabPrompt
-            | ModalType::DeleteFile => ModalLayout::Popup,
+            | ModalType::DeleteFile
+            | ModalType::Settings
+            => ModalLayout::Popup,
         }
     }
 
