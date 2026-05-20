@@ -382,6 +382,12 @@ impl App {
 
             while let Ok(action) = self.plugin_rx.try_recv() {
                 match action {
+                    PluginAction::MakeCommand { name, func } => {
+                        todo!("Implement making commands")
+                    }
+                    PluginAction::RemoveCommand { name } => {
+                        todo!("Implement removing commands")
+                    }
                     PluginAction::MakeSetting { name, value } => {
                         self.config.insert(name, json!(value));
                     }
