@@ -133,6 +133,8 @@ impl App {
                     // Since some distros like Bodhi have Ubuntu as NAME, but Bodhi [version] as PRETTY_NAME
                     //
                     // ID is a similar story
+                    //
+                    // We could also parse ID_LIKE to get an idea on the logo to use, and dynamically build
                     let linux_name = String::from_utf8(
                         fs::read("/etc/os-release")
                             .unwrap_or_else(|_| b"NAME=\"THIS IS NOT LINUX\"".to_vec())
