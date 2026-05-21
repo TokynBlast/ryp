@@ -117,7 +117,7 @@ impl App {
             host_terminal_height: 0,
             host_terminal_width: 0,
             debug_logs: VecDeque::with_capacity(40),
-            os: CompactString::const_new(
+            os: CompactString::new(
                 if cfg!(target_os = "windows") {
                     "Windows "
                 } else if cfg!(target_os = "macos"){
