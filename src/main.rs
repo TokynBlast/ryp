@@ -87,7 +87,9 @@ fn main() -> Result<(), Box<dyn Error>> {
         drop(plugin_tx);
     }
 
-    fs::File::create(&path.join("config.json"))?;
+    if !fs::exists(&path.join("config.json")).unwrap_or(false) {
+        fs::File::create(&path.join("config.json"))?;
+    }
 
     execute!(std::io::stdout(), EnableFocusChange)?;
 
