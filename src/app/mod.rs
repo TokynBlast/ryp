@@ -141,7 +141,7 @@ impl App {
                         .lines()
                         .find(|line| line.starts_with("NAME="))
                         .and_then(|line| line.splitn(2, '=').nth(1))
-                        .map(|value| value.trim_end_matches('"'))
+                        .map(|value| value.trim_matches('"'))
                         .unwrap();
                     match linux_name {
                         "Pop!_OS" => "Pop!_OS ",
