@@ -130,7 +130,7 @@ impl App {
                 } else if cfg!(target_os = "linux") {
                     use os_info::Type::*;
                     match os_info::get().os_type() {
-                        Pop => "!Pop_OS ",
+                        Pop => "Pop!_OS ",
                         Arch => "Arch Linux 󰣇",
                         Fedora => "Fedora ",
                         Gentoo => "Gentoo ",
