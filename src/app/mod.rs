@@ -6,6 +6,7 @@ use crate::plugin::action::PluginAction;
 use crossterm::event::{self, Event};
 use hashbrown::HashSet;
 use std::collections::VecDeque;
+use std::fs;
 use std::time::Duration;
 use syntect::{parsing::SyntaxSet, highlighting::ThemeSet};
 use std::path::{Path, PathBuf};
@@ -128,37 +129,49 @@ impl App {
                 } else if cfg!(target_os = "visionos") {
                     "VisionOS "
                 } else if cfg!(target_os = "linux") {
-                    use os_info::Type::*;
-                    match os_info::get().os_type() {
-                        Pop => "Pop!_OS ",
-                        Arch => "Arch Linux 󰣇",
-                        Fedora => "Fedora ",
-                        Gentoo => "Gentoo ",
-                        Redhat
-                        | RedHatEnterprise => "Redhat ",
-                        AlmaLinux => "AlmaLinux ",
-                        AOSC => "AOSC ",
-                        Artix => "Artix ",
-                        CentOS => "CentOS ",
-                        Cygwin => "Cygwin ",
-                        Debian => "Debian ",
-                        Elementary => "ElementaryOS ",
-                        EndeavourOS => "EndeavourOS ",
-                        Garuda => "Garuda ",
-                        Illumos => "Illumos ",
-                        Kali => "Kali Linux ",
-                        Manjaro => "Manjaro ",
-                        Mint => "Linux Mint 󰣭",
-                        NixOS => "NixOS ",
-                        Nobara => "Nobara ",
-                        Raspbian => "Raspbian ",
-                        RockyLinux => "RockyLinux ",
-                        openSUSE => "openSUSE ",
-                        SUSE => "SUSE ",
-                        Solus => "Solus ",
-                        Ubuntu => "Ubuntu 󰕈",
-                        Void => "Void Linux ",
-                        Zorin => "Zorin ",
+                    // In the future, we could parse PRETTY_NAME too, to get a better hint at what the OS is
+                    // Since some distros like Bodhi have Ubuntu as NAME, but Bodhi [version] as PRETTY_NAME
+                    //
+                    // ID is a similar story
+                    let linux_name = String::from_utf8(
+                        fs::read("/etc/os-release")
+                            .unwrap_or_else(|_| b"NAME=\"THIS IS NOT LINUX\"".to_vec())
+                    ).unwrap();
+                    let linux_name = linux_name
+                        .lines()
+                        .find(|line| line.starts_with("NAME="))
+                        .and_then(|line| line.splitn(2, '=').nth(1))
+                        .map(|value| value.trim_end_matches('"'))
+                        .unwrap();
+                    match linux_name {
+                        "Pop!_OS" => "Pop!_OS ",
+                        "Arch Linux" | "Arch Linux 32" => "Arch Linux 󰣇",
+                        "Fedora Linux" => "Fedora ",
+                        "Gentoo Linux" => "Gentoo ",
+                        "Red Hat Linux" | "Red Hat Enterprise Linux" => "Red Hat ",
+                        "AlmaLinux" => "AlmaLinux ",
+                        "AOSC OS" => "AOSC ",
+                        "Artix Linux" => "Artix ",
+                        "CentOS" | "CentOS Linux" | "CentOS Stream" => "CentOS ",
+                        "Cygwin" => "Cygwin ",
+                        "Debian GNU/Linux" => "Debian ",
+                        "elementary OS" => "ElementaryOS ",
+                        "EndeavourOS" => "EndeavourOS ",
+                        "Garuda Linux" => "Garuda ",
+                        "illumos" => "Illumos ",
+                        "Kali GNU/Linux" => "Kali Linux ",
+                        "Manjaro Linux" => "Manjaro ",
+                        "Linux Mint" => "Linux Mint 󰣭",
+                        "NixOS" => "NixOS ",
+                        "Nobara Linux" => "Nobara ",
+                        "Raspbian GNU/Linux" => "Raspbian ",
+                        "Rocky Linux" => "RockyLinux ",
+                        "openSUSE" | "openSUSE Leap" | "openSUSE Tumbleweed" => "openSUSE ",
+                        "SLES" | "SUSE Linux Enterprise Server" => "SUSE ",
+                        "Solus" => "Solus ",
+                        "Ubuntu" => "Ubuntu 󰕈",
+                        "Void Linux" => "Void Linux ",
+                        "Zorin OS" => "Zorin ",
                         _ => "Linux ",
                     }
                 } else if cfg!(target_os="android") {

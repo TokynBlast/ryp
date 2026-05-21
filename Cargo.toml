@@ -62,7 +62,6 @@ git2 = "0.20.4"                 # git
 [target.'cfg(target_os = "linux")'.dependencies]
 evdev = "0.13.2"                # Caps lock detection
 glob = "0.3.3"                  # File pattern searching
-os_info = "3.14.0"              # Determining Linux distro
 
 # Windows
 [target.'cfg(target_os = "windows")'.dependencies]
