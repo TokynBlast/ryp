@@ -148,7 +148,7 @@ impl App {
                     match linux_name {
                         "Pop!_OS" => "Pop!_OS ",
                         "Arch Linux" | "Arch Linux 32" => "Arch Linux 󰣇",
-                        "Fedora Linux" => "Fedora ",
+                        "Fedora Linux" | "Fedora Remix for WSL" => "Fedora ",
                         "Gentoo Linux" => "Gentoo ",
                         "Red Hat Linux" | "Red Hat Enterprise Linux" => "Red Hat ",
                         "AlmaLinux" => "AlmaLinux ",
@@ -162,16 +162,21 @@ impl App {
                         "Garuda Linux" => "Garuda ",
                         "illumos" => "Illumos ",
                         "Kali GNU/Linux" => "Kali Linux ",
-                        "Manjaro Linux" => "Manjaro ",
+                        "Manjaro Linux" | "Manjaro-ARM" => "Manjaro ",
                         "Linux Mint" => "Linux Mint 󰣭",
                         "NixOS" => "NixOS ",
-                        "Nobara Linux" => "Nobara ",
+                        "Nobara Linux" => "Nobara Linux ",
                         "Raspbian GNU/Linux" => "Raspbian ",
                         "Rocky Linux" => "RockyLinux ",
                         "openSUSE" | "openSUSE Leap" | "openSUSE Tumbleweed" => "openSUSE ",
-                        "SLES" | "SUSE Linux Enterprise Server" => "SUSE ",
+                        "SLES"
+                        | "SUSE Linux Enterprise Server"
+                        | "SLES_SAP"
+                        | "SLE Micro"
+                        | "SLED"
+                        => "SUSE ",
                         "Solus" => "Solus ",
-                        "Ubuntu" => "Ubuntu 󰕈",
+                        "Ubuntu" | "Ubuntu Kylin" => "Ubuntu 󰕈", // could also be UwUntu
                         "Void Linux" => "Void Linux ",
                         "Zorin OS" => "Zorin ",
                         _ => "Linux ",
