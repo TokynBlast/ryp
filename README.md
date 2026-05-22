@@ -9,7 +9,9 @@ Including things such as a git viewer, plugins, search and replace, plus so much
 
 ## Features
 Ryp is feature rich!<br>
-There are all sorts of features, such as git, plugins, and support for TONS of operating systems!
+There are all sorts of features, such as git, plugins, and support for TONS of operating systems!<br>
+Ryp is designed for everyone. Ryp has a goal of inclusiveness and making sure as many people can use it as possible.<br>
+That means extreme customizability,
 
 Ryp also comes with different languages, making it highly accesible!
 
