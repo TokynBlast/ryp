@@ -20,8 +20,10 @@ Ryp also comes with different languages, making it highly accesible!
 
 # Requirements
 ## OS
-`Windows` and `Linux` are the only tested OSes. `Mac`, `Android`, and so on, may have limited, full, or no support at all.<br>
-Currently, suppport for other OSes is being developed.
+
+| --- | Linux | Windows | MacOS | FreeBSD | OpenBSD | NetBSD | DragonflyBSD | Haiku | Solaris | Fuchsia | Illumos | QNX Neutrino | Redox | Wind River WxWorks | ESP Board |
+| --- |  ---  |   ---   |  ---  |   ---   |   ---   |  ---   |      ---     |  ---  |   ---   |   ---   |   ---   |      ---     |  ---  |         ---        |    ---    |
+| Builds | ✅ |   ✅    |  ❓   |   ❓    |   ❓   |    ❓  |     ❓       |  ❓   |    ❓   |    ❓   |   ❓    |       ❓     |  ❓  |          ❓        |     ❓    |
 
 ## CPU
 `Intel Celeron N4120` is the weakest CPU you can use, while maintaining a (mostly) smooth experience.
