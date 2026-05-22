@@ -316,7 +316,6 @@ pub fn draw_modal(f: &mut Frame, app: &App, area: Rect) {
             let mut text: Vec<Line<'_>> = vec![];
 
             #[cfg(not(any(
-                target_os = "uefi",
                 target_os = "horizon",
                 target_os = "vita",
                 target_os = "redox",

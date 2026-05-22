@@ -13,9 +13,6 @@ use std::process::exit;
 use std::{env, fs};
 use crossterm::{execute, event::{EnableFocusChange, DisableFocusChange}};
 
-#[cfg(target_os = "uefi")]
-#[no_std]
-
 #[global_allocator]
 static GLOBAL: mimalloc::MiMalloc = mimalloc::MiMalloc;
 

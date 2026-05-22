@@ -302,57 +302,6 @@ impl App {
                 // When GNU Herd gets keyboard support, we can uncomment it.
                 // } else if cfg!(target_os = "hurd") {
                 //     CompactString::const_new("GNU Herd ")
-                } else if cfg!(target_os = "uefi") {
-                    // Although this would be insane if it were happening,
-                    // it would be pretty cool!
-                    // And for that, I've decided to have some fun with these,
-                    // and be literal or add fitting icons!
-                    if cfg!(target_arch = "x86_64") {
-                        "x86_64 UEFI 󰻠"
-                    } else if cfg!(target_arch = "x86") {
-                        "x86 UEFI 󰻟"
-                    } else if cfg!(any(target_arch="arm", target_arch="aarch64", target_arch="arm64ec")) {
-                        "ARM UEFI 󰿗"
-                    } else if cfg!(target_arch = "avr") {
-                        "AVR UEFI "
-                    } else if cfg!(target_arch = "bpf") {
-                        "BPF UEFI"
-                    } else if cfg!(target_arch = "csky") {
-                        "C-SKY UEFI "
-                    } else if cfg!(target_arch = "hexagon") {
-                        "Qualcom Hexago UEFI "
-                    } else if cfg!(target_arch = "loongarch64") {
-                        "LoongArch64 UEFI 󰻠"
-                    } else if cfg!(target_arch = "m68k") {
-                        "Motorola 68000 UEFI "
-                    } else if cfg!(any(
-                        target_arch="mips",
-                        target_arch="mips32r6",
-                        target_arch="mips64",
-                        target_arch="mips64r6",
-                        target_arch="msp430",
-                        ))
-                    {
-                        "MIPS UEFI "
-                    } else if cfg!(target_arch = "nvptx64") {
-                        "NVIDIA PTX UEFI"
-                    } else if cfg!(any(target_arch="powerpc", target_arch="powerpc64")) {
-                        "PowerPC UEFI ⏻"
-                    } else if cfg!(any(target_arch="riscv32", target_arch="riscv64")) {
-                        // The  may be misleading, and may at some point need to be changed
-                        "Risc-V UEFI "
-                    } else if cfg!(target_arch="s390x") {
-                        "IBM Z UEFI"
-                    } else if cfg!(any(target_arch="sparc", target_arch="sparc64")) {
-                        "Sparc UEFI "
-                    } else if cfg!(target_arch = "xtensa") {
-                        "Xtensa"
-                    } else {
-                        // Would be unreachable!(), but we can't garuntee that in the future
-                        // there won't be more arch' that Rust supports, so we just use "UEFI"
-                        // as a backup value for that case
-                        "UEFI"
-                    }
                 } else {
                     "Unknown ?"
                 }

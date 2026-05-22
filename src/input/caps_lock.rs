@@ -173,8 +173,3 @@ pub fn is_caps_lock_on() -> bool {
 pub fn is_caps_lock_on() -> bool {
     compile_error!("Caps lock detection for the ESP Board is not implemented yet.")
 }
-
-#[cfg(target_os = "uefi")]
-pub fn is_caps_lock_on() -> bool {
-    compile_error!("Caps lock detection for UEFI is not implemented yet.")
-}

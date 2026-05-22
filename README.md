@@ -9,7 +9,9 @@ Including things such as a git viewer, plugins, search and replace, plus so much
 
 ## Features
 Ryp is feature rich!<br>
-There are all sorts of features, such as git, plugins, and support for TONS of OSes! (including UEFI)
+There are all sorts of features, such as git, plugins, and support for TONS of operating systems!
+
+Ryp also comes with different languages, making it highly accesible!
 
 > [!NOTE]
 > There is currently a Ryp plugin hub being developed, to ease the installing of plugins.
