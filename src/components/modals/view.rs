@@ -316,13 +316,8 @@ pub fn draw_modal(f: &mut Frame, app: &App, area: Rect) {
             let mut text: Vec<Line<'_>> = vec![];
 
             #[cfg(not(any(
-                target_os = "horizon",
-                target_os = "vita",
                 target_os = "redox",
                 target_os = "espidf",
-                target_os = "emscripten",
-                target_arch = "wasm32",
-                target_arch = "wasm64",
             )))]
             text.extend([
                 Line::from(" [ NOTE ] "),

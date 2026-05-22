@@ -39,18 +39,13 @@ termimad = "0.34.1"             # MD Rendering
 [target.'cfg(not(any(target_os="linux", target_os="windows", target_os="macos", target_os="freebsd")))'.dependencies]
 cursive = "0.21.1"              # Ratatui replacement
 
-# WASM
-[target.'cfg(any(target_arch="wasm32", target_arch="wasm64"))'.dependencies]
-shim-fs = "0.1.0"               # std::fs replacement
-gix="0.83.0"                    # git
-
 # FreeBSD
 [target.'cfg(target_os="freebsd")'.dependencies]
 syntect = "5.3.0"               # Syntax highlighting
 crossterm = "0.29.0"            # Keyboard input
 
 
-[target.'cfg(any(target_os="android", target_os="fuchsia", target_os="redox", target_os="haiku", target_os="solaris", target_os="illumos", target_os="nto", target_os="hurd", target_os="vxworks"))'.dependencies]
+[target.'cfg(any(target_os="fuchsia", target_os="redox", target_os="haiku", target_os="solaris", target_os="illumos", target_os="nto", target_os="hurd", target_os="vxworks"))'.dependencies]
 ratatui = "0.30.0"
 crossterm = "0.29.0"
 
@@ -66,9 +61,6 @@ glob = "0.3.3"                  # File pattern searching
 # Windows
 [target.'cfg(target_os = "windows")'.dependencies]
 windows-sys = { version = "0.61.2", features = ["Win32_UI_Input_KeyboardAndMouse"] }
-
-[target.'cfg(target_os = "emscripten")'.dependencies]
-emscripten-functions-sys = "5.0.401"
 
 [profile.release]
 lto = "fat"

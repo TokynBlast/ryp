@@ -122,12 +122,6 @@ impl App {
                     "Windows "
                 } else if cfg!(target_os = "macos"){
                     "MacOS "
-                } else if cfg!(target_os = "ios") {
-                    "iOS "
-                } else if cfg!(target_os = "tvos") {
-                    "TVOS "
-                } else if cfg!(target_os = "visionos") {
-                    "VisionOS "
                 } else if cfg!(target_os = "linux") {
                     // In the future, we could parse PRETTY_NAME too, to get a better hint at what the OS is
                     // Since some distros like Bodhi have Ubuntu as NAME, but Bodhi [version] as PRETTY_NAME
@@ -260,10 +254,6 @@ impl App {
                         "Wind River Linux" => "Wind River Linux",
                         _ => "Linux ",
                     }
-                } else if cfg!(target_os="android") {
-                    "Android "
-                } else if cfg!(any(target_arch="wasm32", target_arch="wasm64")) {
-                    "WebAssembly "
                 } else if cfg!(target_os = "freebsd") {
                     "FreeBSD "
                 } else if cfg!(target_os = "openbsd") {
@@ -278,20 +268,11 @@ impl App {
                     "Solaris "
                 } else if cfg!(target_os = "fuchsia") {
                     "Fuchsia"
-                } else if cfg!(target_os = "emscripten") {
-                    "Web 󰖟"
-                } else if cfg!(target_os = "horizon") {
-                    // This could technicallt be a 3DS, or a Switch
-                    // But, the character for the Nintendo Logo is
-                    // too small: 
-                    "Nintendo 󰟡"
                 } else if cfg!(target_os = "illumos") {
                     "Illumos"
                 } else if cfg!(target_os = "nto") {
                     // This is usually an OS for medical equipment/cars...
                     "QNX Neutrino"
-                } else if cfg!(target_os = "vita") {
-                    "PlayStation Vita"
                 } else if cfg!(target_os = "redox") {
                     // OS written in the same language this text editor is!
                     "Redox OS"
