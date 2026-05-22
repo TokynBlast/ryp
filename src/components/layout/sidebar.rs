@@ -9,6 +9,54 @@ use ratatui::{
 use compact_str::CompactString;
 
 pub fn draw_sidebar(f: &mut Frame, app: &App, area: Rect) {
+    let active_bg_color = {
+        let hex = app.config.get("Active Sidebar BG Color")
+            .and_then(|v| v.as_str())
+            .map(|s| s.trim_start_matches('#'))
+            .filter(|s| s.len() == 6)
+            .unwrap_or("EE7101");
+        let r = u8::from_str_radix(&hex[0..2], 16).unwrap_or(0);
+        let g = u8::from_str_radix(&hex[2..4], 16).unwrap_or(0);
+        let b = u8::from_str_radix(&hex[4..6], 16).unwrap_or(0);
+        Color::Rgb(r, g, b)
+    };
+
+    let inactive_bg_color = {
+        let hex = app.config.get("Sidebar BG Color")
+            .and_then(|v| v.as_str())
+            .map(|s| s.trim_start_matches('#'))
+            .filter(|s| s.len() == 6)
+            .unwrap_or("808080");
+        let r = u8::from_str_radix(&hex[0..2], 16).unwrap_or(0);
+        let g = u8::from_str_radix(&hex[2..4], 16).unwrap_or(0);
+        let b = u8::from_str_radix(&hex[4..6], 16).unwrap_or(0);
+        Color::Rgb(r, g, b)
+    };
+
+    let active_fg_color = {
+        let hex = app.config.get("Active Sidebar FG Color")
+            .and_then(|v| v.as_str())
+            .map(|s| s.trim_start_matches('#'))
+            .filter(|s| s.len() == 6)
+            .unwrap_or("EF703F");
+        let r = u8::from_str_radix(&hex[0..2], 16).unwrap_or(0);
+        let g = u8::from_str_radix(&hex[2..4], 16).unwrap_or(0);
+        let b = u8::from_str_radix(&hex[4..6], 16).unwrap_or(0);
+        Color::Rgb(r, g, b)
+    };
+
+      let inactive_fg_color = {
+          let hex = app.config.get("Sidebar FG Color")
+              .and_then(|v| v.as_str())
+              .map(|s| s.trim_start_matches('#'))
+              .filter(|s| s.len() == 6)
+              .unwrap_or("f0f0f0");
+          let r = u8::from_str_radix(&hex[0..2], 16).unwrap_or(0);
+          let g = u8::from_str_radix(&hex[2..4], 16).unwrap_or(0);
+          let b = u8::from_str_radix(&hex[4..6], 16).unwrap_or(0);
+          Color::Rgb(r, g, b)
+    };
+
     if let Some(ws) = &app.workspace {
         if !ws.visible {
             return;
@@ -23,12 +71,12 @@ pub fn draw_sidebar(f: &mut Frame, app: &App, area: Rect) {
             ])
             .split(area);
 
-        draw_activity_bar(f, app, sidebar_layout[0]);
-        draw_sidebar_content(f, app, sidebar_layout[1]);
+        draw_activity_bar(f, app, sidebar_layout[0], active_fg_color, inactive_fg_color);
+        draw_sidebar_content(f, app, sidebar_layout[1], active_bg_color, inactive_bg_color, active_fg_color, inactive_fg_color);
     }
 }
 
-fn draw_activity_bar(f: &mut Frame, app: &App, area: Rect) {
+fn draw_activity_bar(f: &mut Frame, app: &App, area: Rect, active_fg_color: Color, inactive_fg_color: Color) {
     let background_style = Style::default().bg(Color::Rgb(30, 30, 30));
     f.render_widget(Block::default().style(background_style), area);
 
@@ -43,9 +91,9 @@ fn draw_activity_bar(f: &mut Frame, app: &App, area: Rect) {
     let mut lines = vec![];
     for (cat, icon) in categories.iter() {
         let style = if app.sidebar_category == *cat {
-            Style::default().fg(Color::Yellow).add_modifier(Modifier::BOLD)
+            Style::default().fg(active_fg_color).add_modifier(Modifier::BOLD)
         } else {
-            Style::default().fg(Color::Gray)
+            Style::default().fg(inactive_fg_color)
         };
         lines.push(Line::from(Span::styled(*icon, style)));
         lines.push(Line::from("")); // Spacer
@@ -55,28 +103,28 @@ fn draw_activity_bar(f: &mut Frame, app: &App, area: Rect) {
     f.render_widget(p, area);
 }
 
-fn draw_sidebar_content(f: &mut Frame, app: &App, area: Rect) {
+fn draw_sidebar_content(f: &mut Frame, app: &App, area: Rect, active_bg_color: Color, inactive_bg_color: Color, active_fg_color: Color, inactive_fg_color: Color) {
     let background_style = Style::default().bg(Color::Rgb(35, 35, 35));
     f.render_widget(Block::default().style(background_style), area);
 
     match app.sidebar_category {
-        SidebarCategory::FileTree => draw_file_tree(f, app, area),
+        SidebarCategory::FileTree => draw_file_tree(f, app, area, active_fg_color, inactive_fg_color),
         SidebarCategory::Search => draw_search_view(f, app, area),
         SidebarCategory::Git => draw_git_view(f, app, area),
-        SidebarCategory::Settings => draw_settings_view(f, app, area),
+        SidebarCategory::Settings => draw_settings_view(f, app, area, active_bg_color, inactive_bg_color, active_fg_color, inactive_fg_color),
         SidebarCategory::MarketPlace => draw_marketplace_view(f, app, area),
     }
 }
 
-fn draw_file_tree(f: &mut Frame, app: &App, area: Rect) {
+fn draw_file_tree(f: &mut Frame, app: &App, area: Rect, active_fg_color: Color, inactive_fg_color: Color) {
     if let Some(ws) = &app.workspace {
         let active_style = if ws.focused {
             Style::default()
-                .fg(Color::Yellow)
+                .fg(active_fg_color)
                 .add_modifier(Modifier::BOLD)
         } else {
             Style::default()
-                .fg(Color::Gray)
+                .fg(inactive_fg_color)
                 .add_modifier(Modifier::BOLD)
         };
 
@@ -103,9 +151,9 @@ fn draw_file_tree(f: &mut Frame, app: &App, area: Rect) {
             };
 
             let style = if ws.focused && ws.selected == i {
-                Style::default().bg(Color::Rgb(60, 60, 60)).fg(Color::White)
+                Style::default().bg(Color::Rgb(60, 60, 60)).fg(active_fg_color)
             } else {
-                Style::default().fg(Color::Gray)
+                Style::default().fg(inactive_fg_color)
             };
 
             let text = format!(
@@ -199,7 +247,7 @@ fn draw_search_view(f: &mut Frame, app: &App, area: Rect) {
     let mut lines = vec![];
     for (i, result) in app.search_results.iter().enumerate() {
         let style = if app.search_selected == i {
-            Style::default().bg(Color::Rgb(60, 60, 60)).fg(Color::White)
+            Style::default().bg(Color::Rgb(60, 60, 60)).fg(Color::Rgb(255, 255, 255))
         } else {
             Style::default().fg(Color::Gray)
         };
@@ -299,55 +347,7 @@ fn draw_git_view(f: &mut Frame, app: &App, area: Rect) {
       f.set_cursor_position((area.x + 1, area.y + 1));
 }
 
-fn draw_settings_view(f: &mut Frame, app: &App, area: Rect) {
-    let active_bg_color = {
-        let hex = app.config.get("Active Sidebar BG Color")
-            .and_then(|v| v.as_str())
-            .map(|s| s.trim_start_matches('#'))
-            .filter(|s| s.len() == 6)
-            .unwrap_or("FFFF00");
-        let r = u8::from_str_radix(&hex[0..2], 16).unwrap_or(0);
-        let g = u8::from_str_radix(&hex[2..4], 16).unwrap_or(0);
-        let b = u8::from_str_radix(&hex[4..6], 16).unwrap_or(0);
-        Color::Rgb(r, g, b)
-    };
-
-    let inactive_bg_color = {
-        let hex = app.config.get("Sidebar BG Color")
-            .and_then(|v| v.as_str())
-            .map(|s| s.trim_start_matches('#'))
-            .filter(|s| s.len() == 6)
-            .unwrap_or("808080");
-        let r = u8::from_str_radix(&hex[0..2], 16).unwrap_or(0);
-        let g = u8::from_str_radix(&hex[2..4], 16).unwrap_or(0);
-        let b = u8::from_str_radix(&hex[4..6], 16).unwrap_or(0);
-        Color::Rgb(r, g, b)
-    };
-
-    let active_fg_color = {
-        let hex = app.config.get("Active Sidebar FG Color")
-            .and_then(|v| v.as_str())
-            .map(|s| s.trim_start_matches('#'))
-            .filter(|s| s.len() == 6)
-            .unwrap_or("FFFF10");
-        let r = u8::from_str_radix(&hex[0..2], 16).unwrap_or(0);
-        let g = u8::from_str_radix(&hex[2..4], 16).unwrap_or(0);
-        let b = u8::from_str_radix(&hex[4..6], 16).unwrap_or(0);
-        Color::Rgb(r, g, b)
-    };
-
-    let inactive_fg_color = {
-        let hex = app.config.get("Sidebar FG Color")
-            .and_then(|v| v.as_str())
-            .map(|s| s.trim_start_matches('#'))
-            .filter(|s| s.len() == 6)
-            .unwrap_or("898989");
-        let r = u8::from_str_radix(&hex[0..2], 16).unwrap_or(0);
-        let g = u8::from_str_radix(&hex[2..4], 16).unwrap_or(0);
-        let b = u8::from_str_radix(&hex[4..6], 16).unwrap_or(0);
-        Color::Rgb(r, g, b)
-    };
-
+fn draw_settings_view(f: &mut Frame, app: &App, area: Rect, active_bg_color: Color, inactive_bg_color: Color, active_fg_color: Color, inactive_fg_color: Color) {
     let is_focused = app.workspace.as_ref().map_or(false, |w| w.focused);
     let active_style = if is_focused {
         Style::default()
@@ -355,7 +355,7 @@ fn draw_settings_view(f: &mut Frame, app: &App, area: Rect) {
             .add_modifier(Modifier::BOLD)
     } else {
         Style::default()
-            .fg(inactive_bg_color)
+            .fg(inactive_fg_color)
             .add_modifier(Modifier::BOLD)
     };
 
