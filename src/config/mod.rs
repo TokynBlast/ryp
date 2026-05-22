@@ -15,7 +15,7 @@ pub fn default() -> Config {
         "Active Tab BG Color": "#EE7101", // Color of tab currently in
         "Inactive Sidebar BG Color": "#808080", // Color of sidebar when not active
         "Active Sidebar BG Color": "#EE7101", // Color of sidebar BG when active
-        "Inactive Sidebar Text Color": "#808080", // Color of sidebar FG when inactive
+        "Inactive Sidebar Text Color": "#FFFFFF", // Color of sidebar FG when inactive
         "Active Sidebar Text Color": "#EE7101", // Color of sidebar FG when active
         "Selected Text Font Color": "#000000", // Color of selected text
         "Highlighted Text BG": "#0084FF", // Color of selected text BG
