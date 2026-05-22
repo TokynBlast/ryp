@@ -1,0 +1,55 @@
+# The comment below should come before anything else, or it won't be used:
+## English
+
+# It sets the language to parse in, and defaults to American English.
+
+# Background is the color behind the actual text... The background!
+[sidebar.color.background]
+active = "#EE7101"
+inactive = "#808080"
+
+[sidebar.color.foreground]
+active = "#EE7101"
+inactive = "#FFFFFF"
+
+[sidebar.keybinds]
+previous = "Ctrl+A"
+next = "Ctrl+D"
+toggle = "Ctrl+B"
+
+[tab.color.background]
+active = "#EE7101"
+inactive = "#808080"
+
+[tab.color.foreground]
+active = "#EE7101"
+inactive = "#FFFFFF"
+
+[tab.keybinds]
+left = "Ctrl+A"
+right = "Ctrl+D"
+close = "Ctrl+W"
+
+[editor]
+background = "#808080"
+tab_size = 4
+
+[plugins.console]
+character = "λ"
+toggle = "Ctrl+E"
+color = "#BF00FF"
+
+[saving]
+on = true
+time = 30_000
+
+[selection.highlighting]
+foreground = ""
+background = ""
+
+[search.highlighting]
+inactive = ""
+active = ""
+
+[git.keybinds]
+refresh = "Ctrl+G"
