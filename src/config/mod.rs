@@ -1,3 +1,5 @@
+pub mod keybind;
+
 use serde_json::{json, Value};
 use indexmap::IndexMap;
 
