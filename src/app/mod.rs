@@ -1,3 +1,4 @@
+use crate::app::langs::Languages;
 use crate::config::Config;
 use crate::core::editor::Editor;
 use crate::input::action::SidebarCategory;
@@ -19,8 +20,11 @@ use rayon::{self, prelude::*};
 use crossbeam_channel::Receiver;
 use crate::core::{tree, git, terminal};
 use crate::app::marketplace::MarketplacePlugin;
+use hashbrown::HashMap;
 
 mod ui;
+pub mod langs;
+pub use crate::get_trans;
 pub mod marketplace;
 
 pub struct SearchResult {
@@ -30,6 +34,7 @@ pub struct SearchResult {
 }
 
 pub struct App {
+    pub language: Languages,                                                          // Language to display text editor in
     pub editors: Vec<Editor>,                                                         // All open editors
     pub active_tab: usize,                                                            // Current active tab
     pub config: Config,                                                               // Configuration of editor(s) and plugin(s)
@@ -75,7 +80,8 @@ pub struct App {
     pub cursor_pos: usize,                                                            // Curosor position for use in sidebar
     pub resized: bool,                                                                // Whether the terminal has been resized
     pub commands: Vec<&'static str>,                                                  // Commands, and what to do
-    pub plugin_commands: Vec<(String, mlua::Function)>,                                // Funcitons provided by plugins for commands to run
+    pub plugin_commands: Vec<(String, mlua::Function)>,                               // Funcitons provided by plugins for commands to run
+    pub translations: HashMap<WorldStrings, &'static str>,                                    // Translations of every piece of text (excluding plugins)
 }
 
 pub fn fuzzy_match(haystack: &str, needle: &str) -> bool {
@@ -83,9 +89,60 @@ pub fn fuzzy_match(haystack: &str, needle: &str) -> bool {
   needle.chars().all(|n| chars.any(|h| h.eq_ignore_ascii_case(&n)))
 }
 
+#[derive(Debug, PartialEq, Eq, Hash, Clone, Copy)]
+pub enum WorldStrings {
+    OpenTerminalCommand,
+    OpenSettingsCommand,
+    GotoEditorEndCommand,
+    GotoEditorStartCommand,
+    CloseRypCommand,
+    OpenHelpCommand,
+
+    CorruptedPluginsError,
+    WebsiteDownOrBlockedError,
+    NoInternetError,
+    ConnectionTimeOutError,
+    InternetUnknownError,
+    ConnectingToInternet,
+
+    WordSetting,
+    WordMarketplace,
+    WordSearch,
+    WordGitStatus,
+    WordExplorer,
+
+    ShortHandDiff,
+}
+
 impl App {
     pub fn new(plugin_rx: Receiver<PluginAction>) -> Self {
+        let path = if cfg!(windows) {
+            PathBuf::from(std::env::var("APPDATA").unwrap()).join("ryp")
+        } else {
+            PathBuf::from(std::env::var("HOME").unwrap()).join(".config").join("ryp")
+        };
+
+        let user_lang = std::fs::read_to_string(path.join("config.toml"))
+            .map(|contents| {
+                // grab the first line and check for "##"
+                contents
+                    .lines()
+                    .next()
+                    .and_then(|line| line.strip_prefix("##"))
+                    .map(|lang| lang.trim().to_string())
+                    .unwrap_or_else(|| "English".to_string())
+            })
+            .unwrap_or_else(|_| "English".to_string());
+
+        let lang_setting = langs::undo_pretty_name(&user_lang);
+        drop(user_lang);
+
+        // The lazy lock makes it so we enforce a
+        let strings = crate::app::langs::build_lang_map(lang_setting);
+
         Self {
+            // TODO: Read a config to get this
+            language: lang_setting,
             editors: vec![],
             active_tab: 0,
             config: crate::config::default(),
@@ -282,9 +339,9 @@ impl App {
                     "ESP Board"
                 // When GNU Herd gets keyboard support, we can uncomment it.
                 // } else if cfg!(target_os = "hurd") {
-                //     CompactString::const_new("GNU Herd ")
+                //     "GNU Herd "
                 } else {
-                    "Unknown ?"
+                    unreachable!("This OS is not supported...")
                 }
             ),
             key_pressed: Mutex::new(None),
@@ -292,14 +349,22 @@ impl App {
             marketplace_item_selected: 0,
             marketplace_plugins: Vec::new(),
             marketplace_error: None,
-            market_state: Arc::new(RwLock::new((false, Result::Err(String::from("Attempting to connect..."))))),
+            market_state: Arc::new(RwLock::new((false, Result::Err(String::from(get_trans!(strings, &WorldStrings::ConnectingToInternet)))))),
             market_search_query: CompactString::default(),
             marketplace_listed_items: vec![],
             online: false,
             cursor_pos: 0,
             resized: false,
-            commands: vec!["Open settings window", "Go to end of file", "Go to start of file", "Close Ryp", "Open terminal", "Help"],
+            commands: vec![
+                get_trans!(strings, &WorldStrings::OpenSettingsCommand),
+                get_trans!(strings, &WorldStrings::GotoEditorEndCommand),
+                get_trans!(strings, &WorldStrings::GotoEditorStartCommand),
+                get_trans!(strings, &WorldStrings::CloseRypCommand),
+                get_trans!(strings, &WorldStrings::OpenTerminalCommand),
+                get_trans!(strings, &WorldStrings::OpenHelpCommand),
+            ],
             plugin_commands: vec![],
+            translations: strings,
         }
     }
 
@@ -320,7 +385,7 @@ impl App {
     pub fn open_diff(&mut self, change_idx: usize) {
         if let Some(change) = self.git_changes.get(change_idx).cloned() {
             let mut editor = Editor::new();
-            let mut lines  = vec![CompactString::from(format!("DIFF: {}", change.path)), CompactString::default()];
+            let mut lines  = vec![CompactString::from(format!("{}: {}", get_trans!(self.translations, &WorldStrings::ShortHandDiff), change.path)), CompactString::default()];
             for dl in change.diff {
                 lines.push(dl.content);
             }
@@ -391,20 +456,21 @@ impl App {
         //let cell = Arc::clone(&self.market_state);
         while !self.should_quit {
             let cell = Arc::clone(&self.market_state);
+            let lang = self.translations.clone();
             rayon::spawn(move || {
                 if online::check(None).is_ok() {
                     let result = match reqwest::blocking::get("https://json.ryp.app/search/") {
                         Ok(resp) => match resp.json::<Vec<MarketplacePlugin>>() {
                             Ok(plugins) => Ok(plugins),
-                            Err(_) => Err(String::from("The list of plugins might be corrupted")),
+                            Err(_) => Err(String::from(get_trans!(lang, &WorldStrings::CorruptedPluginsError))),
                         },
-                        Err(e) if e.is_connect() => Err(String::from("The website may be down, or it is blocked")),
-                        Err(e) if e.is_timeout() => Err(String::from("Connection timed out")),
-                        Err(_) => Err(String::from("An unknown error occured")),
+                        Err(e) if e.is_connect() => Err(String::from(get_trans!(lang, &WorldStrings::WebsiteDownOrBlockedError))),
+                        Err(e) if e.is_timeout() => Err(String::from(get_trans!(lang, &WorldStrings::ConnectionTimeOutError))),
+                        Err(_) => Err(String::from(get_trans!(lang, &WorldStrings::InternetUnknownError))),
                     };
                     *cell.write() = (true, result);
                 } else {
-                    *cell.write() = (false, Err(String::from("No internet connection")));
+                    *cell.write() = (false, Err(String::from(get_trans!(lang, &WorldStrings::NoInternetError))));
                 }
             });
 
@@ -815,24 +881,31 @@ impl App {
                 Action::ModalConfirm => {
                     match modal.modal_type {
                         ModalType::CommandPallete => {
-                            let query = modal.input.trim().to_owned();
+                            // There has to be a more manageable way to do this...
+                            let query = modal.input.trim();
 
-                            let chosen_command = self.commands
+                            let chosen_index = self.commands
                                 .iter()
-                                .find(|cmd| {
-                                    query.is_empty() || fuzzy_match(cmd, &query)  // free fn, no self
+                                .position(|cmd| {
+                                    query.is_empty() || fuzzy_match(cmd, query)
                                 });
 
-                            match chosen_command.unwrap_or(&&"") {
-                                &"Close Ryp" => self.should_quit = true,
-                                &"Open settings window" => todo!("Implement opening the settings window command"),
-                                &"Go to end of file" => todo!("Implement going to end of file"),
-                                &"Go to start of file" => todo!("Implement going to start of file"),
-                                &"Open terminal" => todo!("Implement opening the terminal"),
-                                &"Help" => self.modal = Some(Modal::new(ModalType::Help)),
+                            match chosen_index {
+                                Some(0) => todo!("Implement opening the settings window command"),
+                                Some(1) => todo!("Implement going to end of editor"),
+                                Some(2) => todo!("Implement going to start of editor"),
+                                Some(3) => self.should_quit = true,
+                                Some(4) => {
+                                    self.terminal_visible = !self.terminal_visible;
+                                    self.dirty = true;
+                                }
+                                Some(5) => self.modal = Some(Modal::new(ModalType::Help)),
+
                                 _ => {
-                                    for command in &self.plugin_commands {
-                                        if Some(&command.0.as_str()) == chosen_command {
+                                    if let Some(idx) = chosen_index {
+                                        // If it's beyond core commands, map it to plugin_commands index
+                                        let plugin_idx = idx.saturating_sub(self.commands.len());
+                                        if let Some(command) = self.plugin_commands.get(plugin_idx) {
                                             command.1.call::<()>(()).unwrap();
                                         }
                                     }

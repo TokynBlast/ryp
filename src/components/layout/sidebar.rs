@@ -7,6 +7,8 @@ use ratatui::{
     widgets::{Block, Borders, Paragraph},
 };
 use compact_str::CompactString;
+use crate::app::WorldStrings;
+use crate::app::get_trans;
 
 pub fn draw_sidebar(f: &mut Frame, app: &App, area: Rect) {
     let active_bg_color = {
@@ -376,7 +378,7 @@ fn draw_settings_view(f: &mut Frame, app: &App, area: Rect, active_bg_color: Col
     }
 
     let settings_block = Block::default()
-        .title(" Settings ")
+        .title(format!(" {} ", get_trans!(app.translations, &WorldStrings::WordSetting)))
         .borders(Borders::ALL)
         .border_style(active_style);
 
@@ -409,8 +411,8 @@ fn draw_settings_view(f: &mut Frame, app: &App, area: Rect, active_bg_color: Col
         .constraints(constraints)
         .split(inner);
 
-        // Render only the visible settings
-        for (i, setting_idx) in (start_index..end_index).enumerate() {
+    // Render only the visible settings
+    for (i, setting_idx) in (start_index..end_index).enumerate() {
         let setting = &settings[setting_idx];
         let is_selected = is_focused && app.settings_selected == setting_idx;
 
@@ -450,7 +452,7 @@ fn draw_marketplace_view(f: &mut Frame, app: &App, area: Rect) {
     };
 
     let block = Block::default()
-        .title(" Marketplace ")
+        .title(format!(" {} ", get_trans!(app.translations, &WorldStrings::WordMarketplace)))
         .borders(Borders::ALL)
         .border_style(active_style);
 
@@ -467,7 +469,7 @@ fn draw_marketplace_view(f: &mut Frame, app: &App, area: Rect) {
 
     // Search input display
     let search_line = Line::from(vec![
-        Span::styled(" Search: ", Style::default().fg(Color::DarkGray)),
+        Span::styled(format!(" {}: ", get_trans!(app.translations, &WorldStrings::WordSearch)), Style::default().fg(Color::DarkGray)),
         Span::styled(
             app.market_search_query
             .char_indices()
