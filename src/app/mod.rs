@@ -123,11 +123,11 @@ impl App {
 
         let user_lang = std::fs::read_to_string(path.join("config.toml"))
             .map(|contents| {
-                // grab the first line and check for "##"
+                // grab the first line and check for a shebang
                 contents
                     .lines()
                     .next()
-                    .and_then(|line| line.strip_prefix("##"))
+                    .and_then(|line| line.strip_prefix("#!"))
                     .map(|lang| lang.trim().to_string())
                     .unwrap_or_else(|| "English".to_string())
             })
