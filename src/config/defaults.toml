@@ -1,7 +1,8 @@
-# The comment below should come before anything else, or it won't be used:
-## English
-
-# It sets the language to parse in, and defaults to American English.
+#! English
+# The above comment sets the language for Ryp to be rendered in.
+# It does not change the language of any of the configs.
+# The language of the configs cannot be changed, it's a security thing of being
+# able to read what the config file will do.
 
 # Background is the color behind the actual text... The background!
 [sidebar.color.background]
@@ -17,13 +18,13 @@ previous = "Ctrl+A"
 next = "Ctrl+D"
 toggle = "Ctrl+B"
 
-[tab.color.background]
-active = "#EE7101"
-inactive = "#808080"
+[tab.color.active]
+background = "#EE7101"
+foreground = "#EE7101"
 
-[tab.color.foreground]
-active = "#EE7101"
-inactive = "#FFFFFF"
+[tab.color.inactive]
+background = "#808080"
+foreground = "#FFFFFF"
 
 [tab.keybinds]
 left = "Ctrl+A"
@@ -31,7 +32,7 @@ right = "Ctrl+D"
 close = "Ctrl+W"
 
 [editor]
-background = "#808080"
+background = "#323232"
 tab_size = 4
 
 [plugins.console]
@@ -42,14 +43,23 @@ color = "#BF00FF"
 [saving]
 on = true
 time = 30_000
+keybind = "Ctrl+S"
 
 [selection.highlighting]
-foreground = ""
-background = ""
+foreground = "#000000"
+background = "#0084FF"
 
-[search.highlighting]
-inactive = ""
-active = ""
+[search.highlighting.selected]
+background = "#FFFF00"
+foreground = "#000000"
+
+[search.highlighting.unselected]
+background = "#00FFFF"
+foreground = "#FFFFFF"
 
 [git.keybinds]
 refresh = "Ctrl+G"
+# These are left empty on purpose, they have no default binding
+push = ""
+pull = ""
+new_repo = "Ctrl+Alt+N"
