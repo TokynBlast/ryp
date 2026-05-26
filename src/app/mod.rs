@@ -39,7 +39,6 @@ pub struct App {
     pub active_tab: usize,                                                            // Current active tab
     pub config: Config,                                                               // Configuration of editor(s) and plugin(s)
     pub modal: Option<Modal>,                                                         // Selection windows (confirm leave, new file, etc.)
-    // TODO: Remove this, and return later
     pub should_quit: bool,                                                            // Whether Ryp should quit or not
     pub syntax_set: SyntaxSet,                                                        // Syntax set for languages
     pub theme_set: ThemeSet,                                                          // Highlighting colors
