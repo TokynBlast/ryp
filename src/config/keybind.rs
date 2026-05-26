@@ -19,7 +19,7 @@ fn decode_binding(bind: &'static str) -> (bool, bool, Option<String>) {
     let key: String = key_parts.join("+");
 
     // Must have at least one modifier and a non-empty key
-    if (!is_ctrl && !is_shift) || key.is_empty() {
+    if key.is_empty() || (!is_ctrl && !is_shift){
         return (false, false, None);
     }
 
