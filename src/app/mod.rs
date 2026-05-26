@@ -868,6 +868,8 @@ impl App {
                                     query.is_empty() || fuzzy_match(cmd, query)
                                 });
 
+                            self.modal = None;
+
                             match chosen_index {
                                 Some(0) => todo!("Implement opening the settings window command, and implement the window"),
                                 Some(1) =>
