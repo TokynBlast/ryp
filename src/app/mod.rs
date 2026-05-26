@@ -318,27 +318,6 @@ impl App {
                     "NetBSD"
                 } else if cfg!(target_os = "dragonfly") {
                     "DragonFly BSD"
-                } else if cfg!(target_os = "haiku") {
-                    "Haiku"
-                } else if cfg!(target_os = "solaris") {
-                    "Solaris "
-                } else if cfg!(target_os = "fuchsia") {
-                    "Fuchsia"
-                } else if cfg!(target_os = "illumos") {
-                    "Illumos"
-                } else if cfg!(target_os = "nto") {
-                    // This is usually an OS for medical equipment/cars...
-                    "QNX Neutrino"
-                } else if cfg!(target_os = "redox") {
-                    // OS written in the same language this text editor is!
-                    "Redox OS"
-                } else if cfg!(target_os = "vxworks") {
-                    "Wind River VxWorks"
-                } else if cfg!(target_os = "espidf") {
-                    "ESP Board"
-                // When GNU Herd gets keyboard support, we can uncomment it.
-                // } else if cfg!(target_os = "hurd") {
-                //     "GNU Herd "
                 } else {
                     unreachable!("This OS is not supported...")
                 }

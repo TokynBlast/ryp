@@ -27,14 +27,6 @@ Ryp also comes with different languages, making it highly accesible!
 `OpenBSD`
 `NetBSD`
 `DragonflyBSD`
-`Haiku`
-`Solaris`
-`Fuchsia`
-`Illumos`
-`QNX Neutrino`
-`Redox`
-`Wind River WxWorks`
-`ESP Board`
 
 ## CPU
 `Intel Celeron N4120` is the weakest CPU you can use, while maintaining a (mostly) smooth experience.

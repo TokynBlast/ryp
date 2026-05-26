@@ -35,19 +35,10 @@ crossterm = "0.29.0"            # Keyboard input
 syntect = "5.3.0"               # Highlighting
 termimad = "0.34.1"             # MD Rendering
 
-# Not Windows, MacOS, Linux, or FreeBSD
-[target.'cfg(not(any(target_os="linux", target_os="windows", target_os="macos", target_os="freebsd")))'.dependencies]
-cursive = "0.21.1"              # Ratatui replacement
-
 # FreeBSD
 [target.'cfg(target_os="freebsd")'.dependencies]
 syntect = "5.3.0"               # Syntax highlighting
 crossterm = "0.29.0"            # Keyboard input
-
-
-[target.'cfg(any(target_os="fuchsia", target_os="redox", target_os="haiku", target_os="solaris", target_os="illumos", target_os="nto", target_os="hurd", target_os="vxworks"))'.dependencies]
-ratatui = "0.30.0"
-crossterm = "0.29.0"
 
 # FreeBSD, OpenBSD, NetBSD, DragonflyBSD
 [target.'cfg(any(target_os="freebsd", target_os="openbsd", target_os="netbsd", target_os="dragonfly"))'.dependencies]
