@@ -869,9 +869,18 @@ impl App {
                                 });
 
                             match chosen_index {
-                                Some(0) => todo!("Implement opening the settings window command"),
-                                Some(1) => todo!("Implement going to end of editor"),
-                                Some(2) => todo!("Implement going to start of editor"),
+                                Some(0) => todo!("Implement opening the settings window command, and implement the window"),
+                                Some(1) =>
+                                if let Some(editor) = self.current_editor_mut() {
+                                    let last_line = editor.lines.len().saturating_sub(1);
+                                    editor.cursor_y = last_line;
+                                    editor.cursor_x = editor.lines[last_line].len();
+                                },
+                                Some(2) =>
+                                if let Some(editor) = self.current_editor_mut() {
+                                    editor.cursor_x = 0;
+                                    editor.cursor_y = 0;
+                                },
                                 Some(3) => self.should_quit = true,
                                 Some(4) => {
                                     self.terminal_visible = !self.terminal_visible;
