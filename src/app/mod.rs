@@ -999,7 +999,7 @@ impl App {
                                 _ => {}
                             }
                         }
-                        _ => {} // Other actions ignored in modal
+                        _ => {}
                     }
                 }
                 _ => {}
