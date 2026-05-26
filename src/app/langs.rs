@@ -173,7 +173,7 @@ pub fn build_lang_map(lang_setting: Languages) -> HashMap<WorldStrings, &'static
             (WorldStrings::WordSearch, "Search"),
             (WorldStrings::WordGitStatus, "Git Status"),
             (WorldStrings::WordExplorer, "Explorer"),
-            (WorldStrings::ShortHandDiff, "DIFF")
+            (WorldStrings::ShortHandDiff, "DIFF"),
         ]),
         Languages::Japanese => HashMap::from([
             (WorldStrings::OpenTerminalCommand, "ターミナルを開く"),
@@ -313,7 +313,7 @@ pub fn build_lang_map(lang_setting: Languages) -> HashMap<WorldStrings, &'static
             (WorldStrings::WordSearch, "Szukaj"),
             (WorldStrings::WordGitStatus, "Status Git"),
             (WorldStrings::WordExplorer, "Eksplorator"),
-            (WorldStrings::ShortHandDiff, "RÓŻNICA")
+            (WorldStrings::ShortHandDiff, "RÓŻNICA"),
         ]),
         Languages::Spanish => HashMap::from([
             (WorldStrings::OpenTerminalCommand, "Abrir terminal"),
@@ -333,7 +333,7 @@ pub fn build_lang_map(lang_setting: Languages) -> HashMap<WorldStrings, &'static
             (WorldStrings::WordSearch, "Buscar"),
             (WorldStrings::WordGitStatus, "Estado de Git"),
             (WorldStrings::WordExplorer, "Explorador"),
-            (WorldStrings::ShortHandDiff, "DIFERENCIA")
+            (WorldStrings::ShortHandDiff, "DIFERENCIA"),
         ]),
         Languages::Russian => HashMap::from([
             (WorldStrings::OpenTerminalCommand, "Открыть терминал"),
