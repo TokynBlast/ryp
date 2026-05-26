@@ -197,6 +197,7 @@ fn decode_binding(bind: &'static str) -> Option<(KeyCombo, Option<String>)> {
             .with_esc(is_esc)
             .with_meta(is_meta)
             .with_enter(is_enter)
+            .with_padding(0)
             ,
             Some(key)
         ))
