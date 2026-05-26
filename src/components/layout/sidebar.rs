@@ -378,7 +378,7 @@ fn draw_settings_view(f: &mut Frame, app: &App, area: Rect, active_bg_color: Col
     }
 
     let settings_block = Block::default()
-        .title(format!(" {} ", get_trans!(app.translations, &WorldStrings::WordSetting)))
+        .title(format!(" {} ", get_trans!(app.translations, WorldStrings::WordSetting)))
         .borders(Borders::ALL)
         .border_style(active_style);
 
@@ -452,7 +452,7 @@ fn draw_marketplace_view(f: &mut Frame, app: &App, area: Rect) {
     };
 
     let block = Block::default()
-        .title(format!(" {} ", get_trans!(app.translations, &WorldStrings::WordMarketplace)))
+        .title(format!(" {} ", get_trans!(app.translations, WorldStrings::WordMarketplace)))
         .borders(Borders::ALL)
         .border_style(active_style);
 
@@ -469,7 +469,7 @@ fn draw_marketplace_view(f: &mut Frame, app: &App, area: Rect) {
 
     // Search input display
     let search_line = Line::from(vec![
-        Span::styled(format!(" {}: ", get_trans!(app.translations, &WorldStrings::WordSearch)), Style::default().fg(Color::DarkGray)),
+        Span::styled(format!(" {}: ", get_trans!(app.translations, WorldStrings::WordSearch)), Style::default().fg(Color::DarkGray)),
         Span::styled(
             app.market_search_query
             .char_indices()

@@ -4,7 +4,7 @@ use crate::app::WorldStrings;
 #[macro_export]
 macro_rules! get_trans {
     ($strings:expr, $key:expr) => {
-        $strings.get($key).copied().unwrap()
+        $strings.get(&$key).copied().unwrap()
     };
 }
 

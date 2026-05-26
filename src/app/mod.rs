@@ -327,19 +327,19 @@ impl App {
             marketplace_item_selected: 0,
             marketplace_plugins: Vec::new(),
             marketplace_error: None,
-            market_state: Arc::new(RwLock::new((false, Result::Err(String::from(get_trans!(strings, &WorldStrings::ConnectingToInternet)))))),
+            market_state: Arc::new(RwLock::new((false, Result::Err(String::from(get_trans!(strings, WorldStrings::ConnectingToInternet)))))),
             market_search_query: CompactString::default(),
             marketplace_listed_items: vec![],
             online: false,
             cursor_pos: 0,
             resized: false,
             commands: vec![
-                get_trans!(strings, &WorldStrings::OpenSettingsCommand),
-                get_trans!(strings, &WorldStrings::GotoEditorEndCommand),
-                get_trans!(strings, &WorldStrings::GotoEditorStartCommand),
-                get_trans!(strings, &WorldStrings::CloseRypCommand),
-                get_trans!(strings, &WorldStrings::OpenTerminalCommand),
-                get_trans!(strings, &WorldStrings::OpenHelpCommand),
+                get_trans!(strings, WorldStrings::OpenSettingsCommand),
+                get_trans!(strings, WorldStrings::GotoEditorEndCommand),
+                get_trans!(strings, WorldStrings::GotoEditorStartCommand),
+                get_trans!(strings, WorldStrings::CloseRypCommand),
+                get_trans!(strings, WorldStrings::OpenTerminalCommand),
+                get_trans!(strings, WorldStrings::OpenHelpCommand),
             ],
             plugin_commands: vec![],
             translations: strings,
@@ -363,7 +363,7 @@ impl App {
     pub fn open_diff(&mut self, change_idx: usize) {
         if let Some(change) = self.git_changes.get(change_idx).cloned() {
             let mut editor = Editor::new();
-            let mut lines  = vec![CompactString::from(format!("{}: {}", get_trans!(self.translations, &WorldStrings::ShortHandDiff), change.path)), CompactString::default()];
+            let mut lines  = vec![CompactString::from(format!("{}: {}", get_trans!(self.translations, WorldStrings::ShortHandDiff), change.path)), CompactString::default()];
             for dl in change.diff {
                 lines.push(dl.content);
             }
@@ -440,15 +440,15 @@ impl App {
                     let result = match reqwest::blocking::get("https://json.ryp.app/search/") {
                         Ok(resp) => match resp.json::<Vec<MarketplacePlugin>>() {
                             Ok(plugins) => Ok(plugins),
-                            Err(_) => Err(String::from(get_trans!(lang, &WorldStrings::CorruptedPluginsError))),
+                            Err(_) => Err(String::from(get_trans!(lang, WorldStrings::CorruptedPluginsError))),
                         },
-                        Err(e) if e.is_connect() => Err(String::from(get_trans!(lang, &WorldStrings::WebsiteDownOrBlockedError))),
-                        Err(e) if e.is_timeout() => Err(String::from(get_trans!(lang, &WorldStrings::ConnectionTimeOutError))),
-                        Err(_) => Err(String::from(get_trans!(lang, &WorldStrings::InternetUnknownError))),
+                        Err(e) if e.is_connect() => Err(String::from(get_trans!(lang, WorldStrings::WebsiteDownOrBlockedError))),
+                        Err(e) if e.is_timeout() => Err(String::from(get_trans!(lang, WorldStrings::ConnectionTimeOutError))),
+                        Err(_) => Err(String::from(get_trans!(lang, WorldStrings::InternetUnknownError))),
                     };
                     *cell.write() = (true, result);
                 } else {
-                    *cell.write() = (false, Err(String::from(get_trans!(lang, &WorldStrings::NoInternetError))));
+                    *cell.write() = (false, Err(String::from(get_trans!(lang, WorldStrings::NoInternetError))));
                 }
             });
 
