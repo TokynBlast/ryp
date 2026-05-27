@@ -24,7 +24,8 @@ reqwest = { version = "0.13.3", features = ["blocking", "json"] } # Networking
 tokio = "1.52.3"                # Async for networking
 online = { version = "4.0.2", features = ["tokio"] }
 modular-bitfield = "0.13.1"
-iced = "0.14.0"
+iced = { version = "0.14.0", features = ["tokio", "lazy", "image", "markdown", "wgpu", "tiny-skia"] }
+smol_str = "0.2.2"
 
 # MacOS, Windows, Linux
 [target.'cfg(any(target_os="linux", target_os="windows", target_os="macos"))'.dependencies]
