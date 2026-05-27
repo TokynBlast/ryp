@@ -715,6 +715,10 @@ impl App {
         Ok(())
     }
 
+    pub fn set_focus(&mut self, focus: bool) {
+        self.focused = focus;
+    }
+
     fn handle_key(&mut self, key: event::KeyEvent) {
         use crate::input::{action::Action, keymap};
         use crossterm::event::{KeyCode, KeyModifiers};
@@ -1528,9 +1532,9 @@ impl App {
                 Action::MoveLeft(shift, ctrl) => editor.move_left(shift, ctrl),
                 Action::MoveRight(shift, ctrl) => editor.move_right(shift, ctrl),
 
-                Action::Copy() => editor.copy(),
-                Action::Cut() => editor.cut(),
-                Action::Paste() => editor.paste(),
+                Action::Copy => editor.copy(),
+                Action::Cut => editor.cut(),
+                Action::Paste => editor.paste(),
 
                 Action::PageUp(shift) => {
                     editor.update_selection(shift);
