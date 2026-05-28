@@ -1,0 +1,172 @@
+name: "Bug report"
+description: Report unintended behaviour within Ryp
+title: "Bug: "
+labels: ["bug"]
+body:
+  # The description
+  - type: textarea
+    id: description
+    attributes:
+      label: Bug description
+      description: A description of what the bug is.
+      placeholder: What went wrong?
+    validations:
+      required: true
+
+  # How to make it happen
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Steps to reproduce
+      description: Explain how you got the bug to occur.
+      placeholder: |
+        1. Open a tab
+        2. Type anything
+        3. Go to Git
+        4. Save
+
+  # Any extra stuff the user may have seen
+  - type: textarea
+    id: term_output
+    attributes:
+      label: Terminal output
+      description: Paste any errors you saw that might be relevant.
+      render: shell
+      placeholder: thread 'main' panicked at ....
+
+  # Which OS
+  - type: dropdown
+    id: os
+    attributes:
+      label: Operating System
+      description: What OS are you running ryp on?
+      # Sorted alphabetically
+      options:
+        - Alma Linux
+        - Alpine Linux
+        - AltLinux / Sisyphus
+        - Amazon Linux
+        - AOSC
+        - Arch Linux
+        - Archcraft
+        - Arkane Linux
+        - Artix
+        - Aurora
+        - Azure Linux
+        - Bazzite
+        - BlackArch Linux
+        - blendOS
+        - Bluefin
+        - Buildroot
+        - CachyOS Linux
+        - CentOS
+        - Chimera / ChimeraOS
+        - CirrOS
+        - Clear Linux OS
+        - Container-Optimized OS
+        - CoreOS
+        - Cumulus Linux
+        - Cygwin
+        - Debian GNU/Linux
+        - Deepin
+        - Devuan GNU/Linux
+        - elementary OS
+        - Endless OS
+        - EndeavourOS
+        - EuroLinux
+        - Exherbo
+        - Fedora
+        - Flatcar Container Linux
+        - funtoo
+        - Garuda Linux
+        - Gentoo
+        - GhostBSD
+        - Gnoppix
+        - Guix System
+        - Hyperbola
+        - illumos
+        - KaOS
+        - Kali GNU/Linux
+        - KDE neon
+        - Linux (Generic/Other)
+        - Linux Mint
+        - macOS
+        - Mageia
+        - Manjaro Linux
+        - Mariner Linux (CBL)
+        - MIRACLE LINUX
+        - Nexus
+        - NI Linux Real-Time
+        - NixOS
+        - Nobara Linux
+        - NovariaOS
+        - NurOS
+        - OmniOS
+        - openEuler
+        - OpenMandriva Lx
+        - openSUSE / SLES / SUSE
+        - OpenWrt
+        - Oracle Linux Server
+        - Parrot OS
+        - PCLinuxOS
+        - Pengwin
+        - Photon OS (VMware)
+        - PikaOS
+        - PisiLinux
+        - Pop!_OS
+        - postmarketOS
+        - Puppy Linux
+        - PureOS
+        - Qubes OS
+        - RancherOS
+        - Raspbian GNU/Linux
+        - RebornOS Linux
+        - Red Hat / RHEL
+        - Rocky Linux
+        - Scientific Linux
+        - Slackware
+        - Solus
+        - SteamOS
+        - SystemRescue
+        - Tails
+        - TencentOS Server
+        - TileOS
+        - TinyCore
+        - Trisquel GNU/Linux
+        - UbiOS
+        - Ubuntu
+        - Ultramarine Linux
+        - Vanilla OS
+        - Void Linux
+        - Windows
+        - Wind River Linux
+        - Wolfi
+        - XCP-ng
+        - Zenclora
+        - Zorin OS
+    validations:
+      required: true
+
+  # Whether it's TUI, GUI, both, or neither
+  - type: dropdown
+    id: relevant_to
+    attributes:
+      label: Relevant to?
+      description: Which runtime is it relevant to?
+      options:
+        - TUI
+        - GUI
+        - Both
+        - Neither
+      # Not requried, because the user may be unsure
+
+  # Just to make sure the user isn't reporting a dead bug, or one that's already known :)
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Checklists
+      options:
+        - label: I found this bug in the latest version of Ryp.
+          required: true
+        - label: I checked for existing issues and didn't find a duplicate.
+          required: true
