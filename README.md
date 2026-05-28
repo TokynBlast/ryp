@@ -1,40 +1,69 @@
-# What Is Ryp
+<p align="center">
+  <img src="content/banner.png" alt="Ryp banner">
+</p>
 
-Ryp is a highly customizable text editor, with the user in mind, running in the temrinal!<br>
-It's lightweight, feature rich, safe, and extensible!<br>
-Including things such as a git viewer, plugins, search and replace, plus so much more.<br>
+<h4 align="center">Ryp is a highly customizable GUI & TUI text editor.</h4>
 
-> [!NOTE]
-> This is currently in development. Support for more than Windows and Linux is being worked on.
+<p align="center">
+  <a>
+    <img src="https://img.shields.io/badge/rust-1.86+-orange?logo=rust?style=flat" alt="Requires Rust 1.86+">
+  </a>
+  <a href="https://github.com/sammwyy/ryp/issues">
+    <img src="https://img.shields.io/github/issues/sammwyy/ryp?style=flat&label=open%20issues" alt="Number of open issues">
+  </a>
+  <a href="https://github.com/sammwyy/ryp/issues">
+    <img src="https://img.shields.io/github/issues-closed/sammwyy/ryp?style=flat&label=closed%20issues" alt="Number of closed issues">
+  </a>
+  <a href="https://github.com/sammwyy/ryp/commits">
+    <img src="https://img.shields.io/github/last-commit/sammwyy/ryp" alt="When last commit was">
+  </a>
+</p>
 
-## Features
-Ryp is feature rich!<br>
-There are all sorts of features, such as git, plugins, and support for TONS of operating systems!<br>
-Ryp is designed for everyone. Ryp has a goal of inclusiveness and making sure as many people can use it as possible.<br>
-That means extreme customizability,
+<p align="center">
+  <a href="#usage">Usage</a> •
+  <a href="#requirements">Requirements</a> •
+  <a href="#installing">Installing</a> •
+  <a href="#support">OS Support</a>
+</p>
 
-Ryp also comes with different languages, making it highly accesible!
+<p align="center">
+  <img src="content/preview.gif" alt="Preview of Ryp">
+</p>
 
-> [!NOTE]
-> There is currently a Ryp plugin hub being developed, to ease the installing of plugins.
+<!-- This is used to prevent a grouping bar between the gif and Usage -->
+<br>
 
-# Requirements
-## OS
-`Linux`
-`Windows`
-`MacOS`
-`FreeBSD`
-`OpenBSD`
-`NetBSD`
+## Usage
+```
+Usage: ryp [OPTIONS]
+    Edit text via a GUI or TUI editor.
+
+Options:
+  --help, -h       Prints the Usage of Ryp
+  --version, -v    Prints the current version of Ryp
+  --gui            Opens Ryp in a GUI interface
+  --tui            Explicitly opens Ryp in a TUI interface (default)
+```
+
+# Installing
+> There is currently no way to install Ryp.<br>
+> That is still being worked on.
+
+# Support
+<!-- Linux isn't an OS, but I'm refering to the eco sysyem as a whole -->
+### OS
+`Linux` •
+`Windows` •
+`MacOS` •
+`FreeBSD` •
+`OpenBSD` •
+`NetBSD` •
 `DragonflyBSD`
 
-## CPU
-`Intel Celeron N4120` is the weakest CPU you can use, while maintaining a (mostly) smooth experience.
+### Arch
+`x86_64` •
+`x86`
 
-## Terminal
-While not entirely needed, a terminal that supports Kitty Protocol is suggested.<br>
-You will gain full support. Terminals such as Windows cmd.exe don't have Kitty Support.
-
-### Contributions
-Feel free to contribuite by making an issue report, or making changes and a pull request.<br>
-NOTE: An issue report can contain suggestions, and is not exclusivley bugs.
+## How to contribute
+To contribute, head to [here](https://github.com/sammwyy/ryp/issues), and make a report.<br>
+Or, fork Ryp, make changes, then push them.
