@@ -12,9 +12,66 @@ use std::path::{Path, PathBuf};
 use std::process::exit;
 use std::{env, fs};
 use crossterm::{execute, event::{EnableFocusChange, DisableFocusChange}};
+use std::process::Command;
 
 #[global_allocator]
 static GLOBAL: mimalloc::MiMalloc = mimalloc::MiMalloc;
+
+/// Spawns a new instance of the current executable with administrator privileges.
+fn escalate_privileges() -> bool {
+    let current_exe = match env::current_exe() {
+        Ok(path) => path,
+        Err(_) => return false,
+    };
+
+    // Filter out the '--admin' flag so the new instance doesn't loop infinitely,
+    // but pass all other original user arguments forward!
+    let forward_args: Vec<String> = env::args()
+        .skip(1)
+        .filter(|arg| arg != "--admin")
+        .collect();
+
+    #[cfg(windows)]
+    {
+        // On Windows, we use PowerShell's 'runAs' verb to trigger the UAC prompt popup
+        let mut args_string = format!("& '{}'", current_exe.to_string_lossy());
+        for arg in forward_args {
+            args_string.push_str(&format!(" '{}'", arg));
+        }
+
+        let status = Command::new("powershell")
+            .args([
+                "-NoProfile",
+                "-Command",
+                &format!("Start-Process -Verb runAs -FilePath powershell -ArgumentList '-NoProfile', '-Command', \"{}\"", args_string)
+            ])
+            .status();
+
+        status.map(|s| s.success()).unwrap_or(false)
+    }
+
+    #[cfg(unix)]
+    {
+        // On Linux/macOS, we look for 'sudo'. If it fails or isn't present, we try 'pkexec'
+        // (which brings up a friendly GUI password prompt for desktop Linux users!)
+        let child = Command::new("sudo")
+            .arg(&current_exe)
+            .args(&forward_args)
+            .spawn()
+            .or_else(|_| {
+                // Fallback for desktop users without sudo configured or who prefer GUI prompts
+                Command::new("pkexec")
+                    .arg(&current_exe)
+                    .args(&forward_args)
+                    .spawn()
+            });
+
+        match child {
+            Ok(mut process) => process.wait().map(|s| s.success()).unwrap_or(false),
+            Err(_) => false,
+        }
+    }
+}
 
 const VERSION: &str = env!("CARGO_PKG_VERSION");
 
@@ -32,6 +89,10 @@ fn main() -> Result<(), Box<dyn Error>> {
             }
             "--version" | "-v" => {
                 println!("{}", VERSION);
+                exit(0);
+            }
+            "--admin" => {
+                escalate_privileges();
                 exit(0);
             }
             // Catch anything we know are real, and used as non-getters
