@@ -16,6 +16,8 @@ use crossterm::{execute, event::{EnableFocusChange, DisableFocusChange}};
 #[global_allocator]
 static GLOBAL: mimalloc::MiMalloc = mimalloc::MiMalloc;
 
+const VERSION: &str = env!("CARGO_PKG_VERSION");
+
 fn main() -> Result<(), Box<dyn Error>> {
     // Check if an argument is passed
     let args: Vec<String> = std::env::args().collect();
