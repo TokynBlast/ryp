@@ -102,8 +102,29 @@ fn main() -> Result<(), Box<dyn Error>> {
             _ => {
                 // If it starts with a dash but isn't a known flag, reject it
                 if arg.starts_with('-') {
-                    eprintln!("Error: Unknown argument '{}'", arg);
-                    exit(1);
+                    if arg.starts_with("--") {
+                        eprintln!("Error: Unknown argument '{}'", arg);
+                        exit(1);
+                    } else {
+                      for chr in arg[1..].chars() {
+                          match chr {
+                              // We put exit() with each match, for scalability... If we have it after, in the future,
+                              //   we may have to go through and add exit(0) to each one if there's a single dash flag
+                              //   that we care about handling
+                              'v' => println!("{}", VERSION),
+                              'h' => include!(concat!(env!("OUT_DIR"), "/usage.rs")),
+                              'a' => {
+                                  escalate_privileges();
+                                  exit(0);
+                              }
+                              _ => {
+                                  eprintln!("Error: Unknown argument '{}'", chr);
+                                  exit(1)
+                              }
+                          }
+                      }
+                      exit(0)
+                    }
                 } else {
                     Path::new(arg).canonicalize().unwrap()
                 }
