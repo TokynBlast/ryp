@@ -9,86 +9,69 @@
 # language = "English"
 # We make it so that you don't need to know how to say "language" in English!
 
-# Settings inheritance for GUI
-[gui.inherit]
-type = "fill" # fill in blanks
-parent = "gui default" # fill with GUI default
+# These are profiles, they allow further seperation and customization between GUI, TUI, moods, or users!
+[[profile]]
+name = "default"
+extends = "default" # This is telling Ryp, "I've provivided EVERYTHING"
+                    # If you haven't actually, Ryp will crash
 
-# Settings inheritance for TUI
-[tui.inherit]
-type = "overwrite" # ignore all tui settings
-parent = "gui" # use GUI settings
+[[profile]]
+name = "gui"        # What to call the profile
+extends = "default" # What to get anything not filled in from
 
+[[profile]]
+name = "tui"
+extends = "default"
+
+
+[default.sidebar]
 # Background is the color behind the actual text... The background!
-[sidebar.color.background]
-active = "#EE7101"
-inactive = "#808080"
-
+color.background = { active = "#EE7101", inactive = "#808080" }
 # This sets the color of the font
-[sidebar.color.foreground]
-active = "#EE7101"
-inactive = "#FFFFFF"
-
+color.foreground = { active = "#EE7101", inactive = "#FFFFFF" }
 # Keybinds to interact with the sidebar
-[sidebar.keybinds]
-previous = "Ctrl+A"
-next = "Ctrl+D"
-toggle = "Ctrl+B"
+keybinds         = { previous = "Ctrl+A", next = "Ctrl+D", toggle = "Ctrl+B" }
 
+[default.tab]
 # Color of the currently active tab
-[tab.color.active]
-background = "#EE7101"
-foreground = "#EE7101"
-
+color.active   = { background = "#EE7101", foreground = "#EE7101" }
 # Color of inactive tabs
-[tab.color.inactive]
-background = "#808080"
-foreground = "#FFFFFF"
-
+color.inactive = { background = "#808080", foreground = "#FFFFFF" }
 # Keybinds to interact with the editor
-[tab.keybinds]
-left = "Ctrl+A"
-right = "Ctrl+D"
-close = "Ctrl+W"
+keybinds       = { left = "Ctrl+A", right = "Ctrl+D", close = "Ctrl+W" }
 
 # General settings for the editor
-[editor]
+[default.editor]
 background = "#323232"
-tab_size = 4
+tab_size   = 4
 
 # The console that plugins print to
 # `character` sets the character before every print
-[plugins.console]
+[default.plugins.console]
 character = "λ"
-toggle = "Ctrl+E"
-color = "#BF00FF"
+toggle    = "Ctrl+E"
+color     = "#BF00FF"
 
 # Extra config stuff about saving
-[saving]
-on = true
-time = 30_000
+[default.saving]
+on      = true
+time    = 30_000
 keybind = "Ctrl+S"
 
 # These control the color the text is when doing a selection hilight (Shift+Arrow on TUI)
-[selection.highlighting]
-foreground = "#000000"
-background = "#0084FF"
+[default.selection]
+highlighting = { foreground = "#000000", background = "#0084FF" }
 
+[default.search.highlighting]
 # This is the color the text is when doing a global search, for the item you're on
-[search.highlighting.selected]
-background = "#FFFF00"
-foreground = "#000000"
-
+selected   = { background = "#FFFF00", foreground = "#000000" }
 # The opposite of above, where instead of what you're on, what you're not on
-[search.highlighting.unselected]
-background = "#00FFFF"
-foreground = "#FFFFFF"
+unselected = { background = "#00FFFF", foreground = "#FFFFFF" }
 
 # The keybinds to manage Git
-[git.keybinds]
-refresh = "Ctrl+G"
-
-# These are left empty on purpose, they have no default binding
-push = ""
-pull = ""
+[default.git.keybinds]
+refresh  = "Ctrl+G"
 new_repo = "Ctrl+Alt+N"
+# These are left empty on purpose, they have no default binding
+push     = ""
+pull     = ""
