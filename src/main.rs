@@ -80,6 +80,12 @@ fn main() -> Result<(), Box<dyn Error>> {
     let args: Vec<String> = std::env::args().collect();
     let target: PathBuf;
 
+    // Check for conflicts
+    if args.contains(&String::from("--tui")) && args.contains(&String::from("--gui")) {
+        eprintln!("Error: --gui and --tui are mutually exclusive");
+        exit(1);
+    }
+
     target = if let Some(arg) = args.get(1) {
         // Match directly on the exact string slice to avoid prefix confusion
         match &*arg.to_lowercase().as_str() {
