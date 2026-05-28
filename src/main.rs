@@ -23,7 +23,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     let args: Vec<String> = std::env::args().collect();
     let target: PathBuf;
 
-    if let Some(arg) = args.get(1) {
+    target = if let Some(arg) = args.get(1) {
         // Match directly on the exact string slice to avoid prefix confusion
         match &*arg.to_lowercase().as_str() {
             "--help" | "-h" => {
@@ -36,7 +36,7 @@ fn main() -> Result<(), Box<dyn Error>> {
             }
             // Catch anything we know are real, and used as non-getters
             "--gui" | "--tui" => {
-                target = PathBuf::from(".").canonicalize().unwrap();
+                PathBuf::from(".").canonicalize().unwrap()
             }
             _ => {
                 // If it starts with a dash but isn't a known flag, reject it
@@ -44,13 +44,13 @@ fn main() -> Result<(), Box<dyn Error>> {
                     eprintln!("Error: Unknown argument '{}'", arg);
                     exit(1);
                 } else {
-                    target = Path::new(arg).canonicalize().unwrap();
+                    Path::new(arg).canonicalize().unwrap()
                 }
             }
         }
     } else {
-        target = PathBuf::from(".").canonicalize().unwrap();
-    }
+        PathBuf::from(".").canonicalize().unwrap()
+    };
 
     reqwest::Client::new();
 
