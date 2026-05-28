@@ -8,7 +8,9 @@ Improve visuals
 Add support for:
  - Delete key
  - Ctrl + Arrow
-Made changing current editor cheaper</pre>
+Made changing current editor cheaper
+Add GUI support
+Add marketplace</pre>
 
 ## v0.1.0
 <pre>Fix bug where opening a file wouldn't pull up file tree
