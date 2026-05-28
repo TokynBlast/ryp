@@ -24,20 +24,29 @@ fn main() -> Result<(), Box<dyn Error>> {
     let target: PathBuf;
 
     if let Some(arg) = args.get(1) {
-        if let Some(flag) = arg.strip_prefix("--") {
-            match flag {
-                "help" => {
-                    println!("Ryp is a text editor. By default, it will open to the current directory.\n--help - prints help text\n--version - prints the version");
-                    exit(0);
-                },
-                "version" => {
-                    println!("0.1.0");
-                    exit(0);
-                },
-                _ => panic!("Info getter does not expect any extra arguments."),
+        // Match directly on the exact string slice to avoid prefix confusion
+        match &*arg.to_lowercase().as_str() {
+            "--help" | "-h" => {
+                include!(concat!(env!("OUT_DIR"), "/usage.rs"));
+                exit(0);
             }
-        } else {
-            target = Path::new(arg).canonicalize().unwrap();
+            "--version" | "-v" => {
+                println!("{}", VERSION);
+                exit(0);
+            }
+            // Catch anything we know are real, and used as non-getters
+            "--gui" | "--tui" => {
+                target = PathBuf::from(".").canonicalize().unwrap();
+            }
+            _ => {
+                // If it starts with a dash but isn't a known flag, reject it
+                if arg.starts_with('-') {
+                    eprintln!("Error: Unknown argument '{}'", arg);
+                    exit(1);
+                } else {
+                    target = Path::new(arg).canonicalize().unwrap();
+                }
+            }
         }
     } else {
         target = PathBuf::from(".").canonicalize().unwrap();
