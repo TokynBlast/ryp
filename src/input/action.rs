@@ -59,4 +59,5 @@ pub enum Action {
     Undo,
     Redo,
     OpenCommandPallete,
+    Focus(bool),
 }

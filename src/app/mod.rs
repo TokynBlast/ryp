@@ -715,10 +715,6 @@ impl App {
         Ok(())
     }
 
-    pub fn set_focus(&mut self, focus: bool) {
-        self.focused = focus;
-    }
-
     fn handle_key(&mut self, key: event::KeyEvent) {
         use crate::input::{action::Action, keymap};
         use crossterm::event::{KeyCode, KeyModifiers};
@@ -1012,6 +1008,7 @@ impl App {
         }
 
         match action {
+            Action::Focus(focus) => self.focused = focus,
             Action::SwitchSidebarCategory(category) => {
                 self.cursor_pos = 0;
                 self.sidebar_category = category;
