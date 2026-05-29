@@ -43,6 +43,9 @@ Options:
   --version, -v    Prints the current version of Ryp
   --gui            Opens Ryp in a GUI interface
   --tui            Explicitly opens Ryp in a TUI interface (default)
+  --admin, -a      Runs Ryp as admin
+  --wait, -w       Waits for you to press enter
+  --question, -q   Asks if you want to continue or not
 ```
 
 # Installing
