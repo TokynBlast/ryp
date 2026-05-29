@@ -17,6 +17,9 @@
   <a href="https://github.com/sammwyy/ryp/commits">
     <img src="https://img.shields.io/github/last-commit/sammwyy/ryp" alt="When last commit was">
   </a>
+  <a>
+    <img src="https://img.shields.io/github/actions/workflow/status/sammwyy/ryp/check.yml" alt="Build check for Ryp">
+  </a>
 </p>
 
 <p align="center">
