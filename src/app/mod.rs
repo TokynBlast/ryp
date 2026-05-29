@@ -750,6 +750,22 @@ impl App {
             self.active_tab = self.editors.len().saturating_sub(1);
         }
     }
+    pub fn dispatch_gui(&mut self, action: crate::input::action::Action) {
+        use crate::input::action::Action;
+        use crate::windows::modal::ModalType;
+
+        match action {
+            Action::NodeClick(idx) => {
+                let ws = self.workspace.as_mut().unwrap();
+                if ws.nodes[idx].is_dir {
+                    ws.toggle(idx);
+                } else {
+                    todo!("Open file into editor")
+                }
+            }
+            _ => {}
+        }
+    }
 
     pub fn dispatch(&mut self, action: crate::input::action::Action) {
         use crate::input::action::Action;

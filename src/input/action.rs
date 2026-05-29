@@ -60,4 +60,5 @@ pub enum Action {
     Redo,
     OpenCommandPallete,
     Focus(bool),
+    NodeClick(usize),
 }

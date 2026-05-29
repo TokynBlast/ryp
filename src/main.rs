@@ -215,27 +215,49 @@ fn main() -> Result<(), Box<dyn Error>> {
         fs::File::create(&path.join("config.toml"))?;
     }
 
-    execute!(std::io::stdout(), EnableFocusChange)?;
+    if args.contains(&String::from("--gui")) {
+        let gui_plugin_rx = plugin_rx.clone();
 
-    let mut terminal = ratatui::init();
+        let _ = iced::application(
+            move || {
+                let mut app = App::new(gui_plugin_rx.clone());
 
-    // Create app and run it
-    let mut app = App::new(plugin_rx);
+                if target.is_dir() {
+                    app.load_workspace(&target);
+                } else {
+                    app.open_file(&target, false);
+                }
 
-    if target.is_dir() {
-        app.load_workspace(&target);
+                (app, iced::Task::none())
+            },
+            crate::app::App::dispatch_gui,
+            crate::app::App::view_file_tree,
+        )
+        .title("Ryp Text Editor")
+        .run();
     } else {
-        app.open_file(&target, false);
-    }
+        execute!(std::io::stdout(), EnableFocusChange)?;
 
-    let res = app.run(&mut terminal);
+        // Create app and run it
+        let mut app: App = App::new(plugin_rx);
 
-    ratatui::restore();
+        let mut terminal = ratatui::init();
 
-    execute!(std::io::stdout(), DisableFocusChange)?;
+        if target.is_dir() {
+            app.load_workspace(&target);
+        } else {
+            app.open_file(&target, false);
+        }
 
-    if let Err(err) = res {
-        println!("{:?}", err);
+        let res = app.run(&mut terminal);
+
+        ratatui::restore();
+
+        execute!(std::io::stdout(), DisableFocusChange)?;
+
+        if let Err(err) = res {
+            println!("{:?}", err);
+        }
     }
 
     Ok(())

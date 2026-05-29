@@ -9,6 +9,20 @@ use ratatui::{
 use compact_str::CompactString;
 use crate::app::WorldStrings;
 use crate::app::get_trans;
+use crate::input::action::Action;
+use iced::{
+    Alignment::Start,
+    Element,
+    widget::{
+        column,
+        button,
+        text
+    },
+    Color as IcedColor,
+    Theme,
+    Border,
+};
+
 
 pub fn draw_sidebar(f: &mut Frame, app: &App, area: Rect) {
     let active_bg_color = {
@@ -545,4 +559,57 @@ fn draw_marketplace_view(f: &mut Frame, app: &App, area: Rect) {
     // Paragraph::scroll takes (vertical, horizontal)
     let p = Paragraph::new(lines).scroll((scroll_y as u16, 0));
     f.render_widget(p, marketplace_layout[1]);
+}
+
+
+// GUI things
+impl App {
+    pub fn view_file_tree(&self) -> Element<'_, Action> {
+        if let Some(ws) = &self.workspace {
+            let mut my_column = column![].align_x(Start);
+
+            for (index, node) in ws.nodes.iter().enumerate() {
+                let selected_name = node.path.file_name().unwrap_or_default().to_string_lossy();
+
+                let prefix = if node.is_dir {
+                    if node.expanded { "▼ " } else { "▶ " }
+                } else {
+                    "  "
+                };
+
+                my_column = my_column.push(
+                    button(
+                        text(format!("{}{}", prefix, selected_name)).size(15)
+                    )
+                    .on_press(Action::NodeClick(index))
+                    .height(30)
+                    .style(App::black_solid_buttons)
+                );
+            }
+
+            my_column.into()
+        } else {
+            // Empty column when there isn't a workspace
+            column![].into()
+        }
+     }
+
+    fn black_solid_buttons(_theme: &Theme, status: button::Status) -> button::Style {
+        let background_color = match status {
+            button::Status::Hovered => IcedColor::from_rgb8(40, 40, 40),
+            button::Status::Pressed => IcedColor::from_rgb8(60, 60, 60),
+            _ => IcedColor::from_rgb8(80, 80, 80),
+        };
+
+        button::Style {
+            background: Some(iced::Background::Color(background_color)),
+            text_color: IcedColor::WHITE,
+            border: Border {
+                color: IcedColor::TRANSPARENT,
+                width: 0.0,
+                radius: 0.0.into(),
+            },
+            ..button::Style::default()
+        }
+    }
 }
