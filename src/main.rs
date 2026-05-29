@@ -90,7 +90,7 @@ fn ask_continue() -> bool {
     trimmed.is_empty() || trimmed == "y" || trimmed == "yes"
 }
 
-const VERSION: &str = env!("CARGO_PKG_VERSION");
+const VERSION: &str = concat!("Ryp ", env!("CARGO_PKG_VERSION"));
 
 fn main() -> Result<(), Box<dyn Error>> {
     let args: Vec<String> = std::env::args().collect();
