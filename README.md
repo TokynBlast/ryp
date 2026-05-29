@@ -26,7 +26,7 @@
   <a href="#usage">Usage</a> •
   <a href="#requirements">Requirements</a> •
   <a href="#installing">Installing</a> •
-  <a href="#support">OS Support</a>
+  <a href="#support">Support</a>
 </p>
 
 <p align="center">
