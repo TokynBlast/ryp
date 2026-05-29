@@ -34,5 +34,5 @@ fn main() {
         }
         usage_code.push_str("}\n");
 
-    fs::write(&dest_usage_path, usage_code).unwrap();
-}
+        fs::write(&dest_usage_path, usage_code).unwrap();
+    }
