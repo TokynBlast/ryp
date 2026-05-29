@@ -8,17 +8,15 @@
 - Make terminal not cover cursor or bottom info
 - Saving while in Git, saves the Git info to the actual file
 - Search memory, not disk for project search
-- When highlighting, then pressing arrow to go to the other side, cursor stays in same poosition
-- Something like the "yes" command can consume all Ryp input
+- When highlighting, then pressing arrow to go to the other side, cursor stays in same position
+- Something like the "yes" command can consume all Ryp input in GUI while in a terminal
 
 # QOL
-- Implement larger terminal size (full screen?)
-- Better documentation
 - Resource limiting
 - Explanation boxes for settings on hover
 - Make settings more like the easier to manage VS Code settings
-- Implement mouse support
+- Implement mouse support where supported
+- Implement an image decoder that has no file access after the image is grabbed (prevents overflow buffer execution and other security risks with images that contain malicous code [this is possible, and does happen])
 
 # Internal
-- Add minimum cells size
 - Fetch a couple of hot items for start of marketplace, then when searching, only request the next 50 items on search, and not typing for one second
