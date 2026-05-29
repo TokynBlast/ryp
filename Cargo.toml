@@ -26,6 +26,8 @@ online = { version = "4.0.2", features = ["tokio"] }
 modular-bitfield = "0.13.1"
 iced = { version = "0.14.0", features = ["tokio", "lazy", "image", "markdown", "wgpu", "tiny-skia"] }
 smol_str = "0.2.2"
+image = { version = "0.25.10", default-features = false, features = ["jpeg", "ico", "png", "webp", "rayon"] }
+pulldown-cmark = "0.13.4"
 
 # MacOS, Windows, Linux
 [target.'cfg(any(target_os="linux", target_os="windows", target_os="macos"))'.dependencies]
