@@ -211,8 +211,8 @@ fn main() -> Result<(), Box<dyn Error>> {
         drop(plugin_tx);
     }
 
-    if !fs::exists(&path.join("config.json")).unwrap_or(false) {
-        fs::File::create(&path.join("config.json"))?;
+    if !fs::exists(&path.join("config.toml")).unwrap_or(false) {
+        fs::File::create(&path.join("config.toml"))?;
     }
 
     execute!(std::io::stdout(), EnableFocusChange)?;
