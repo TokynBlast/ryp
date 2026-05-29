@@ -583,6 +583,7 @@ impl App {
                     )
                     .on_press(Action::NodeClick(index))
                     .height(30)
+                    .width(150)
                     .style(App::black_solid_buttons)
                 );
             }
