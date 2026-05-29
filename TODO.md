@@ -10,6 +10,7 @@
 - Search memory, not disk for project search
 - When highlighting, then pressing arrow to go to the other side, cursor stays in same position
 - Something like the "yes" command can consume all Ryp input in GUI while in a terminal
+- Local find isn't UTF-8 safe
 
 # QOL
 - Resource limiting
