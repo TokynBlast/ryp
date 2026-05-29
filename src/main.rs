@@ -8,7 +8,8 @@ pub mod plugin;
 
 use app::App;
 use std::error::Error;
-use std::path::{Path, PathBuf};
+use std::io::stdin;
+use std::path::PathBuf;
 use std::process::exit;
 use std::{env, fs};
 use crossterm::{execute, event::{EnableFocusChange, DisableFocusChange}};
@@ -73,12 +74,27 @@ fn escalate_privileges() -> bool {
     }
 }
 
+fn check_once<'a>(seen: &mut std::collections::HashSet<&'a str>, flag: &'a str) {
+    if !seen.insert(flag) {
+        eprintln!("Error: '{}' can only be used once", flag);
+        exit(1);
+    }
+}
+
+fn ask_continue() -> bool {
+    print!("Continue? [Y/n] ");
+    std::io::Write::flush(&mut std::io::stdout()).ok();
+    let mut input = String::new();
+    stdin().read_line(&mut input).ok();
+    let trimmed = input.trim().to_lowercase();
+    trimmed.is_empty() || trimmed == "y" || trimmed == "yes"
+}
+
 const VERSION: &str = env!("CARGO_PKG_VERSION");
 
 fn main() -> Result<(), Box<dyn Error>> {
-    // Check if an argument is passed
     let args: Vec<String> = std::env::args().collect();
-    let target: PathBuf;
+    let mut target = PathBuf::from(".").canonicalize().unwrap();
 
     // Check for conflicts
     if args.contains(&String::from("--tui")) && args.contains(&String::from("--gui")) {
@@ -86,60 +102,72 @@ fn main() -> Result<(), Box<dyn Error>> {
         exit(1);
     }
 
-    target = if let Some(arg) = args.get(1) {
+    // TODO: Make it so that it checks for doubles before running
+    let mut seen: std::collections::HashSet<&str> =
+        std::collections::HashSet::new();
+
+    for arg in args.iter().skip(1) {
         // Match directly on the exact string slice to avoid prefix confusion
-        match &*arg.to_lowercase().as_str() {
-            "--help" | "-h" => {
+        match arg.as_str() {
+            "--help" => {
+                check_once(&mut seen, "--help");
                 include!(concat!(env!("OUT_DIR"), "/usage.rs"));
                 exit(0);
             }
-            "--version" | "-v" => {
+            "--version" => {
+                check_once(&mut seen, "--version");
                 println!("{}", VERSION);
                 exit(0);
             }
             "--admin" => {
+                check_once(&mut seen, "--admin");
                 escalate_privileges();
                 exit(0);
             }
-            // Catch anything we know are real, and used as non-getters
-            "--gui" | "--tui" => {
-                PathBuf::from(".").canonicalize().unwrap()
+            "--wait" => {
+                stdin().read_line(&mut String::new()).ok();
             }
-            _ => {
-                // If it starts with a dash but isn't a known flag, reject it
-                if arg.starts_with('-') {
-                    if arg.starts_with("--") {
-                        eprintln!("Error: Unknown argument '{}'", arg);
-                        exit(1);
-                    } else {
-                      for chr in arg[1..].chars() {
-                          match chr {
-                              // We put exit() with each match, for scalability... If we have it after, in the future,
-                              //   we may have to go through and add exit(0) to each one if there's a single dash flag
-                              //   that we care about handling
-                              'v' => println!("{}", VERSION),
-                              'h' => include!(concat!(env!("OUT_DIR"), "/usage.rs")),
-                              'a' => {
-                                  escalate_privileges();
-                                  exit(0);
-                              }
-                              _ => {
-                                  eprintln!("Error: Unknown argument '{}'", chr);
-                                  exit(1)
-                              }
-                          }
-                      }
-                      exit(0)
+            "--question" => {
+                if !ask_continue() { exit(0); }
+            }
+            "--gui" | "--tui" => {}
+            s if s.starts_with("--") => {
+                eprintln!("Error: Unknown argument '{}'", s);
+                exit(1);
+            }
+            s if s.starts_with('-') => {
+                for chr in s[1..].chars() {
+                    match chr {
+                        'v' => {
+                            check_once(&mut seen, "-v");
+                            println!("{}", VERSION);
+                        }
+                        'h' => {
+                            check_once(&mut seen, "-h");
+                            include!(concat!(env!("OUT_DIR"), "/usage.rs"));
+                            exit(0);
+                        }
+                        'a' => {
+                            check_once(&mut seen, "-a");
+                            escalate_privileges();
+                            exit(0);
+                        }
+                        'w' => {
+                            stdin().read_line(&mut String::new()).ok();
+                        }
+                        'q' => {
+                            if !ask_continue() { exit(0); }
+                        }
+                        _ => {
+                            eprintln!("Error: Unknown flag '{}'", chr);
+                            exit(1);
+                        }
                     }
-                } else {
-                    Path::new(arg).canonicalize().unwrap()
                 }
             }
+            _ => target = PathBuf::from(arg).canonicalize().unwrap(),
         }
-    } else {
-        PathBuf::from(".").canonicalize().unwrap()
-    };
-
+    }
     reqwest::Client::new();
 
     let path = if cfg!(windows) {
