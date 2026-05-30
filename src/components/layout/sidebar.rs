@@ -566,7 +566,7 @@ fn draw_marketplace_view(f: &mut Frame, app: &App, area: Rect) {
 impl App {
     pub fn view_file_tree(&self) -> Element<'_, Action> {
         if let Some(ws) = &self.workspace {
-            let mut my_column = column![].align_x(Start);
+            let mut file_tree_column = column![].align_x(Start);
 
             for (index, node) in ws.nodes.iter().enumerate() {
                 let selected_name = node.path.file_name().unwrap_or_default().to_string_lossy();
@@ -577,7 +577,7 @@ impl App {
                     "  "
                 };
 
-                my_column = my_column.push(
+                file_tree_column = file_tree_column.push(
                     button(
                         text(format!("{}{}", prefix, selected_name)).size(15)
                     )
@@ -588,7 +588,7 @@ impl App {
                 );
             }
 
-            my_column.into()
+            file_tree_column.into()
         } else {
             // Empty column when there isn't a workspace
             column![].into()
