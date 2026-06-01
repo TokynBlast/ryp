@@ -174,6 +174,14 @@ fn main() -> Result<(), Box<dyn Error>> {
             _ => target = PathBuf::from(arg).canonicalize().unwrap(),
         }
     }
+
+    // Reclaim any memory we can, to keep out footprint as small as possible
+    {
+        drop(OFL.to_owned());
+        drop(seen);
+        drop(args);
+    }
+
     reqwest::Client::new();
 
     let path = if cfg!(windows) {
