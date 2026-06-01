@@ -122,7 +122,7 @@ impl App {
             PathBuf::from(std::env::var("HOME").unwrap()).join(".config").join("ryp")
         };
 
-        let user_lang = std::fs::read_to_string(path.join("config.toml"))
+        let user_lang = std::fs::read_to_string(path.join("config.jsonc"))
             .map(|contents| {
                 // grab the first line and check for a shebang
                 contents

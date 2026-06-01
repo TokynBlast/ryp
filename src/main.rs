@@ -244,8 +244,8 @@ fn main() -> Result<(), Box<dyn Error>> {
         drop(plugin_tx);
     }
 
-    if !fs::exists(&path.join("config.toml")).unwrap_or(false) {
-        fs::File::create(&path.join("config.toml"))?;
+    if !fs::exists(&path.join("config.jsonc")).unwrap_or(false) {
+        fs::File::create(&path.join("config.jsonc"))?;
     }
 
     if run_in_gui {

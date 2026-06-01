@@ -1,0 +1,147 @@
+// English
+// The above comment sets the language for Ryp to be rendered in.
+// It does not change the language of any of the configs.
+// The language of the configs cannot be changed, this was a security decision.
+//
+// Rather than having something like...
+// [ryp]
+// language = "English"
+// We make it so that you don't need to know how to say "language" in English.
+
+{
+  // These are profiles, they allow further seperation and customization between GUI, TUI, moods, or users!
+
+  "profiles": [
+    {
+      "name": "default",
+      "extends": "default"
+    },
+    {
+      "name": "gui",
+      "extends": "default"
+    },
+    {
+      "name": "tui",
+      "extends": "default"
+    }
+  ],
+  "default": {
+    "sidebar": {
+      "colors": {
+        // This is the color behind the actual text... The background!
+        "background": {
+          "active": "#EE7101",
+          "inactive": "#808080"
+        },
+        // This sets the actual color the text is drawn as
+        "foreground": {
+          "active": "#EE7101",
+          "inactive": "#FFFFFF"
+        }
+      },
+      // Keybinds to interact with the sidebar
+      "keybinds": {
+        "previous": "Ctrl+A",
+        "next": "Ctrl+D",
+        "toggle": "Ctrl+B"
+      }
+    },
+    "tabs": {
+      "colors": {
+        // Color of the currently active tab
+        "active": {
+          "background": "#EE7101",
+          "foreground": "#EE7101"
+        },
+        // Color of inactive tabs
+        "inactive": {
+          "background": "#808080",
+          "foreground": "#FFFFFF"
+        }
+      },
+
+      // Keybinds to interact with the editor
+      "keybinds": {
+        "left": "Ctrl+A",
+        "right": "Ctrl+D",
+        "close": "Ctrl+W"
+      }
+    },
+    // General settings for the editor
+    "editor": {
+      "background": "#323232",
+      "tab size": 4
+    },
+    // The console that plugins print to
+    // `character` sets the character before every print
+    "plugins": {
+      "console": {
+        "character": "λ",
+        "toggle": "Ctrl+E",
+        "color": "#BF00FF"
+      },
+      // Fine grain settings for plugins
+      "permissions": {
+        // File acceess
+        // Will likely change before first 1.0.0 stable release
+        "io": {
+          "sandbox": true
+        }
+      }
+    },
+    // Settings for saving files
+    "saving": {
+      "auto": {
+        "on": true,
+        "condition": "timed", // also `typing`
+        "time": 30000,
+        // Whether to tell you in the activity bar when auto saving
+        "tell": true
+      },
+      "keybind": "Ctrl+S",
+      // Extra things to do on save
+      "extras": {}
+    },
+    // For selected text
+    "highlighting": {
+      "foreground": "#000000",
+      "background": "#0084FF"
+    },
+    "search": {
+      // Global file search
+      "global": {
+        // The color of the current item while searching
+        "selected": {
+          "background": "#FFFF00",
+          "foreground": "#000000"
+        },
+        // The color of every item not selected during search
+        "unselected": {
+          "background": "#00FFFF",
+          "foreground": "#FFFFFF"
+        },
+        "search on type": true
+      },
+      // Leaving it empty tells Ryp to use global for everything not chosen
+      "local": {}
+    },
+    // Settings for the Git manager
+    "git": {
+      "keybinds": {
+        "refresh": "Ctrl+G",
+        "new": "",
+        "push": "",
+        "pull": ""
+      }
+    }
+  },
+  "gui": {
+    "sidebar": {
+      "shadow": {
+        "x": -5,
+        "y": 5
+      }
+    },
+    "antialiasing": true
+  }
+}
