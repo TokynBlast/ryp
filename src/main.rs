@@ -96,6 +96,8 @@ fn main() -> Result<(), Box<dyn Error>> {
     let args: Vec<String> = std::env::args().collect();
     let mut target = PathBuf::from(".").canonicalize().unwrap();
 
+    let mut run_in_gui = false;
+
     // Check for conflicts
     if args.contains(&String::from("--tui")) && args.contains(&String::from("--gui")) {
         eprintln!("Error: --gui and --tui are mutually exclusive");
@@ -130,7 +132,11 @@ fn main() -> Result<(), Box<dyn Error>> {
             "--question" => {
                 if !ask_continue() { exit(0); }
             }
-            "--gui" | "--tui" => {}
+            "--gui" => {
+                check_once(&mut seen, "--gui");
+                run_in_gui = true;
+            }
+            "--tui" => {}
             s if s.starts_with("--") => {
                 eprintln!("Error: Unknown argument '{}'", s);
                 exit(1);
@@ -215,7 +221,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         fs::File::create(&path.join("config.toml"))?;
     }
 
-    if args.contains(&String::from("--gui")) {
+    if run_in_gui {
         let gui_plugin_rx = plugin_rx.clone();
 
         let _ = iced::application(
