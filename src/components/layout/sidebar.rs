@@ -16,11 +16,16 @@ use iced::{
     widget::{
         column,
         button,
-        text
+        text,
+        container,
+        scrollable,
     },
     Color as IcedColor,
     Theme,
     Border,
+    Shadow,
+    Length::Fill,
+    Background
 };
 
 
