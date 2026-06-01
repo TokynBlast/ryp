@@ -90,6 +90,8 @@ fn ask_continue() -> bool {
     trimmed.is_empty() || trimmed == "y" || trimmed == "yes"
 }
 
+const FONT_BYTES: &[u8] = include_bytes!(concat!(env!("OUT_DIR"), "/0xProtoNerdFontMono-Regular.ttf"));
+const OFL: &str = include_str!(concat!(env!("OUT_DIR"), "/LICENSE.0xProto"));
 const VERSION: &str = concat!("Ryp ", env!("CARGO_PKG_VERSION"));
 
 fn main() -> Result<(), Box<dyn Error>> {
@@ -109,6 +111,23 @@ fn main() -> Result<(), Box<dyn Error>> {
         std::collections::HashSet::new();
 
     for arg in args.iter().skip(1) {
+        if let Some(arg) = arg.strip_prefix("--license=") {
+            match arg.trim_matches('"').to_ascii_lowercase().as_str() {
+                "ofl" => {
+                    println!("\n{}", OFL);
+
+                }
+                "all" => {
+                    println!("\n{}", OFL);
+                    exit(0);
+                }
+                _ => {
+                    eprintln!("Unknown license: {}", arg);
+                    exit(1);
+                }
+            }
+        }
+
         // Match directly on the exact string slice to avoid prefix confusion
         match arg.as_str() {
             "--help" => {
@@ -248,8 +267,11 @@ fn main() -> Result<(), Box<dyn Error>> {
             crate::app::App::view_file_tree,
         )
         .title("Ryp Text Editor")
+        .font(FONT_BYTES)
         .run();
     } else {
+        drop(FONT_BYTES.to_owned());
+
         execute!(std::io::stdout(), EnableFocusChange)?;
 
         // Create app and run it
