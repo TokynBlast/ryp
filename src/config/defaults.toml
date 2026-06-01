@@ -75,3 +75,7 @@ new_repo = "Ctrl+Alt+N"
 # These are left empty on purpose, they have no default binding
 push     = ""
 pull     = ""
+
+
+[gui.sidebar]
+shadow = { x = "-5", y = "5", radius = "" }
