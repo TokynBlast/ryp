@@ -582,7 +582,7 @@ impl App {
                         text(format!("{}{}", prefix, selected_name)).size(15)
                     )
                     .on_press(Action::NodeClick(index))
-                    .height(30)
+                    .height(28)
                     .width(150)
                     .style(App::gray_solid_buttons)
                 );
