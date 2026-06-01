@@ -606,11 +606,19 @@ impl App {
             background: Some(iced::Background::Color(background_color)),
             text_color: IcedColor::WHITE,
             border: Border {
-                color: IcedColor::TRANSPARENT,
-                width: 0.0,
+                color: IcedColor::BLACK,
+                width: 1.0,
                 radius: 0.0.into(),
             },
-            ..button::Style::default()
+            shadow: Shadow {
+                color: IcedColor::from_rgb8(90, 90, 90),
+                offset: iced::Vector {
+                    x: 1.0,
+                    y: 1.0,
+                },
+                blur_radius: 30.0,
+            },
+            snap: true
         }
     }
 }
