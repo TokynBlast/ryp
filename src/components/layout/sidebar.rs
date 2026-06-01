@@ -584,6 +584,7 @@ impl App {
                     .on_press(Action::NodeClick(index))
                     .height(28)
                     .width(150)
+                    .clip(true)
                     .style(App::gray_solid_buttons)
                 );
             }
