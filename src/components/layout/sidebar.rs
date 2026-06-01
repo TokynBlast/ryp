@@ -588,10 +588,19 @@ impl App {
                 );
             }
 
-            file_tree_column.into()
+            container(scrollable(file_tree_column))
+                .width(150)
+                .height(Fill)
+                .style(|_| container::Style {
+                    background: Some(Background::Color(IcedColor::BLACK)),
+                    ..Default::default()
+                })
+
+
+            .into()
         } else {
             // Empty column when there isn't a workspace
-            column![].into()
+            container(column![title]).into()
         }
      }
 
