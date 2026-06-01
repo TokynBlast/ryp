@@ -584,7 +584,7 @@ impl App {
                     .on_press(Action::NodeClick(index))
                     .height(30)
                     .width(150)
-                    .style(App::black_solid_buttons)
+                    .style(App::gray_solid_buttons)
                 );
             }
 
@@ -595,7 +595,7 @@ impl App {
         }
      }
 
-    fn black_solid_buttons(_theme: &Theme, status: button::Status) -> button::Style {
+    fn gray_solid_buttons(_: &Theme, status: button::Status) -> button::Style {
         let background_color = match status {
             button::Status::Hovered => IcedColor::from_rgb8(40, 40, 40),
             button::Status::Pressed => IcedColor::from_rgb8(60, 60, 60),
