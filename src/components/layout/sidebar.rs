@@ -565,8 +565,12 @@ fn draw_marketplace_view(f: &mut Frame, app: &App, area: Rect) {
 // GUI things
 impl App {
     pub fn view_file_tree(&self) -> Element<'_, Action> {
+        let title: Element<'_, Action> = text(get_trans!(self.translations, WorldStrings::WordExplorer))
+            .size(30)
+            .color(IcedColor::WHITE)
+            .into();
         if let Some(ws) = &self.workspace {
-            let mut file_tree_column = column![].align_x(Start);
+            let mut file_tree_column = column![title].align_x(Start);
 
             for (index, node) in ws.nodes.iter().enumerate() {
                 let selected_name = node.path.file_name().unwrap_or_default().to_string_lossy();
