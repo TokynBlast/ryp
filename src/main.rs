@@ -268,6 +268,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         )
         .title("Ryp Text Editor")
         .font(FONT_BYTES)
+        .antialiasing(true)
         .run();
     } else {
         drop(FONT_BYTES.to_owned());
