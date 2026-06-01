@@ -264,7 +264,7 @@ fn main() -> Result<(), Box<dyn Error>> {
                 (app, iced::Task::none())
             },
             crate::app::App::dispatch_gui,
-            crate::app::App::view_file_tree,
+            crate::app::App::view_app,
         )
         .title("Ryp Text Editor")
         .font(FONT_BYTES)

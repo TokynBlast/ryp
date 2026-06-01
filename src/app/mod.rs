@@ -6,6 +6,7 @@ use crate::windows::modal::{Modal, ModalType};
 use crate::plugin::action::PluginAction;
 use crossterm::event::{self, Event};
 use hashbrown::HashSet;
+use iced::Element;
 use std::collections::VecDeque;
 use std::fs;
 use std::time::Duration;
@@ -1775,5 +1776,13 @@ impl App {
         self.search_results = results;
         self.search_selected = 0;
         self.search_scroll = 0;
+    }
+}
+
+// GUI
+use crate::input::action::Action;
+impl App {
+    pub fn view_app(&self) -> Element<'_, Action> {
+        return self.view_file_tree();
     }
 }
