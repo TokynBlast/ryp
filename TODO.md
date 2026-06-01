@@ -21,3 +21,4 @@
 
 # Internal
 - Fetch a couple of hot items for start of marketplace, then when searching, only request the next 50 items on search, and not typing for one second
+- Make it so the build looks to see if the user has the default font installed before giving an error
