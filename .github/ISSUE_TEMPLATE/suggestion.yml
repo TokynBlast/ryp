@@ -1,0 +1,33 @@
+name: "Suggestion"
+description: Suggest something to be added to Ryp
+title: "Suggestion: "
+labels: ["suggestion"]
+body:
+  # The description
+  - type: textarea
+    id: description
+    attributes:
+      label: Suggestion description
+      description: A description of what you want added.
+      placeholder: What should be added ?
+    validations:
+      required: true
+
+  # Any extra stuff the user may have seen
+  - type: textarea
+    id: useful
+    attributes:
+      label: Where would it be useful?
+      description: Where would this be useful in the text editor?
+      placeholder: Users who program in XYZ ....
+    validations:
+      required: true
+
+  # Just to make sure the user isn't reporting a dead bug, or one that's already known :)
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Checklists
+      options:
+        - label: I checked for existing suggestions and didn't find a duplicate. (If you did, you can expand on the one you found!)
+          required: true
