@@ -576,9 +576,12 @@ impl App {
             .into();
         if let Some(ws) = &self.workspace {
             let mut file_tree_column = column![title].align_x(Start);
+            let flat = ws.flatten();
 
-            for (index, node) in ws.nodes.iter().enumerate() {
-                let selected_name = node.path.file_name().unwrap_or_default().to_string_lossy();
+
+            for (_, &(node_idx, depth)) in flat.iter().enumerate() {
+                let node = &ws.nodes[node_idx];
+                let indent = " ".repeat(depth * 2);
 
                 let prefix = if node.is_dir {
                     if node.expanded { "▼ " } else { "▶ " }
@@ -586,11 +589,18 @@ impl App {
                     "  "
                 };
 
+                let name = format!(
+                    "{}{}{}",
+                    indent,
+                    prefix,
+                    node.path.file_name().unwrap_or_default().to_string_lossy()
+                );
+
                 file_tree_column = file_tree_column.push(
                     button(
-                        text(format!("{}{}", prefix, selected_name)).size(15)
+                        text(name).size(15)
                     )
-                    .on_press(Action::NodeClick(index))
+                    .on_press(Action::NodeClick(node_idx))
                     .height(28)
                     .width(150)
                     .clip(true)
@@ -598,16 +608,13 @@ impl App {
                 );
             }
 
-            container(scrollable(file_tree_column))
+            container(scrollable(file_tree_column).anchor_right())
                 .width(150)
                 .height(Fill)
                 .style(|_| container::Style {
                     background: Some(Background::Color(IcedColor::BLACK)),
                     ..Default::default()
-                })
-
-
-            .into()
+                }).into()
         } else {
             // Empty column when there isn't a workspace
             container(column![title]).into()
