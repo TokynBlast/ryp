@@ -423,6 +423,7 @@ impl Editor {
                     "zon" => "Zonnon",
                     "sass" => "Sass ",
                     "hell" => "Malbolge",
+                    "unistore" => "UniStore",
                     _ => "Unknown",
                 }
             } else {
