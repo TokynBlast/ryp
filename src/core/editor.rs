@@ -344,7 +344,7 @@ impl Editor {
                     "nl" => "NewLISP ",
                     "ns" => "Newspeak",
                     "nim" | "nims" => "Nim ",
-                    "nix" => "Nix ", //  isn't a joke...
+                    "nix" => "Nix ",
                     "nxc" => "NXC",
                     "nqc" => "NQC",
                     "nu" => "Nu",
