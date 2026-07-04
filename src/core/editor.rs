@@ -148,7 +148,7 @@ impl Editor {
                     "dart" => "Dart ",
                     "cpl" => "Common Programming Language",
                     "bcpl" => "Basic Common Programming Language",
-                    "+" |  "a" | "m" => "A+",
+                    "+" | "a" | "m" => "A+",
                     "abap" => "Advanced Business Application Programming",
                     "abc" => "ABC",
                     "acc" => "AutoCoder Complier",
