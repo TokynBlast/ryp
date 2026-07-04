@@ -807,7 +807,23 @@ impl App {
                 if ws.nodes[idx].is_dir {
                     ws.toggle(idx);
                 } else {
-                    todo!("Open file into editor")
+                    match ws.nodes[idx]
+                        .path
+                        .as_path()
+                        .extension()
+                        .and_then(|e| e.to_str())
+                        .or_else(|| ws.nodes[idx].path.file_name().and_then(|n| n.to_str()))
+                        .unwrap()
+                    {
+                        "exe" => {
+                            todo!(
+                                "Add popup about executables, or things we can't render (needs to be done for TUI too)"
+                            )
+                        }
+                        _ => {
+                            todo!("Open file into editor")
+                        }
+                    }
                 }
             }
             _ => {}
