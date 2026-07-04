@@ -551,7 +551,7 @@ impl App {
                             responder.signal.notify_one();
                         }
                     }
-                    PluginAction::SetCursorX { x} => {
+                    PluginAction::SetCursorX { x } => {
                         if let Some(editor) = self.current_editor_mut() {
                             editor.cursor_x = x;
                             self.dirty = true;
