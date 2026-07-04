@@ -1,6 +1,6 @@
-use std::process::Command;
-use std::path::Path;
 use compact_str::CompactString;
+use std::path::Path;
+use std::process::Command;
 
 #[derive(Debug, Clone)]
 pub struct GitDiffLine {
@@ -57,7 +57,9 @@ impl GitManager {
         if let Some(output) = output {
             let stdout = CompactString::from_utf8_lossy(&output.stdout);
             for line in stdout.lines() {
-                if line.len() < 4 { continue; }
+                if line.len() < 4 {
+                    continue;
+                }
                 let status = CompactString::from(line[..2].trim());
                 let path = CompactString::from(line[3..].trim().trim_matches('"'));
 

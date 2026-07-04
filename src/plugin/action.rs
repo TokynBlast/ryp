@@ -10,18 +10,18 @@ pub struct SerdeResponder {
 #[derive(Debug)]
 pub struct UsizeResponder {
     pub number: Mutex<Option<usize>>,
-    pub signal: Condvar
+    pub signal: Condvar,
 }
 #[derive(Debug)]
 pub struct UsizeVecResponder {
     pub numbers: Mutex<Option<Vec<usize>>>,
-    pub signal: Condvar
+    pub signal: Condvar,
 }
 
 #[derive(Debug)]
 pub struct StrResponder {
     pub string: Mutex<Option<String>>,
-    pub signal: Condvar
+    pub signal: Condvar,
 }
 
 #[derive(Debug)]

@@ -1,5 +1,5 @@
-use hashbrown::HashMap;
 use crate::app::langs::Languages;
+use hashbrown::HashMap;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum SettingsStrings {

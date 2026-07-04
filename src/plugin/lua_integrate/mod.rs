@@ -1,5 +1,5 @@
-pub mod settings;
 pub mod keys;
+pub mod settings;
 // pub mod sidebar;
-pub mod editor;
 pub mod cursor;
+pub mod editor;

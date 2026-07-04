@@ -1,9 +1,9 @@
-use mlua::{UserData, UserDataMethods, Result, Error};
-use std::fs::File;
-use std::io::{Read, Seek, SeekFrom, BufReader, BufRead};
+use mlua::{Error, Result, UserData, UserDataMethods};
 use parking_lot::Mutex;
-use triomphe::Arc;
+use std::fs::File;
+use std::io::{BufRead, BufReader, Read, Seek, SeekFrom};
 use std::path::Path;
+use triomphe::Arc;
 
 #[derive(Clone)]
 pub struct OpenFile(Arc<Mutex<Option<File>>>);
@@ -13,7 +13,9 @@ impl UserData for OpenFile {
         // read n bytes (if n == 0 -> read_all)
         methods.add_method("read", |_, this, n: Option<usize>| {
             let mut guard = this.0.lock();
-            let f = guard.as_mut().ok_or_else(|| Error::external("file closed"))?;
+            let f = guard
+                .as_mut()
+                .ok_or_else(|| Error::external("file closed"))?;
 
             if let Some(n) = n {
                 let mut buf = vec![0u8; n];
@@ -31,7 +33,9 @@ impl UserData for OpenFile {
         // read_to_end returns bytes as Lua string
         methods.add_method("read_to_end", |_, this, _: ()| {
             let mut guard = this.0.lock();
-            let f = guard.as_mut().ok_or_else(|| Error::external("file closed"))?;
+            let f = guard
+                .as_mut()
+                .ok_or_else(|| Error::external("file closed"))?;
             let mut buf = Vec::new();
             f.read_to_end(&mut buf).map_err(Error::external)?;
             let s = String::from_utf8(buf).map_err(Error::external)?;
@@ -41,7 +45,9 @@ impl UserData for OpenFile {
         // read_line: read a single line (like BufRead::read_line)
         methods.add_method("read_line", |_, this, _: ()| {
             let mut guard = this.0.lock();
-            let f = guard.as_mut().ok_or_else(|| Error::external("file closed"))?;
+            let f = guard
+                .as_mut()
+                .ok_or_else(|| Error::external("file closed"))?;
 
             let mut reader = BufReader::new(f.try_clone().map_err(Error::external)?);
             let mut line = String::new();
@@ -54,14 +60,18 @@ impl UserData for OpenFile {
 
         methods.add_method("seek", |_, this, pos: u64| {
             let mut guard = this.0.lock();
-            let f = guard.as_mut().ok_or_else(|| Error::external("file closed"))?;
+            let f = guard
+                .as_mut()
+                .ok_or_else(|| Error::external("file closed"))?;
             f.seek(SeekFrom::Start(pos)).map_err(Error::external)?;
             Ok(())
         });
 
         methods.add_method("tell", |_, this, _: ()| {
             let mut guard = this.0.lock();
-            let f = guard.as_mut().ok_or_else(|| Error::external("file closed"))?;
+            let f = guard
+                .as_mut()
+                .ok_or_else(|| Error::external("file closed"))?;
             let p = f.seek(SeekFrom::Current(0)).map_err(Error::external)?;
             Ok(p)
         });

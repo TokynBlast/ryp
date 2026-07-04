@@ -1,4 +1,15 @@
+use crate::app::WorldStrings;
+use crate::app::get_trans;
+use crate::input::action::Action;
 use crate::{app::App, input::action::SidebarCategory};
+use compact_str::CompactString;
+use iced::{
+    Alignment::Start,
+    Background, Border, Color as IcedColor, Element,
+    Length::Fill,
+    Shadow, Theme,
+    widget::{button, column, container, scrollable, text},
+};
 use ratatui::{
     Frame,
     layout::{Constraint, Direction, Layout, Rect},
@@ -6,32 +17,12 @@ use ratatui::{
     text::{Line, Span},
     widgets::{Block, Borders, Paragraph},
 };
-use compact_str::CompactString;
-use crate::app::WorldStrings;
-use crate::app::get_trans;
-use crate::input::action::Action;
-use iced::{
-    Alignment::Start,
-    Element,
-    widget::{
-        column,
-        button,
-        text,
-        container,
-        scrollable,
-    },
-    Color as IcedColor,
-    Theme,
-    Border,
-    Shadow,
-    Length::Fill,
-    Background
-};
-
 
 pub fn draw_sidebar(f: &mut Frame, app: &App, area: Rect) {
     let active_bg_color = {
-        let hex = app.config.get("Active Sidebar BG Color")
+        let hex = app
+            .config
+            .get("Active Sidebar BG Color")
             .and_then(|v| v.as_str())
             .map(|s| s.trim_start_matches('#'))
             .filter(|s| s.len() == 6)
@@ -43,7 +34,9 @@ pub fn draw_sidebar(f: &mut Frame, app: &App, area: Rect) {
     };
 
     let inactive_bg_color = {
-        let hex = app.config.get("Sidebar BG Color")
+        let hex = app
+            .config
+            .get("Sidebar BG Color")
             .and_then(|v| v.as_str())
             .map(|s| s.trim_start_matches('#'))
             .filter(|s| s.len() == 6)
@@ -55,7 +48,9 @@ pub fn draw_sidebar(f: &mut Frame, app: &App, area: Rect) {
     };
 
     let active_fg_color = {
-        let hex = app.config.get("Active Sidebar FG Color")
+        let hex = app
+            .config
+            .get("Active Sidebar FG Color")
             .and_then(|v| v.as_str())
             .map(|s| s.trim_start_matches('#'))
             .filter(|s| s.len() == 6)
@@ -66,16 +61,18 @@ pub fn draw_sidebar(f: &mut Frame, app: &App, area: Rect) {
         Color::Rgb(r, g, b)
     };
 
-      let inactive_fg_color = {
-          let hex = app.config.get("Sidebar FG Color")
-              .and_then(|v| v.as_str())
-              .map(|s| s.trim_start_matches('#'))
-              .filter(|s| s.len() == 6)
-              .unwrap_or("f0f0f0");
-          let r = u8::from_str_radix(&hex[0..2], 16).unwrap_or(0);
-          let g = u8::from_str_radix(&hex[2..4], 16).unwrap_or(0);
-          let b = u8::from_str_radix(&hex[4..6], 16).unwrap_or(0);
-          Color::Rgb(r, g, b)
+    let inactive_fg_color = {
+        let hex = app
+            .config
+            .get("Sidebar FG Color")
+            .and_then(|v| v.as_str())
+            .map(|s| s.trim_start_matches('#'))
+            .filter(|s| s.len() == 6)
+            .unwrap_or("f0f0f0");
+        let r = u8::from_str_radix(&hex[0..2], 16).unwrap_or(0);
+        let g = u8::from_str_radix(&hex[2..4], 16).unwrap_or(0);
+        let b = u8::from_str_radix(&hex[4..6], 16).unwrap_or(0);
+        Color::Rgb(r, g, b)
     };
 
     if let Some(ws) = &app.workspace {
@@ -92,12 +89,32 @@ pub fn draw_sidebar(f: &mut Frame, app: &App, area: Rect) {
             ])
             .split(area);
 
-        draw_activity_bar(f, app, sidebar_layout[0], active_fg_color, inactive_fg_color);
-        draw_sidebar_content(f, app, sidebar_layout[1], active_bg_color, inactive_bg_color, active_fg_color, inactive_fg_color);
+        draw_activity_bar(
+            f,
+            app,
+            sidebar_layout[0],
+            active_fg_color,
+            inactive_fg_color,
+        );
+        draw_sidebar_content(
+            f,
+            app,
+            sidebar_layout[1],
+            active_bg_color,
+            inactive_bg_color,
+            active_fg_color,
+            inactive_fg_color,
+        );
     }
 }
 
-fn draw_activity_bar(f: &mut Frame, app: &App, area: Rect, active_fg_color: Color, inactive_fg_color: Color) {
+fn draw_activity_bar(
+    f: &mut Frame,
+    app: &App,
+    area: Rect,
+    active_fg_color: Color,
+    inactive_fg_color: Color,
+) {
     let background_style = Style::default().bg(Color::Rgb(30, 30, 30));
     f.render_widget(Block::default().style(background_style), area);
 
@@ -112,7 +129,9 @@ fn draw_activity_bar(f: &mut Frame, app: &App, area: Rect, active_fg_color: Colo
     let mut lines = vec![];
     for (cat, icon) in categories.iter() {
         let style = if app.sidebar_category == *cat {
-            Style::default().fg(active_fg_color).add_modifier(Modifier::BOLD)
+            Style::default()
+                .fg(active_fg_color)
+                .add_modifier(Modifier::BOLD)
         } else {
             Style::default().fg(inactive_fg_color)
         };
@@ -120,24 +139,52 @@ fn draw_activity_bar(f: &mut Frame, app: &App, area: Rect, active_fg_color: Colo
         lines.push(Line::from("")); // Spacer
     }
 
-    let p = Paragraph::new(lines).block(Block::default().borders(Borders::RIGHT).border_style(Style::default().fg(Color::Rgb(50, 50, 50))));
+    let p = Paragraph::new(lines).block(
+        Block::default()
+            .borders(Borders::RIGHT)
+            .border_style(Style::default().fg(Color::Rgb(50, 50, 50))),
+    );
     f.render_widget(p, area);
 }
 
-fn draw_sidebar_content(f: &mut Frame, app: &App, area: Rect, active_bg_color: Color, inactive_bg_color: Color, active_fg_color: Color, inactive_fg_color: Color) {
+fn draw_sidebar_content(
+    f: &mut Frame,
+    app: &App,
+    area: Rect,
+    active_bg_color: Color,
+    inactive_bg_color: Color,
+    active_fg_color: Color,
+    inactive_fg_color: Color,
+) {
     let background_style = Style::default().bg(Color::Rgb(35, 35, 35));
     f.render_widget(Block::default().style(background_style), area);
 
     match app.sidebar_category {
-        SidebarCategory::FileTree => draw_file_tree(f, app, area, active_fg_color, inactive_fg_color),
+        SidebarCategory::FileTree => {
+            draw_file_tree(f, app, area, active_fg_color, inactive_fg_color)
+        }
         SidebarCategory::Search => draw_search_view(f, app, area),
         SidebarCategory::Git => draw_git_view(f, app, area),
-        SidebarCategory::Settings => draw_settings_view(f, app, area, active_bg_color, inactive_bg_color, active_fg_color, inactive_fg_color),
+        SidebarCategory::Settings => draw_settings_view(
+            f,
+            app,
+            area,
+            active_bg_color,
+            inactive_bg_color,
+            active_fg_color,
+            inactive_fg_color,
+        ),
         SidebarCategory::MarketPlace => draw_marketplace_view(f, app, area),
     }
 }
 
-fn draw_file_tree(f: &mut Frame, app: &App, area: Rect, active_fg_color: Color, inactive_fg_color: Color) {
+fn draw_file_tree(
+    f: &mut Frame,
+    app: &App,
+    area: Rect,
+    active_fg_color: Color,
+    inactive_fg_color: Color,
+) {
     if let Some(ws) = &app.workspace {
         let active_style = if ws.focused {
             Style::default()
@@ -162,17 +209,15 @@ fn draw_file_tree(f: &mut Frame, app: &App, area: Rect, active_fg_color: Color, 
             let indent = " ".repeat(depth * 2);
 
             let icon = if node.is_dir {
-                if node.expanded {
-                    "▼ "
-                } else {
-                    "▶ "
-                }
+                if node.expanded { "▼ " } else { "▶ " }
             } else {
                 " " // no icon for generic file
             };
 
             let style = if ws.focused && ws.selected == i {
-                Style::default().bg(Color::Rgb(60, 60, 60)).fg(active_fg_color)
+                Style::default()
+                    .bg(Color::Rgb(60, 60, 60))
+                    .fg(active_fg_color)
             } else {
                 Style::default().fg(inactive_fg_color)
             };
@@ -229,30 +274,32 @@ fn draw_search_view(f: &mut Frame, app: &App, area: Rect) {
         Span::styled(" Query: ", Style::default().fg(Color::DarkGray)),
         Span::styled(
             app.search_query
-            .char_indices()
-            .rev()
-            .skip(
-                app.search_query
-                .len()
-                .saturating_sub(app.cursor_pos)
-            )
-            .nth(26)
-            .map(|(i, _)| &app.search_query[i..])
-            .unwrap_or(&app.search_query),
-            Style::default().fg(Color::White)
+                .char_indices()
+                .rev()
+                .skip(app.search_query.len().saturating_sub(app.cursor_pos))
+                .nth(26)
+                .map(|(i, _)| &app.search_query[i..])
+                .unwrap_or(&app.search_query),
+            Style::default().fg(Color::White),
         ),
     ]);
-    let metrics_line = Line::from(vec![
-        Span::styled(format!(" Hits: {} in {} files ", app.search_num_occurrences, app.search_num_files), Style::default().fg(Color::Green).bg(Color::Rgb(40, 40, 40))),
-    ]);
+    let metrics_line = Line::from(vec![Span::styled(
+        format!(
+            " Hits: {} in {} files ",
+            app.search_num_occurrences, app.search_num_files
+        ),
+        Style::default().fg(Color::Green).bg(Color::Rgb(40, 40, 40)),
+    )]);
 
     let query_p = Paragraph::new(vec![
         query_line,
         metrics_line,
-        Line::from(Span::styled("─".repeat(search_layout[0].width as usize), Style::default().fg(Color::Rgb(50, 50, 50))))
+        Line::from(Span::styled(
+            "─".repeat(search_layout[0].width as usize),
+            Style::default().fg(Color::Rgb(50, 50, 50)),
+        )),
     ]);
     f.render_widget(query_p, search_layout[0]);
-
 
     f.set_cursor_position((app.cursor_pos.clamp(0, 27) as u16 + 13, 1));
 
@@ -268,7 +315,9 @@ fn draw_search_view(f: &mut Frame, app: &App, area: Rect) {
     let mut lines = vec![];
     for (i, result) in app.search_results.iter().enumerate() {
         let style = if app.search_selected == i {
-            Style::default().bg(Color::Rgb(60, 60, 60)).fg(Color::Rgb(255, 255, 255))
+            Style::default()
+                .bg(Color::Rgb(60, 60, 60))
+                .fg(Color::Rgb(255, 255, 255))
         } else {
             Style::default().fg(Color::Gray)
         };
@@ -280,11 +329,11 @@ fn draw_search_view(f: &mut Frame, app: &App, area: Rect) {
 
         lines.push(Line::from(Span::styled(
             format!(" {}:{} ", filename, result.line_number),
-            style.clone().fg(Color::Cyan)
+            style.clone().fg(Color::Cyan),
         )));
         lines.push(Line::from(Span::styled(
             format!("   {}", result.content),
-            style
+            style,
         )));
     }
 
@@ -343,13 +392,21 @@ fn draw_git_view(f: &mut Frame, app: &App, area: Rect) {
         let path = &change.path;
         let components: Vec<&str> = path.split('/').collect();
         let display_path = if components.len() > 3 {
-            CompactString::from(format!("{}/.../{}/{}", components[0], components[components.len()-2], components[components.len()-1]))
+            CompactString::from(format!(
+                "{}/.../{}/{}",
+                components[0],
+                components[components.len() - 2],
+                components[components.len() - 1]
+            ))
         } else {
             path.clone()
         };
 
         lines.push(Line::from(vec![
-            Span::styled(format!(" {} ", change.status), status_style.add_modifier(Modifier::BOLD)),
+            Span::styled(
+                format!(" {} ", change.status),
+                status_style.add_modifier(Modifier::BOLD),
+            ),
             Span::styled(display_path, style.add_modifier(Modifier::BOLD)),
         ]));
     }
@@ -361,14 +418,24 @@ fn draw_git_view(f: &mut Frame, app: &App, area: Rect) {
         0
     };
 
-    let p = Paragraph::new(lines).block(block).scroll((scroll_y as u16, 0));
+    let p = Paragraph::new(lines)
+        .block(block)
+        .scroll((scroll_y as u16, 0));
     f.render_widget(p, area);
 
-      // Top left of box
-      f.set_cursor_position((area.x + 1, area.y + 1));
+    // Top left of box
+    f.set_cursor_position((area.x + 1, area.y + 1));
 }
 
-fn draw_settings_view(f: &mut Frame, app: &App, area: Rect, active_bg_color: Color, inactive_bg_color: Color, active_fg_color: Color, inactive_fg_color: Color) {
+fn draw_settings_view(
+    f: &mut Frame,
+    app: &App,
+    area: Rect,
+    active_bg_color: Color,
+    inactive_bg_color: Color,
+    active_fg_color: Color,
+    inactive_fg_color: Color,
+) {
     let is_focused = app.workspace.as_ref().map_or(false, |w| w.focused);
     let active_style = if is_focused {
         Style::default()
@@ -397,7 +464,10 @@ fn draw_settings_view(f: &mut Frame, app: &App, area: Rect, active_bg_color: Col
     }
 
     let settings_block = Block::default()
-        .title(format!(" {} ", get_trans!(app.translations, WorldStrings::WordSetting)))
+        .title(format!(
+            " {} ",
+            get_trans!(app.translations, WorldStrings::WordSetting)
+        ))
         .borders(Borders::ALL)
         .border_style(active_style);
 
@@ -409,7 +479,9 @@ fn draw_settings_view(f: &mut Frame, app: &App, area: Rect, active_bg_color: Col
     let visible_count = (inner.height / 3) as usize;
 
     // Determine the window of items to show based on scroll
-    if visible_count == 0 { return; }
+    if visible_count == 0 {
+        return;
+    }
     let mut start_index = app.settings_scroll;
 
     // Ensure selected item is not above the view
@@ -436,7 +508,9 @@ fn draw_settings_view(f: &mut Frame, app: &App, area: Rect, active_bg_color: Col
         let is_selected = is_focused && app.settings_selected == setting_idx;
 
         let style = if is_selected {
-            Style::default().bg(Color::Rgb(60, 60, 60)).fg(active_fg_color)
+            Style::default()
+                .bg(Color::Rgb(60, 60, 60))
+                .fg(active_fg_color)
         } else {
             Style::default().fg(inactive_fg_color)
         };
@@ -446,7 +520,10 @@ fn draw_settings_view(f: &mut Frame, app: &App, area: Rect, active_bg_color: Col
             .borders(Borders::ALL)
             .border_style(style);
 
-        f.render_widget(Paragraph::new(setting.value.as_str()).block(block), chunks[i]);
+        f.render_widget(
+            Paragraph::new(setting.value.as_str()).block(block),
+            chunks[i],
+        );
 
         if is_selected {
             f.set_cursor_position((chunks[i].x + 1 + app.cursor_pos as u16, chunks[i].y + 1));
@@ -457,9 +534,7 @@ fn draw_settings_view(f: &mut Frame, app: &App, area: Rect, active_bg_color: Col
 fn draw_marketplace_view(f: &mut Frame, app: &App, area: Rect) {
     // TODO: Implement X scrolling when hovering on a plugin with a description
     //       longer than current view
-    let is_focused =
-        app.workspace.as_ref()
-        .map_or(false, |w| w.focused);
+    let is_focused = app.workspace.as_ref().map_or(false, |w| w.focused);
     let active_style = if is_focused {
         Style::default()
             .fg(Color::Yellow)
@@ -471,7 +546,10 @@ fn draw_marketplace_view(f: &mut Frame, app: &App, area: Rect) {
     };
 
     let block = Block::default()
-        .title(format!(" {} ", get_trans!(app.translations, WorldStrings::WordMarketplace)))
+        .title(format!(
+            " {} ",
+            get_trans!(app.translations, WorldStrings::WordMarketplace)
+        ))
         .borders(Borders::ALL)
         .border_style(active_style);
 
@@ -488,46 +566,53 @@ fn draw_marketplace_view(f: &mut Frame, app: &App, area: Rect) {
 
     // Search input display
     let search_line = Line::from(vec![
-        Span::styled(format!(" {}: ", get_trans!(app.translations, WorldStrings::WordSearch)), Style::default().fg(Color::DarkGray)),
+        Span::styled(
+            format!(
+                " {}: ",
+                get_trans!(app.translations, WorldStrings::WordSearch)
+            ),
+            Style::default().fg(Color::DarkGray),
+        ),
         Span::styled(
             app.market_search_query
-            .char_indices()
-            .rev()
-            .skip(
-                app.market_search_query
-                .len()
-                .saturating_sub(app.cursor_pos)
-            )
-            .nth(24)
-            .map(|(i, _)| &app.market_search_query[i..])
-            .unwrap_or(&app.market_search_query),
-            Style::default().fg(Color::White)
+                .char_indices()
+                .rev()
+                .skip(app.market_search_query.len().saturating_sub(app.cursor_pos))
+                .nth(24)
+                .map(|(i, _)| &app.market_search_query[i..])
+                .unwrap_or(&app.market_search_query),
+            Style::default().fg(Color::White),
         ),
     ]);
-
 
     // if nothing in query, use a gray "type to search..."
     let search_query = Paragraph::new(vec![
         search_line,
-        Line::from(Span::styled("─".repeat(marketplace_layout[0].width as usize), Style::default().fg(Color::Rgb(50, 50, 50))))
+        Line::from(Span::styled(
+            "─".repeat(marketplace_layout[0].width as usize),
+            Style::default().fg(Color::Rgb(50, 50, 50)),
+        )),
     ]);
     f.render_widget(search_query, marketplace_layout[0]);
 
-    f.render_widget(Paragraph::new(
-        if app.online {
+    f.render_widget(
+        Paragraph::new(if app.online {
             if app.marketplace_listed_items.is_empty() {
                 if !app.market_search_query.is_empty() {
                     String::from(" No results found.")
                 } else {
-                  String::from(" Loading plugins...")
+                    String::from(" Loading plugins...")
                 }
             } else {
                 String::from(" Here are some hot plugins:")
             }
         } else {
-          app.marketplace_error.clone().unwrap_or(String::from(" Trying to connect..."))
-        }
-    ), marketplace_layout[1]);
+            app.marketplace_error
+                .clone()
+                .unwrap_or(String::from(" Trying to connect..."))
+        }),
+        marketplace_layout[1],
+    );
 
     f.set_cursor_position((app.cursor_pos.clamp(0, 25) as u16 + 14, 1));
 
@@ -539,18 +624,19 @@ fn draw_marketplace_view(f: &mut Frame, app: &App, area: Rect) {
             Style::default().fg(Color::Gray)
         };
 
-        let title = result.title
+        let title = result
+            .title
             .split_once(' ')
             .map(|(_, rest)| rest)
             .unwrap_or(&result.title);
 
         lines.push(Line::from(Span::styled(
             format!(" {} ", title),
-            style.clone().fg(Color::Cyan)
+            style.clone().fg(Color::Cyan),
         )));
         lines.push(Line::from(Span::styled(
             format!(" {} ", result.desc.chars().take(5).collect::<String>()),
-            style
+            style,
         )));
     }
 
@@ -566,18 +652,17 @@ fn draw_marketplace_view(f: &mut Frame, app: &App, area: Rect) {
     f.render_widget(p, marketplace_layout[1]);
 }
 
-
 // GUI things
 impl App {
     pub fn view_file_tree(&self) -> Element<'_, Action> {
-        let title: Element<'_, Action> = text(get_trans!(self.translations, WorldStrings::WordExplorer))
-            .size(30)
-            .color(IcedColor::WHITE)
-            .into();
+        let title: Element<'_, Action> =
+            text(get_trans!(self.translations, WorldStrings::WordExplorer))
+                .size(30)
+                .color(IcedColor::WHITE)
+                .into();
         if let Some(ws) = &self.workspace {
             let mut file_tree_column = column![title].align_x(Start);
             let flat = ws.flatten();
-
 
             for (_, &(node_idx, depth)) in flat.iter().enumerate() {
                 let node = &ws.nodes[node_idx];
@@ -597,14 +682,12 @@ impl App {
                 );
 
                 file_tree_column = file_tree_column.push(
-                    button(
-                        text(name).size(15)
-                    )
-                    .on_press(Action::NodeClick(node_idx))
-                    .height(28)
-                    .width(150)
-                    .clip(true)
-                    .style(App::gray_solid_buttons)
+                    button(text(name).size(15))
+                        .on_press(Action::NodeClick(node_idx))
+                        .height(28)
+                        .width(150)
+                        .clip(true)
+                        .style(App::gray_solid_buttons),
                 );
             }
 
@@ -614,12 +697,13 @@ impl App {
                 .style(|_| container::Style {
                     background: Some(Background::Color(IcedColor::BLACK)),
                     ..Default::default()
-                }).into()
+                })
+                .into()
         } else {
             // Empty column when there isn't a workspace
             container(column![title]).into()
         }
-     }
+    }
 
     fn gray_solid_buttons(_: &Theme, status: button::Status) -> button::Style {
         let background_color = match status {
@@ -638,13 +722,10 @@ impl App {
             },
             shadow: Shadow {
                 color: IcedColor::from_rgb8(90, 90, 90),
-                offset: iced::Vector {
-                    x: 1.0,
-                    y: 1.0,
-                },
+                offset: iced::Vector { x: 1.0, y: 1.0 },
                 blur_radius: 30.0,
             },
-            snap: true
+            snap: true,
         }
     }
 }

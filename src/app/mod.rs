@@ -1,30 +1,30 @@
 use crate::app::langs::Languages;
+use crate::app::marketplace::MarketplacePlugin;
 use crate::config::Config;
 use crate::core::editor::Editor;
+use crate::core::{git, terminal, tree};
 use crate::input::action::SidebarCategory;
-use crate::windows::modal::{Modal, ModalType};
 use crate::plugin::action::PluginAction;
+use crate::windows::modal::{Modal, ModalType};
+use aho_corasick::AhoCorasick;
+use compact_str::CompactString;
+use crossbeam_channel::Receiver;
 use crossterm::event::{self, Event};
+use hashbrown::HashMap;
 use hashbrown::HashSet;
 use iced::Element;
+use parking_lot::{Mutex, RwLock};
+use rayon::{self, prelude::*};
+use serde_json::{Value, json};
 use std::collections::VecDeque;
 use std::fs;
-use std::time::Duration;
-use syntect::{parsing::SyntaxSet, highlighting::ThemeSet};
 use std::path::{Path, PathBuf};
-use parking_lot::{Mutex, RwLock};
+use std::time::Duration;
+use syntect::{highlighting::ThemeSet, parsing::SyntaxSet};
 use triomphe::Arc;
-use aho_corasick::AhoCorasick;
-use serde_json::{json, Value};
-use compact_str::CompactString;
-use rayon::{self, prelude::*};
-use crossbeam_channel::Receiver;
-use crate::core::{tree, git, terminal};
-use crate::app::marketplace::MarketplacePlugin;
-use hashbrown::HashMap;
 
-mod ui;
 pub mod langs;
+mod ui;
 pub use crate::get_trans;
 pub mod marketplace;
 
@@ -35,58 +35,60 @@ pub struct SearchResult {
 }
 
 pub struct App {
-    pub language: Languages,                                                          // Language to display text editor in
-    pub editors: Vec<Editor>,                                                         // All open editors
-    pub active_tab: usize,                                                            // Current active tab
-    pub config: Config,                                                               // Configuration of editor(s) and plugin(s)
-    pub modal: Option<Modal>,                                                         // Selection windows (confirm leave, new file, etc.)
-    pub should_quit: bool,                                                            // Whether Ryp should quit or not
-    pub syntax_set: SyntaxSet,                                                        // Syntax set for languages
-    pub theme_set: ThemeSet,                                                          // Highlighting colors
-    pub workspace: Option<tree::FileTree>,                                            // Sidebar things
-    pub sidebar_category: SidebarCategory,                                            // Current sidebar piece open
-    pub search_query: CompactString,                                                  // What to look for
-    pub search_results: Vec<SearchResult>,                                            // Results of a serarch
-    pub search_selected: usize,                                                       // Selected search result
-    pub search_scroll: usize,                                                         // Scroll amount on search results
-    pub search_num_files: usize,                                                      // Number of files with contents found
-    pub search_num_occurrences: usize,                                                // Number of times a query found
-    pub search_advanced: Vec<CompactString>,                                          // Advanced search input (*.f, /dev/, etc.)
-    pub git_manager: git::GitManager,                                                 // Git
-    pub git_changes: Vec<git::GitFileChange>,                                         // Every change Git found
-    pub git_scroll: usize,                                                            // Scroll on Git
-    pub git_selected: usize,                                                          // File selected in Git view
-    pub settings_selected: usize,                                                     // Selected setting
-    pub settings_scroll: usize,                                                       // Settings scroll
-    pub terminal: terminal::Terminal,                                                 // Builtin terminal
-    pub terminal_visible: bool,                                                       // If the terminal is visible
-    pub debug_console_visible: bool,                                                  // If the debug console is visible
-    pub dirty: bool,                                                                  // If the terminal needs to be updated
-    pub plugin_rx: Receiver<PluginAction>,                                            // Lua plugin reciever
-    pub whitespace_cache: Arc<RwLock<Vec<usize>>>,                                    // Where whitespace is in the editor
-    pub host_terminal_height: u16,                                                    // True height of terminal we're running in
-    pub host_terminal_width: u16,                                                     // True height of terminal we're running in
-    pub debug_logs: VecDeque<CompactString>,                                          // Lua plugin print function routed here
-    pub os: CompactString,                                                            // String of what the OS is (not OsString)
-    pub key_pressed: Mutex<Option<CompactString>>,                                    // Which key was pressed
-    pub focused: bool,                                                                // Whether the terminal is focused or not
-    pub marketplace_item_selected: usize,                                             // Number of selected item
-    pub marketplace_plugins: Vec<MarketplacePlugin>,                                  // Title and description of every plugin
-    pub marketplace_error: Option<String>,                                            // The error (if any) from reqwest
-    pub market_state: Arc<RwLock<(bool, Result<Vec<MarketplacePlugin>, String>)>>,    // The state of the maket
-    pub market_search_query: CompactString,                                           // Plugin search
-    pub marketplace_listed_items: Vec<MarketplacePlugin>,                             // Every marketplace item listed
-    pub online: bool,                                                                 // Whether the user has internet or not
-    pub cursor_pos: usize,                                                            // Curosor position for use in sidebar
-    pub resized: bool,                                                                // Whether the terminal has been resized
-    pub commands: Vec<&'static str>,                                                  // Commands, and what to do
-    pub plugin_commands: Vec<(String, mlua::Function)>,                               // Funcitons provided by plugins for commands to run
-    pub translations: HashMap<WorldStrings, &'static str>,                                    // Translations of every piece of text (excluding plugins)
+    pub language: Languages,                 // Language to display text editor in
+    pub editors: Vec<Editor>,                // All open editors
+    pub active_tab: usize,                   // Current active tab
+    pub config: Config,                      // Configuration of editor(s) and plugin(s)
+    pub modal: Option<Modal>,                // Selection windows (confirm leave, new file, etc.)
+    pub should_quit: bool,                   // Whether Ryp should quit or not
+    pub syntax_set: SyntaxSet,               // Syntax set for languages
+    pub theme_set: ThemeSet,                 // Highlighting colors
+    pub workspace: Option<tree::FileTree>,   // Sidebar things
+    pub sidebar_category: SidebarCategory,   // Current sidebar piece open
+    pub search_query: CompactString,         // What to look for
+    pub search_results: Vec<SearchResult>,   // Results of a serarch
+    pub search_selected: usize,              // Selected search result
+    pub search_scroll: usize,                // Scroll amount on search results
+    pub search_num_files: usize,             // Number of files with contents found
+    pub search_num_occurrences: usize,       // Number of times a query found
+    pub search_advanced: Vec<CompactString>, // Advanced search input (*.f, /dev/, etc.)
+    pub git_manager: git::GitManager,        // Git
+    pub git_changes: Vec<git::GitFileChange>, // Every change Git found
+    pub git_scroll: usize,                   // Scroll on Git
+    pub git_selected: usize,                 // File selected in Git view
+    pub settings_selected: usize,            // Selected setting
+    pub settings_scroll: usize,              // Settings scroll
+    pub terminal: terminal::Terminal,        // Builtin terminal
+    pub terminal_visible: bool,              // If the terminal is visible
+    pub debug_console_visible: bool,         // If the debug console is visible
+    pub dirty: bool,                         // If the terminal needs to be updated
+    pub plugin_rx: Receiver<PluginAction>,   // Lua plugin reciever
+    pub whitespace_cache: Arc<RwLock<Vec<usize>>>, // Where whitespace is in the editor
+    pub host_terminal_height: u16,           // True height of terminal we're running in
+    pub host_terminal_width: u16,            // True height of terminal we're running in
+    pub debug_logs: VecDeque<CompactString>, // Lua plugin print function routed here
+    pub os: CompactString,                   // String of what the OS is (not OsString)
+    pub key_pressed: Mutex<Option<CompactString>>, // Which key was pressed
+    pub focused: bool,                       // Whether the terminal is focused or not
+    pub marketplace_item_selected: usize,    // Number of selected item
+    pub marketplace_plugins: Vec<MarketplacePlugin>, // Title and description of every plugin
+    pub marketplace_error: Option<String>,   // The error (if any) from reqwest
+    pub market_state: Arc<RwLock<(bool, Result<Vec<MarketplacePlugin>, String>)>>, // The state of the maket
+    pub market_search_query: CompactString,                                        // Plugin search
+    pub marketplace_listed_items: Vec<MarketplacePlugin>, // Every marketplace item listed
+    pub online: bool,                                     // Whether the user has internet or not
+    pub cursor_pos: usize,                                // Curosor position for use in sidebar
+    pub resized: bool,                                    // Whether the terminal has been resized
+    pub commands: Vec<&'static str>,                      // Commands, and what to do
+    pub plugin_commands: Vec<(String, mlua::Function)>, // Funcitons provided by plugins for commands to run
+    pub translations: HashMap<WorldStrings, &'static str>, // Translations of every piece of text (excluding plugins)
 }
 
 pub fn fuzzy_match(haystack: &str, needle: &str) -> bool {
-  let mut chars = haystack.chars();
-  needle.chars().all(|n| chars.any(|h| h.eq_ignore_ascii_case(&n)))
+    let mut chars = haystack.chars();
+    needle
+        .chars()
+        .all(|n| chars.any(|h| h.eq_ignore_ascii_case(&n)))
 }
 
 #[derive(Debug, PartialEq, Eq, Hash, Clone, Copy)]
@@ -119,7 +121,9 @@ impl App {
         let path = if cfg!(windows) {
             PathBuf::from(std::env::var("APPDATA").unwrap()).join("ryp")
         } else {
-            PathBuf::from(std::env::var("HOME").unwrap()).join(".config").join("ryp")
+            PathBuf::from(std::env::var("HOME").unwrap())
+                .join(".config")
+                .join("ryp")
         };
 
         let user_lang = std::fs::read_to_string(path.join("config.jsonc"))
@@ -174,161 +178,157 @@ impl App {
             host_terminal_height: 0,
             host_terminal_width: 0,
             debug_logs: VecDeque::with_capacity(40),
-            os: CompactString::new(
-                if cfg!(target_os = "windows") {
-                    "Windows "
-                } else if cfg!(target_os = "macos"){
-                    "MacOS "
-                } else if cfg!(target_os = "linux") {
-                    // In the future, we could parse PRETTY_NAME too, to get a better hint at what the OS is
-                    // Since some distros like Bodhi have Ubuntu as NAME, but Bodhi [version] as PRETTY_NAME
-                    //
-                    // ID is a similar story
-                    //
-                    // We could also parse ID_LIKE to get an idea on the logo to use, and dynamically build
-                    let linux_name = String::from_utf8(
-                        fs::read("/etc/os-release")
-                            .unwrap_or_else(|_| b"NAME=\"THIS IS NOT LINUX\"".to_vec())
-                    ).unwrap();
-                    let linux_name = linux_name
-                        .lines()
-                        .find(|line| line.starts_with("NAME="))
-                        .and_then(|line| line.splitn(2, '=').nth(1))
-                        .map(|value| value.trim_matches('"'))
-                        .unwrap();
-                    match linux_name {
-                        "Pop!_OS" => "Pop!_OS ",
-                        "Arch Linux" | "Arch Linux 32" => "Arch Linux 󰣇",
-                        "Fedora Linux" | "Fedora Remix for WSL" => "Fedora ",
-                        "Gentoo Linux" => "Gentoo ",
-                        "Red Hat Linux" | "Red Hat Enterprise Linux" => "Red Hat ",
-                        "AlmaLinux" => "AlmaLinux ",
-                        "AOSC OS" => "AOSC ",
-                        "Artix Linux" => "Artix ",
-                        "CentOS" | "CentOS Linux" | "CentOS Stream" => "CentOS ",
-                        "Cygwin" => "Cygwin ",
-                        "Debian GNU/Linux" => "Debian ",
-                        "elementary OS" => "ElementaryOS ",
-                        "EndeavourOS" => "EndeavourOS ",
-                        "Garuda Linux" => "Garuda ",
-                        "illumos" => "Illumos ",
-                        "Kali GNU/Linux" => "Kali Linux ",
-                        "Manjaro Linux" | "Manjaro-ARM" => "Manjaro ",
-                        "Linux Mint" => "Linux Mint 󰣭",
-                        "NixOS" => "NixOS ",
-                        "Nobara Linux" => "Nobara Linux ",
-                        "Raspbian GNU/Linux" => "Raspbian ",
-                        "Rocky Linux" => "RockyLinux ",
-                        "openSUSE" | "openSUSE Leap" | "openSUSE Tumbleweed" => "openSUSE ",
-                        "SLES"
-                        | "SUSE Linux Enterprise Server"
-                        | "SLES_SAP"
-                        | "SLE Micro"
-                        | "SLED"
-                        => "SUSE ",
-                        "Solus" => "Solus ",
-                        "Ubuntu" | "Ubuntu Kylin" => "Ubuntu 󰕈", // could also be UwUntu
-                        "Void Linux" => "Void Linux ",
-                        "Zorin OS" => "Zorin ",
-                        "Puppy"
-                        | "Puppy Linux"
-                        | "FossaPup64"
-                        | "BionicPup"
-                        | "BookwormPup64"
-                        | "BookwormPup32"
-                        | "NoblePup32"
-                        => "Puppy Linux ",
-                        "Qubes OS" => "Qubes ",
-                        "Tails" => "Tails ",
-                        "SteamOS" => "SteamOS ",
-                        "TileOS" => "TileOS",
-                        "Mageia" => "Mageia ",
-                        "Zenclora" => "Zenclora",
-                        "Archcraft" => "Arch Craft 󰣇",
-                        "XCP-ng" => "XPC-ng",
-                        "Deepin" => "Deepin ",
-                        "Alpine Linux" => "Alpine Linux ",
-                        "starter kit" | "Sisyphus" => "AltLinux",
-                        "Amazon Linux" => "Amazon Linux ",
-                        "Arkane Linux" => "Arkane",
-                        "Aurora" => "Aurora",
-                        "Microsoft Azure Linux" => "Azure Linux ",
-                        "Bazzite" => "Bazzite",
-                        "BlackArch Linux" => "BlackArch Linux 󰣇",
-                        "blendOS" => "BlendOS 󰯯",
-                        "Bluefin" => "Bluefin",
-                        "Buildroot" => "Buildroot",
-                        "CachyOS Linux" => "CachyOS Linux",
-                        "Chimera" | "ChimeraOS" => "Chimera",
-                        "CirrOS" => "CirrOS",
-                        "Clear Linux OS" => "Clear Linux",
-                        "CoreOS" => "CoreOS ",
-                        "Container-Optimized OS" => "Container Optimized OS",
-                        "Cumulus Linux" => "Cumulus Linux",
-                        "Devuan GNU/Linux" => "Devuan",
-                        "Endless OS" => "Endless OS",
-                        "EuroLinux" => "Euro Linux",
-                        "Exherbo" => "Exherbo Linux",
-                        "Flatcar Container Linux by Kinvolk" => "Flatcar Linux",
-                        "funtoo" => "Funtoo Linux",
-                        "GhostBSD" => "GhostBSD ",
-                        "Gnoppix" => "Gnoppix",
-                        "Guix System" => "Guix System",
-                        "Hyperbola" => "Hyperbola Linux",
-                        "KaOS" => "KaOS",
-                        "Common Base Linux Mariner" => "Mariner Linux",
-                        "MIRACLE LINUX" => "Miracle Linux",
-                        "KDE neon" => "Neon ",
-                        "Nexus" => "Nexus",
-                        "NI Linux Real-Time" => "NILRT",
-                        "NovariaOS" => "NovariaOS",
-                        "NurOS" => "NurOS",
-                        "Oracle Linux Server" => "Oracle Linux Server",
-                        "OmniOS" => "OmniOS",
-                        "openEuler" => "openEuler",
-                        "OpenMandriva Lx" => "OpenMandriva ",
-                        "OpenWrt" => "OpenWrt",
-                        "Parrot OS" => "Parrot OS ",
-                        "PCLinuxOS" => "PC Linux",
-                        "Pengwin" => "Pengwin Linux",
-                        "VMware Photon" | "VMware Photon OS" => "Photon",
-                        "PikaOS" => "PikaOS",
-                        "PisiLinux" => "PisiLinux",
-                        "postmarketOS" => "PostMarketOS ",
-                        "PureOS" => "PureOS",
-                        "RancherOS" => "RancherOS ",
-                        "RebornOS Linux" => "RebornOS",
-                        "Scientific Linux" => "Scientific Linux",
-                        "Slackware" => "Slackware ",
-                        "SystemRescue" => "SystemRescue",
-                        "TencentOS Server" => "TencentOS",
-                        "TinyCore" => "TinyCore",
-                        "Trisquel GNU/Linux" => "Trisquel ",
-                        "UbiOS" => "UbiOS",
-                        "Ultramarine Linux" => "Ultramarine Linux",
-                        "Vanilla OS" => "Vanilla OS ",
-                        "Wolfi" => "Wolfi",
-                        "Wind River Linux" => "Wind River Linux",
-                        _ => "Linux ",
+            os: CompactString::new(if cfg!(target_os = "windows") {
+                "Windows "
+            } else if cfg!(target_os = "macos") {
+                "MacOS "
+            } else if cfg!(target_os = "linux") {
+                // In the future, we could parse PRETTY_NAME too, to get a better hint at what the OS is
+                // Since some distros like Bodhi have Ubuntu as NAME, but Bodhi [version] as PRETTY_NAME
+                //
+                // ID is a similar story
+                //
+                // We could also parse ID_LIKE to get an idea on the logo to use, and dynamically build
+                let linux_name = String::from_utf8(
+                    fs::read("/etc/os-release")
+                        .unwrap_or_else(|_| b"NAME=\"THIS IS NOT LINUX\"".to_vec()),
+                )
+                .unwrap();
+                let linux_name = linux_name
+                    .lines()
+                    .find(|line| line.starts_with("NAME="))
+                    .and_then(|line| line.splitn(2, '=').nth(1))
+                    .map(|value| value.trim_matches('"'))
+                    .unwrap();
+                match linux_name {
+                    "Pop!_OS" => "Pop!_OS ",
+                    "Arch Linux" | "Arch Linux 32" => "Arch Linux 󰣇",
+                    "Fedora Linux" | "Fedora Remix for WSL" => "Fedora ",
+                    "Gentoo Linux" => "Gentoo ",
+                    "Red Hat Linux" | "Red Hat Enterprise Linux" => "Red Hat ",
+                    "AlmaLinux" => "AlmaLinux ",
+                    "AOSC OS" => "AOSC ",
+                    "Artix Linux" => "Artix ",
+                    "CentOS" | "CentOS Linux" | "CentOS Stream" => "CentOS ",
+                    "Cygwin" => "Cygwin ",
+                    "Debian GNU/Linux" => "Debian ",
+                    "elementary OS" => "ElementaryOS ",
+                    "EndeavourOS" => "EndeavourOS ",
+                    "Garuda Linux" => "Garuda ",
+                    "illumos" => "Illumos ",
+                    "Kali GNU/Linux" => "Kali Linux ",
+                    "Manjaro Linux" | "Manjaro-ARM" => "Manjaro ",
+                    "Linux Mint" => "Linux Mint 󰣭",
+                    "NixOS" => "NixOS ",
+                    "Nobara Linux" => "Nobara Linux ",
+                    "Raspbian GNU/Linux" => "Raspbian ",
+                    "Rocky Linux" => "RockyLinux ",
+                    "openSUSE" | "openSUSE Leap" | "openSUSE Tumbleweed" => "openSUSE ",
+                    "SLES" | "SUSE Linux Enterprise Server" | "SLES_SAP" | "SLE Micro" | "SLED" => {
+                        "SUSE "
                     }
-                } else if cfg!(target_os = "freebsd") {
-                    "FreeBSD "
-                } else if cfg!(target_os = "openbsd") {
-                    "OpenBSD "
-                } else if cfg!(target_os = "netbsd") {
-                    "NetBSD"
-                } else if cfg!(target_os = "dragonfly") {
-                    "DragonFly BSD"
-                } else {
-                    unreachable!("This OS is not supported...")
+                    "Solus" => "Solus ",
+                    "Ubuntu" | "Ubuntu Kylin" => "Ubuntu 󰕈", // could also be UwUntu
+                    "Void Linux" => "Void Linux ",
+                    "Zorin OS" => "Zorin ",
+                    "Puppy" | "Puppy Linux" | "FossaPup64" | "BionicPup" | "BookwormPup64"
+                    | "BookwormPup32" | "NoblePup32" => "Puppy Linux ",
+                    "Qubes OS" => "Qubes ",
+                    "Tails" => "Tails ",
+                    "SteamOS" => "SteamOS ",
+                    "TileOS" => "TileOS",
+                    "Mageia" => "Mageia ",
+                    "Zenclora" => "Zenclora",
+                    "Archcraft" => "Arch Craft 󰣇",
+                    "XCP-ng" => "XPC-ng",
+                    "Deepin" => "Deepin ",
+                    "Alpine Linux" => "Alpine Linux ",
+                    "starter kit" | "Sisyphus" => "AltLinux",
+                    "Amazon Linux" => "Amazon Linux ",
+                    "Arkane Linux" => "Arkane",
+                    "Aurora" => "Aurora",
+                    "Microsoft Azure Linux" => "Azure Linux ",
+                    "Bazzite" => "Bazzite",
+                    "BlackArch Linux" => "BlackArch Linux 󰣇",
+                    "blendOS" => "BlendOS 󰯯",
+                    "Bluefin" => "Bluefin",
+                    "Buildroot" => "Buildroot",
+                    "CachyOS Linux" => "CachyOS Linux",
+                    "Chimera" | "ChimeraOS" => "Chimera",
+                    "CirrOS" => "CirrOS",
+                    "Clear Linux OS" => "Clear Linux",
+                    "CoreOS" => "CoreOS ",
+                    "Container-Optimized OS" => "Container Optimized OS",
+                    "Cumulus Linux" => "Cumulus Linux",
+                    "Devuan GNU/Linux" => "Devuan",
+                    "Endless OS" => "Endless OS",
+                    "EuroLinux" => "Euro Linux",
+                    "Exherbo" => "Exherbo Linux",
+                    "Flatcar Container Linux by Kinvolk" => "Flatcar Linux",
+                    "funtoo" => "Funtoo Linux",
+                    "GhostBSD" => "GhostBSD ",
+                    "Gnoppix" => "Gnoppix",
+                    "Guix System" => "Guix System",
+                    "Hyperbola" => "Hyperbola Linux",
+                    "KaOS" => "KaOS",
+                    "Common Base Linux Mariner" => "Mariner Linux",
+                    "MIRACLE LINUX" => "Miracle Linux",
+                    "KDE neon" => "Neon ",
+                    "Nexus" => "Nexus",
+                    "NI Linux Real-Time" => "NILRT",
+                    "NovariaOS" => "NovariaOS",
+                    "NurOS" => "NurOS",
+                    "Oracle Linux Server" => "Oracle Linux Server",
+                    "OmniOS" => "OmniOS",
+                    "openEuler" => "openEuler",
+                    "OpenMandriva Lx" => "OpenMandriva ",
+                    "OpenWrt" => "OpenWrt",
+                    "Parrot OS" => "Parrot OS ",
+                    "PCLinuxOS" => "PC Linux",
+                    "Pengwin" => "Pengwin Linux",
+                    "VMware Photon" | "VMware Photon OS" => "Photon",
+                    "PikaOS" => "PikaOS",
+                    "PisiLinux" => "PisiLinux",
+                    "postmarketOS" => "PostMarketOS ",
+                    "PureOS" => "PureOS",
+                    "RancherOS" => "RancherOS ",
+                    "RebornOS Linux" => "RebornOS",
+                    "Scientific Linux" => "Scientific Linux",
+                    "Slackware" => "Slackware ",
+                    "SystemRescue" => "SystemRescue",
+                    "TencentOS Server" => "TencentOS",
+                    "TinyCore" => "TinyCore",
+                    "Trisquel GNU/Linux" => "Trisquel ",
+                    "UbiOS" => "UbiOS",
+                    "Ultramarine Linux" => "Ultramarine Linux",
+                    "Vanilla OS" => "Vanilla OS ",
+                    "Wolfi" => "Wolfi",
+                    "Wind River Linux" => "Wind River Linux",
+                    _ => "Linux ",
                 }
-            ),
+            } else if cfg!(target_os = "freebsd") {
+                "FreeBSD "
+            } else if cfg!(target_os = "openbsd") {
+                "OpenBSD "
+            } else if cfg!(target_os = "netbsd") {
+                "NetBSD"
+            } else if cfg!(target_os = "dragonfly") {
+                "DragonFly BSD"
+            } else {
+                unreachable!("This OS is not supported... Please compile for another OS.")
+            }),
             key_pressed: Mutex::new(None),
             focused: true,
             marketplace_item_selected: 0,
             marketplace_plugins: Vec::new(),
             marketplace_error: None,
-            market_state: Arc::new(RwLock::new((false, Result::Err(String::from(get_trans!(strings, WorldStrings::ConnectingToInternet)))))),
+            market_state: Arc::new(RwLock::new((
+                false,
+                Result::Err(String::from(get_trans!(
+                    strings,
+                    WorldStrings::ConnectingToInternet
+                ))),
+            ))),
             market_search_query: CompactString::default(),
             marketplace_listed_items: vec![],
             online: false,
@@ -350,9 +350,7 @@ impl App {
     pub fn load_workspace(&mut self, path: &Path) {
         let path = &path.canonicalize().unwrap_or(path.to_path_buf());
 
-        self.workspace = Some(tree::FileTree::new(
-            path.to_path_buf()
-        ));
+        self.workspace = Some(tree::FileTree::new(path.to_path_buf()));
         self.git_manager.set_root(path);
         self.refresh_git();
         let _ = self
@@ -364,7 +362,14 @@ impl App {
     pub fn open_diff(&mut self, change_idx: usize) {
         if let Some(change) = self.git_changes.get(change_idx).cloned() {
             let mut editor = Editor::new();
-            let mut lines  = vec![CompactString::from(format!("{}: {}", get_trans!(self.translations, WorldStrings::ShortHandDiff), change.path)), CompactString::default()];
+            let mut lines = vec![
+                CompactString::from(format!(
+                    "{}: {}",
+                    get_trans!(self.translations, WorldStrings::ShortHandDiff),
+                    change.path
+                )),
+                CompactString::default(),
+            ];
             for dl in change.diff {
                 lines.push(dl.content);
             }
@@ -394,7 +399,6 @@ impl App {
         } else {
             let mut editor = Editor::new();
             if editor.load_file(path) {
-
                 let current_is_dirty = self.current_editor().map_or(false, |e| e.dirty);
                 if force_new_tab
                     || (self.editors.is_empty())
@@ -441,15 +445,33 @@ impl App {
                     let result = match reqwest::blocking::get("https://json.ryp.app/search/") {
                         Ok(resp) => match resp.json::<Vec<MarketplacePlugin>>() {
                             Ok(plugins) => Ok(plugins),
-                            Err(_) => Err(String::from(get_trans!(lang, WorldStrings::CorruptedPluginsError))),
+                            Err(_) => Err(String::from(get_trans!(
+                                lang,
+                                WorldStrings::CorruptedPluginsError
+                            ))),
                         },
-                        Err(e) if e.is_connect() => Err(String::from(get_trans!(lang, WorldStrings::WebsiteDownOrBlockedError))),
-                        Err(e) if e.is_timeout() => Err(String::from(get_trans!(lang, WorldStrings::ConnectionTimeOutError))),
-                        Err(_) => Err(String::from(get_trans!(lang, WorldStrings::InternetUnknownError))),
+                        Err(e) if e.is_connect() => Err(String::from(get_trans!(
+                            lang,
+                            WorldStrings::WebsiteDownOrBlockedError
+                        ))),
+                        Err(e) if e.is_timeout() => Err(String::from(get_trans!(
+                            lang,
+                            WorldStrings::ConnectionTimeOutError
+                        ))),
+                        Err(_) => Err(String::from(get_trans!(
+                            lang,
+                            WorldStrings::InternetUnknownError
+                        ))),
                     };
                     *cell.write() = (true, result);
                 } else {
-                    *cell.write() = (false, Err(String::from(get_trans!(lang, WorldStrings::NoInternetError))));
+                    *cell.write() = (
+                        false,
+                        Err(String::from(get_trans!(
+                            lang,
+                            WorldStrings::NoInternetError
+                        ))),
+                    );
                 }
             });
 
@@ -482,7 +504,11 @@ impl App {
                         }
                     }
                     PluginAction::GetSettingValue { name, responder } => {
-                        let val = self.config.get(&name).cloned().unwrap_or(serde_json::Value::Null);
+                        let val = self
+                            .config
+                            .get(&name)
+                            .cloned()
+                            .unwrap_or(serde_json::Value::Null);
 
                         let mut lock = responder.value.lock();
                         *lock = Some(val);
@@ -511,13 +537,22 @@ impl App {
 
                         responder.signal.notify_one();
                     }
-                    PluginAction::GetStrAt { from, to, responder } => {
+                    PluginAction::GetStrAt {
+                        from,
+                        to,
+                        responder,
+                    } => {
                         if let Some(editor) = self.current_editor() {
-                            let val: CompactString =
-                                if editor.lines[from[1]].len() <= from[1]
+                            let val: CompactString = if editor.lines[from[1]].len() <= from[1]
                                 && editor.lines[to[1]].len() <= to[1]
                             {
-                                editor.lines[from[0]].to_string().chars().skip(from[1]).take(to[1] - from[1]).collect::<String>().into()
+                                editor.lines[from[0]]
+                                    .to_string()
+                                    .chars()
+                                    .skip(from[1])
+                                    .take(to[1] - from[1])
+                                    .collect::<String>()
+                                    .into()
                             } else {
                                 CompactString::default()
                             };
@@ -590,12 +625,20 @@ impl App {
                             let (end_x, end_y) = (to[0], to[1]);
 
                             // Basic bounds check to prevent panics
-                            if start_y < editor.lines.len() && end_y < editor.lines.len() && start_y < end_y {
-
+                            if start_y < editor.lines.len()
+                                && end_y < editor.lines.len()
+                                && start_y < end_y
+                            {
                                 // Calculate byte offsets for the start and end of the selection
                                 // We use char_indices to remain UTF-8 safe
-                                let start_byte = editor.lines[start_y].char_indices().nth(start_x).map(|(i, _)| i);
-                                let end_byte = editor.lines[end_y].char_indices().nth(end_x).map(|(i, c)| i + c.len_utf8());
+                                let start_byte = editor.lines[start_y]
+                                    .char_indices()
+                                    .nth(start_x)
+                                    .map(|(i, _)| i);
+                                let end_byte = editor.lines[end_y]
+                                    .char_indices()
+                                    .nth(end_x)
+                                    .map(|(i, c)| i + c.len_utf8());
 
                                 if let (Some(s_idx), Some(e_idx)) = (start_byte, end_byte) {
                                     // Get the last line (incase only some was changed)
@@ -622,7 +665,9 @@ impl App {
                     }
                     PluginAction::GetCharAtCursor { responder } => {
                         if let Some(editor) = self.current_editor() {
-                            let val = Some(editor.lines[editor.cursor_y].as_bytes()[editor.cursor_x] as char);
+                            let val = Some(
+                                editor.lines[editor.cursor_y].as_bytes()[editor.cursor_x] as char,
+                            );
                             let mut lock = responder.c.lock();
                             *lock = val;
                             responder.signal.notify_one();
@@ -695,7 +740,8 @@ impl App {
                     // we set it here to give the most accurate info, with anything that
                     // might access it in the future :)
                     let height_size = term.size().unwrap();
-                    (self.host_terminal_height, self.host_terminal_width) = (height_size.height, height_size.width);
+                    (self.host_terminal_height, self.host_terminal_width) =
+                        (height_size.height, height_size.width);
 
                     term.draw(|f| ui::draw(f, self))?;
                     self.dirty = false;
@@ -784,7 +830,7 @@ impl App {
                     self.cursor_pos += 1;
                     match modal.modal_type {
                         ModalType::NewFile => self.validate_new_file(),
-                        _ => {},
+                        _ => {}
                     }
                 }
                 Action::ModalBackspace => {
@@ -792,114 +838,110 @@ impl App {
                     modal.remove_char(self.cursor_pos);
                     match modal.modal_type {
                         ModalType::NewFile => self.validate_new_file(),
-                        _ => {},
+                        _ => {}
                     }
                 }
                 Action::ModalDelete => {
                     modal.remove_char(self.cursor_pos);
                     match modal.modal_type {
                         ModalType::NewFile => self.validate_new_file(),
-                        _ => {},
+                        _ => {}
                     }
                 }
                 Action::ModalTab => match modal.modal_type {
                     ModalType::Replace => modal.toggle_focus(),
                     ModalType::QuitPrompt => {
                         modal.active_button += 1;
-                        if modal.active_button >= 3 { modal.active_button = 0; }
+                        if modal.active_button >= 3 {
+                            modal.active_button = 0;
+                        }
                     }
                     ModalType::ConfirmExit => {
                         modal.active_button += 1;
-                        if modal.active_button >= 2 { modal.active_button = 0; }
+                        if modal.active_button >= 2 {
+                            modal.active_button = 0;
+                        }
                     }
                     ModalType::Search => self.find_next_match(),
                     _ => {}
-                }
-                Action::ModalLeft => {
-                    match modal.modal_type {
-                        ModalType::ConfirmExit => {
-                            modal.active_button =
-                                modal.active_button.saturating_sub(1);
-                        }
-                        ModalType::Search => {
-                            self.cursor_pos =
-                                self.cursor_pos.saturating_sub(1);
-                        }
-                        _ => {}
+                },
+                Action::ModalLeft => match modal.modal_type {
+                    ModalType::ConfirmExit => {
+                        modal.active_button = modal.active_button.saturating_sub(1);
                     }
-                }
-                Action::ModalRight => {
-                    match modal.modal_type {
-                        ModalType::Search => {
-                            if modal.focus_replace {
-                                if modal.replace_input.len() > self.cursor_pos {
-                                    self.cursor_pos += 1;
-                                }
-                            } else {
-                                if modal.input.len() > self.cursor_pos {
-                                    self.cursor_pos += 1;
-                                }
+                    ModalType::Search => {
+                        self.cursor_pos = self.cursor_pos.saturating_sub(1);
+                    }
+                    _ => {}
+                },
+                Action::ModalRight => match modal.modal_type {
+                    ModalType::Search => {
+                        if modal.focus_replace {
+                            if modal.replace_input.len() > self.cursor_pos {
+                                self.cursor_pos += 1;
+                            }
+                        } else {
+                            if modal.input.len() > self.cursor_pos {
+                                self.cursor_pos += 1;
                             }
                         }
-                        ModalType::ConfirmExit => {
-                            if modal.active_button < 1 {
-                                modal.active_button += 1;
-                            }
-                        }
-                        _ => {}
                     }
-                }
-                Action::ModalUp => {
-                    match modal.modal_type {
-                        ModalType::QuitPrompt | ModalType::CloseTabPrompt | ModalType::DeleteFile => {
-                            modal.active_button =
-                                modal.active_button.saturating_sub(1);
+                    ModalType::ConfirmExit => {
+                        if modal.active_button < 1 {
+                            modal.active_button += 1;
                         }
-                        _ => {}
                     }
-                }
-                Action::ModalDown => {
-                    match modal.modal_type {
-                        ModalType::QuitPrompt | ModalType::CloseTabPrompt => {
-                            if modal.active_button < 2 {
-                                modal.active_button += 1;
-                            }
-                        }
-                        ModalType::DeleteFile => {
-                            if modal.active_button < 1 {
-                                modal.active_button += 1;
-                            }
-                        }
-                        _ => {}
+                    _ => {}
+                },
+                Action::ModalUp => match modal.modal_type {
+                    ModalType::QuitPrompt | ModalType::CloseTabPrompt | ModalType::DeleteFile => {
+                        modal.active_button = modal.active_button.saturating_sub(1);
                     }
-                }
+                    _ => {}
+                },
+                Action::ModalDown => match modal.modal_type {
+                    ModalType::QuitPrompt | ModalType::CloseTabPrompt => {
+                        if modal.active_button < 2 {
+                            modal.active_button += 1;
+                        }
+                    }
+                    ModalType::DeleteFile => {
+                        if modal.active_button < 1 {
+                            modal.active_button += 1;
+                        }
+                    }
+                    _ => {}
+                },
                 Action::ModalConfirm => {
                     match modal.modal_type {
                         ModalType::CommandPallete => {
                             // There has to be a more manageable way to do this...
                             let query = modal.input.trim();
 
-                            let chosen_index = self.commands
+                            let chosen_index = self
+                                .commands
                                 .iter()
-                                .position(|cmd| {
-                                    query.is_empty() || fuzzy_match(cmd, query)
-                                });
+                                .position(|cmd| query.is_empty() || fuzzy_match(cmd, query));
 
                             self.modal = None;
 
                             match chosen_index {
-                                Some(0) => todo!("Implement opening the settings window command, and implement the window"),
-                                Some(1) =>
-                                if let Some(editor) = self.current_editor_mut() {
-                                    let last_line = editor.lines.len().saturating_sub(1);
-                                    editor.cursor_y = last_line;
-                                    editor.cursor_x = editor.lines[last_line].len();
-                                },
-                                Some(2) =>
-                                if let Some(editor) = self.current_editor_mut() {
-                                    editor.cursor_x = 0;
-                                    editor.cursor_y = 0;
-                                },
+                                Some(0) => todo!(
+                                    "Implement opening the settings window command, and implement the window"
+                                ),
+                                Some(1) => {
+                                    if let Some(editor) = self.current_editor_mut() {
+                                        let last_line = editor.lines.len().saturating_sub(1);
+                                        editor.cursor_y = last_line;
+                                        editor.cursor_x = editor.lines[last_line].len();
+                                    }
+                                }
+                                Some(2) => {
+                                    if let Some(editor) = self.current_editor_mut() {
+                                        editor.cursor_x = 0;
+                                        editor.cursor_y = 0;
+                                    }
+                                }
                                 Some(3) => self.should_quit = true,
                                 Some(4) => {
                                     self.terminal_visible = !self.terminal_visible;
@@ -911,7 +953,8 @@ impl App {
                                     if let Some(idx) = chosen_index {
                                         // If it's beyond core commands, map it to plugin_commands index
                                         let plugin_idx = idx.saturating_sub(self.commands.len());
-                                        if let Some(command) = self.plugin_commands.get(plugin_idx) {
+                                        if let Some(command) = self.plugin_commands.get(plugin_idx)
+                                        {
                                             command.1.call::<()>(()).unwrap();
                                         }
                                     }
@@ -989,13 +1032,11 @@ impl App {
                                 }
                             }
                         }
-                        ModalType::ConfirmExit => {
-                            match modal.active_button {
-                                0 => self.modal = None,
-                                1 => self.should_quit = true,
-                                _ => {}
-                            }
-                        }
+                        ModalType::ConfirmExit => match modal.active_button {
+                            0 => self.modal = None,
+                            1 => self.should_quit = true,
+                            _ => {}
+                        },
                         ModalType::CloseTabPrompt => {
                             match modal.active_button {
                                 0 => {
@@ -1121,7 +1162,11 @@ impl App {
             _ => {}
         }
 
-        let tab_size = self.config.get("Tab Size").and_then(|v| v.as_u64()).unwrap_or(4);
+        let tab_size = self
+            .config
+            .get("Tab Size")
+            .and_then(|v| v.as_u64())
+            .unwrap_or(4);
 
         let is_tree_focused = self.workspace.as_ref().map_or(false, |w| w.focused);
         if is_tree_focused {
@@ -1139,9 +1184,12 @@ impl App {
                                 self.search_query.insert(self.cursor_pos, c);
                                 self.perform_search();
                             }
-                            SidebarCategory::MarketPlace => self.market_search_query.insert(self.cursor_pos, c),
+                            SidebarCategory::MarketPlace => {
+                                self.market_search_query.insert(self.cursor_pos, c)
+                            }
                             SidebarCategory::Settings => {
-                                let setting = self.config
+                                let setting = self
+                                    .config
                                     .get_index(self.settings_selected)
                                     .map(|(k, _)| k.clone())
                                     .unwrap_or_default();
@@ -1158,7 +1206,8 @@ impl App {
                         match self.sidebar_category {
                             SidebarCategory::Search => {
                                 if self.cursor_pos > 0 && self.search_query.len() > 0 {
-                                    let byte_idx = self.search_query
+                                    let byte_idx = self
+                                        .search_query
                                         .char_indices()
                                         .nth(self.cursor_pos.saturating_sub(1))
                                         .map(|(i, _)| i)
@@ -1169,7 +1218,8 @@ impl App {
                             }
                             SidebarCategory::MarketPlace => {
                                 if self.cursor_pos > 0 && self.market_search_query.len() > 0 {
-                                    let byte_idx = self.market_search_query
+                                    let byte_idx = self
+                                        .market_search_query
                                         .char_indices()
                                         .nth(self.cursor_pos.saturating_sub(1))
                                         .map(|(i, _)| i)
@@ -1178,7 +1228,8 @@ impl App {
                                 }
                             }
                             SidebarCategory::Settings => {
-                                let setting = self.config
+                                let setting = self
+                                    .config
                                     .get_index(self.settings_selected)
                                     .map(|(k, _)| k.clone())
                                     .unwrap_or_default();
@@ -1198,73 +1249,77 @@ impl App {
                         }
                         self.cursor_pos = self.cursor_pos.saturating_sub(1);
                     }
-                    Action::DeleteChar => {
-                        match self.sidebar_category {
-                            SidebarCategory::MarketPlace => {
-                                if self.cursor_pos < self.market_search_query.chars().count() {
-                                    let byte_idx = self.market_search_query
-                                        .char_indices()
-                                        .nth(self.cursor_pos)
-                                        .map(|(i, _)| i)
-                                        .unwrap();
-                                    self.market_search_query.remove(byte_idx);
-                                }
+                    Action::DeleteChar => match self.sidebar_category {
+                        SidebarCategory::MarketPlace => {
+                            if self.cursor_pos < self.market_search_query.chars().count() {
+                                let byte_idx = self
+                                    .market_search_query
+                                    .char_indices()
+                                    .nth(self.cursor_pos)
+                                    .map(|(i, _)| i)
+                                    .unwrap();
+                                self.market_search_query.remove(byte_idx);
                             }
-                            SidebarCategory::Settings => {
-                                let setting = self.config
-                                    .get_index(self.settings_selected)
-                                    .map(|(k, _)| k.clone())
-                                    .unwrap_or_default();
-
-                                if let Some(Value::String(s)) = self.config.get_mut(&setting) {
-                                    if self.cursor_pos < s.chars().count() {
-                                        let byte_idx = s
-                                            .char_indices()
-                                            .nth(self.cursor_pos)
-                                            .map(|(i, _)| i)
-                                            .unwrap();
-                                        s.remove(byte_idx);
-                                    }
-                                }
-                            }
-                            SidebarCategory::Search => {
-                                if self.cursor_pos < self.search_query.chars().count() {
-                                    let byte_idx = self.search_query
-                                        .char_indices()
-                                        .nth(self.cursor_pos)
-                                        .map(|(i, _)| i)
-                                        .unwrap();
-                                    self.search_query.remove(byte_idx);
-                                }
-                            }
-                            SidebarCategory::FileTree => {
-                                let ask = serde_json::from_value(self.config.get("Ask Before Delete").clone()
-                                    .unwrap_or(&serde_json::Value::Bool(true)).clone()).unwrap_or(true);
-                                if ask {
-                                    self.modal = Some(Modal::new(ModalType::DeleteFile));
-                                } else {
-                                    ws.delete_file();
-                                }
-                            }
-                            _ => {}
                         }
-                    }
+                        SidebarCategory::Settings => {
+                            let setting = self
+                                .config
+                                .get_index(self.settings_selected)
+                                .map(|(k, _)| k.clone())
+                                .unwrap_or_default();
+
+                            if let Some(Value::String(s)) = self.config.get_mut(&setting) {
+                                if self.cursor_pos < s.chars().count() {
+                                    let byte_idx = s
+                                        .char_indices()
+                                        .nth(self.cursor_pos)
+                                        .map(|(i, _)| i)
+                                        .unwrap();
+                                    s.remove(byte_idx);
+                                }
+                            }
+                        }
+                        SidebarCategory::Search => {
+                            if self.cursor_pos < self.search_query.chars().count() {
+                                let byte_idx = self
+                                    .search_query
+                                    .char_indices()
+                                    .nth(self.cursor_pos)
+                                    .map(|(i, _)| i)
+                                    .unwrap();
+                                self.search_query.remove(byte_idx);
+                            }
+                        }
+                        SidebarCategory::FileTree => {
+                            let ask = serde_json::from_value(
+                                self.config
+                                    .get("Ask Before Delete")
+                                    .clone()
+                                    .unwrap_or(&serde_json::Value::Bool(true))
+                                    .clone(),
+                            )
+                            .unwrap_or(true);
+                            if ask {
+                                self.modal = Some(Modal::new(ModalType::DeleteFile));
+                            } else {
+                                ws.delete_file();
+                            }
+                        }
+                        _ => {}
+                    },
                     Action::MoveLeft(shift, ctrl) => match self.sidebar_category {
                         // TODO: Implement selection movement
                         SidebarCategory::Search => {
-                            self.cursor_pos =
-                                self.cursor_pos.saturating_sub(1);
+                            self.cursor_pos = self.cursor_pos.saturating_sub(1);
                         }
                         SidebarCategory::MarketPlace => {
-                            self.cursor_pos =
-                                self.cursor_pos.saturating_sub(1);
+                            self.cursor_pos = self.cursor_pos.saturating_sub(1);
                         }
                         SidebarCategory::Settings => {
-                            self.cursor_pos =
-                                self.cursor_pos.saturating_sub(1);
+                            self.cursor_pos = self.cursor_pos.saturating_sub(1);
                         }
                         _ => {}
-                    }
+                    },
                     Action::MoveRight(shift, ctrl) => match self.sidebar_category {
                         // TODO: Implement selection movement
                         SidebarCategory::Search => {
@@ -1278,7 +1333,8 @@ impl App {
                             }
                         }
                         SidebarCategory::Settings => {
-                            let setting = self.config
+                            let setting = self
+                                .config
                                 .get_index(self.settings_selected)
                                 .and_then(|(_, v)| v.as_str())
                                 .unwrap_or_default()
@@ -1289,28 +1345,25 @@ impl App {
                             }
                         }
                         _ => {}
-                    }
+                    },
                     Action::MoveUp(_) => {
                         match self.sidebar_category {
                             SidebarCategory::FileTree => {
                                 ws.selected = ws.selected.saturating_sub(1);
                             }
                             SidebarCategory::Search => {
-                                self.search_selected =
-                                    self.search_selected.saturating_sub(1);
+                                self.search_selected = self.search_selected.saturating_sub(1);
                             }
                             SidebarCategory::Git => {
-                                self.git_selected =
-                                    self.git_selected.saturating_sub(1);
+                                self.git_selected = self.git_selected.saturating_sub(1);
                             }
                             SidebarCategory::Settings => {
-                                self.settings_selected =
-                                    self.settings_selected.saturating_sub(1)
-                            },
+                                self.settings_selected = self.settings_selected.saturating_sub(1)
+                            }
                             SidebarCategory::MarketPlace => {
                                 self.marketplace_item_selected =
                                     self.marketplace_item_selected.saturating_sub(1)
-                            },
+                            }
                         }
                         self.cursor_pos = 0;
                     }
@@ -1323,7 +1376,9 @@ impl App {
                                 }
                             }
                             SidebarCategory::Search => {
-                                if self.search_selected < self.search_results.len().saturating_sub(1) {
+                                if self.search_selected
+                                    < self.search_results.len().saturating_sub(1)
+                                {
                                     self.search_selected += 1;
                                 }
                             }
@@ -1336,12 +1391,14 @@ impl App {
                                 if self.settings_selected < self.config.len().saturating_sub(1) {
                                     self.settings_selected += 1;
                                 }
-                            },
+                            }
                             SidebarCategory::MarketPlace => {
-                                if self.marketplace_item_selected < self.marketplace_listed_items.len().saturating_sub(1) {
+                                if self.marketplace_item_selected
+                                    < self.marketplace_listed_items.len().saturating_sub(1)
+                                {
                                     self.marketplace_item_selected += 1;
                                 }
-                            },
+                            }
                         }
                         self.cursor_pos = 0;
                     }
@@ -1358,10 +1415,10 @@ impl App {
                                         }
                                     } else {
                                         file_to_open = Some(ws.nodes[node_idx].path.clone());
-                                          let current_is_dirty =
-                                              self.current_editor().map_or(false, |e| e.dirty);
-                                          open_in_new_tab = force_new || current_is_dirty;
-                                          close_focused = true;
+                                        let current_is_dirty =
+                                            self.current_editor().map_or(false, |e| e.dirty);
+                                        open_in_new_tab = force_new || current_is_dirty;
+                                        close_focused = true;
                                     }
                                 }
                             }
@@ -1384,9 +1441,11 @@ impl App {
                                 if self.settings_selected < self.config.len() {
                                     self.dispatch(Action::ChangeSettings);
                                 }
-                            },
+                            }
                             SidebarCategory::MarketPlace => {
-                                todo!("Implement choosing a marketplace item, and loading the README.md of it, or a \"no README.md found\" note :)\nIt should use termimad, and eventually our own implementation so we can build it up to other OSes more easiy, with a consistent background")
+                                todo!(
+                                    "Implement choosing a marketplace item, and loading the README.md of it, or a \"no README.md found\" note :)\nIt should use termimad, and eventually our own implementation so we can build it up to other OSes more easiy, with a consistent background"
+                                )
                             }
                         }
                     }
@@ -1522,7 +1581,11 @@ impl App {
                 return;
             }
             Action::OpenHelp => {
-                if self.modal.as_ref().map_or(false, |m| m.modal_type == ModalType::Help) {
+                if self
+                    .modal
+                    .as_ref()
+                    .map_or(false, |m| m.modal_type == ModalType::Help)
+                {
                     self.modal = None;
                     self.dirty = true;
                 } else {
@@ -1686,15 +1749,19 @@ impl App {
     fn fill_ws_cache(&mut self) {
         {
             let cache = Arc::clone(&self.whitespace_cache);
-            let lines = self.current_editor()
+            let lines = self
+                .current_editor()
                 .map(|e| e.lines.clone())
                 .unwrap_or_default();
             rayon::spawn(move || {
-                let result: Vec<usize> = lines.par_iter()
+                let result: Vec<usize> = lines
+                    .par_iter()
                     .enumerate()
-                    .filter(|(_, line)| line.chars()
-                        .any(|c| matches!(c,
-                            ' ' | '\t' | '\n' | '\r'
+                    .filter(|(_, line)| {
+                        line.chars().any(|c| {
+                            matches!(
+                                c,
+                                ' ' | '\t' | '\n' | '\r'
                             | '\u{00A0}' // non-breaking space
                             | '\u{2002}' // en space
                             | '\u{2003}' // em space
@@ -1716,8 +1783,9 @@ impl App {
                             | '\u{2028}' // line seperator
                             | '\u{2029}' // paragraph space
                             | '\u{205F}' // medium mathematical space
-                        )
-                    ))
+                            )
+                        })
+                    })
                     .map(|(i, _)| i)
                     .collect();
                 let mut guard = cache.write();

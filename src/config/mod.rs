@@ -1,8 +1,8 @@
 pub mod keybind;
 pub mod langs;
 
-use serde_json::{json, Value};
 use indexmap::IndexMap;
+use serde_json::{Value, json};
 
 pub type Config = IndexMap<String, Value>;
 
@@ -45,7 +45,8 @@ pub fn default() -> Config {
     });
 
     // Convert the JSON into an object for IndexMap
-    default_json.as_object()
+    default_json
+        .as_object()
         .unwrap()
         .clone()
         .into_iter()

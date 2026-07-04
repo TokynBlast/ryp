@@ -1,9 +1,12 @@
-use parking_lot::{Mutex, Condvar};
-use triomphe::Arc;
-use mlua::{self, LuaSerdeExt};
 use crate::plugin::action::{PluginAction, StrResponder};
+use mlua::{self, LuaSerdeExt};
+use parking_lot::{Condvar, Mutex};
+use triomphe::Arc;
 
-pub fn integrate_keys(lua: &mlua::Lua, tx: &crossbeam_channel::Sender<PluginAction>) -> Result<(), mlua::Error> {
+pub fn integrate_keys(
+    lua: &mlua::Lua,
+    tx: &crossbeam_channel::Sender<PluginAction>,
+) -> Result<(), mlua::Error> {
     let tx_clone = tx.clone();
 
     let responder = Arc::new(StrResponder {
@@ -14,7 +17,7 @@ pub fn integrate_keys(lua: &mlua::Lua, tx: &crossbeam_channel::Sender<PluginActi
     let key_fn = lua.create_function(move |lua, ()| {
         let responder_clone = responder.clone();
         let _ = tx_clone.send(PluginAction::GetKeyPress {
-            responder: responder_clone.clone()
+            responder: responder_clone.clone(),
         });
 
         let mut lock = responder_clone.string.lock();

@@ -14,16 +14,16 @@
   "profiles": [
     {
       "name": "default",
-      "extends": "default"
+      "extends": "default",
     },
     {
       "name": "gui",
-      "extends": "default"
+      "extends": "default",
     },
     {
       "name": "tui",
-      "extends": "default"
-    }
+      "extends": "default",
+    },
   ],
   "default": {
     "sidebar": {
@@ -31,46 +31,46 @@
         // This is the color behind the actual text... The background!
         "background": {
           "active": "#EE7101",
-          "inactive": "#808080"
+          "inactive": "#808080",
         },
         // This sets the actual color the text is drawn as
         "foreground": {
           "active": "#EE7101",
-          "inactive": "#FFFFFF"
-        }
+          "inactive": "#FFFFFF",
+        },
       },
       // Keybinds to interact with the sidebar
       "keybinds": {
         "previous": "Ctrl+A",
         "next": "Ctrl+D",
-        "toggle": "Ctrl+B"
-      }
+        "toggle": "Ctrl+B",
+      },
     },
     "tabs": {
       "colors": {
         // Color of the currently active tab
         "active": {
           "background": "#EE7101",
-          "foreground": "#EE7101"
+          "foreground": "#EE7101",
         },
         // Color of inactive tabs
         "inactive": {
           "background": "#808080",
-          "foreground": "#FFFFFF"
-        }
+          "foreground": "#FFFFFF",
+        },
       },
 
       // Keybinds to interact with the editor
       "keybinds": {
         "left": "Ctrl+A",
         "right": "Ctrl+D",
-        "close": "Ctrl+W"
-      }
+        "close": "Ctrl+W",
+      },
     },
     // General settings for the editor
     "editor": {
       "background": "#323232",
-      "tab size": 4
+      "tab size": 4,
     },
     // The console that plugins print to
     // `character` sets the character before every print
@@ -78,16 +78,16 @@
       "console": {
         "character": "λ",
         "toggle": "Ctrl+E",
-        "color": "#BF00FF"
+        "color": "#BF00FF",
       },
       // Fine grain settings for plugins
       "permissions": {
         // File acceess
         // Will likely change before first 1.0.0 stable release
         "io": {
-          "sandbox": true
-        }
-      }
+          "sandbox": true,
+        },
+      },
     },
     // Settings for saving files
     "saving": {
@@ -96,16 +96,16 @@
         "condition": "timed", // also `typing`
         "time": 30000,
         // Whether to tell you in the activity bar when auto saving
-        "tell": true
+        "tell": true,
       },
       "keybind": "Ctrl+S",
       // Extra things to do on save
-      "extras": {}
+      "extras": {},
     },
     // For selected text
     "highlighting": {
       "foreground": "#000000",
-      "background": "#0084FF"
+      "background": "#0084FF",
     },
     "search": {
       // Global file search
@@ -113,17 +113,17 @@
         // The color of the current item while searching
         "selected": {
           "background": "#FFFF00",
-          "foreground": "#000000"
+          "foreground": "#000000",
         },
         // The color of every item not selected during search
         "unselected": {
           "background": "#00FFFF",
-          "foreground": "#FFFFFF"
+          "foreground": "#FFFFFF",
         },
-        "search on type": true
+        "search on type": true,
       },
       // Leaving it empty tells Ryp to use global for everything not chosen
-      "local": {}
+      "local": {},
     },
     // Settings for the Git manager
     "git": {
@@ -131,17 +131,17 @@
         "refresh": "Ctrl+G",
         "new": "",
         "push": "",
-        "pull": ""
-      }
-    }
+        "pull": "",
+      },
+    },
   },
   "gui": {
     "sidebar": {
       "shadow": {
         "x": -5,
-        "y": 5
-      }
+        "y": 5,
+      },
     },
-    "antialiasing": true
-  }
+    "antialiasing": true,
+  },
 }

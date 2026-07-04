@@ -1,26 +1,41 @@
+use crate::plugin::action::PluginAction;
 use mlua;
-use crate::plugin::{action::PluginAction};
 use mlua::LuaSerdeExt;
+use parking_lot::{Condvar, Mutex};
 use triomphe::Arc;
-use parking_lot::{Mutex, Condvar};
 
-fn add_setting(lua: &mlua::Lua, tx: &crossbeam_channel::Sender<PluginAction>, settings_table: &mlua::Table) -> Result<(), mlua::Error>  {
+fn add_setting(
+    lua: &mlua::Lua,
+    tx: &crossbeam_channel::Sender<PluginAction>,
+    settings_table: &mlua::Table,
+) -> Result<(), mlua::Error> {
     // We clone the sender for each function
     let tx_add = tx.clone();
 
-    settings_table.set("add",
+    settings_table.set(
+        "add",
         lua.create_function(move |lua, (name, value): (String, mlua::Value)| {
             let json_value: serde_json::Value = lua.from_value(value)?;
-            let _ = tx_add.send(PluginAction::MakeSetting { name, value: json_value }).ok();
+            let _ = tx_add
+                .send(PluginAction::MakeSetting {
+                    name,
+                    value: json_value,
+                })
+                .ok();
             Ok(())
-        })?
+        })?,
     )
 }
 
-fn get_setting_value(lua: &mlua::Lua, tx: &crossbeam_channel::Sender<PluginAction>, settings_table: &mlua::Table) -> Result<(), mlua::Error> {
+fn get_setting_value(
+    lua: &mlua::Lua,
+    tx: &crossbeam_channel::Sender<PluginAction>,
+    settings_table: &mlua::Table,
+) -> Result<(), mlua::Error> {
     let tx_get = tx.clone();
 
-    settings_table.set("get",
+    settings_table.set(
+        "get",
         lua.create_function(move |lua_ctx, name: String| {
             // Create the high-speed responder
             let responder = Arc::new(crate::plugin::action::SerdeResponder {
@@ -29,10 +44,12 @@ fn get_setting_value(lua: &mlua::Lua, tx: &crossbeam_channel::Sender<PluginActio
             });
 
             // Send the Arc to the App
-            tx_get.send(PluginAction::GetSettingValue {
-                name: name.clone(),
-                responder: responder.clone()
-            }).ok();
+            tx_get
+                .send(PluginAction::GetSettingValue {
+                    name: name.clone(),
+                    responder: responder.clone(),
+                })
+                .ok();
 
             // Lock and wait untill told to continue
             let mut lock = responder.value.lock();
@@ -44,23 +61,34 @@ fn get_setting_value(lua: &mlua::Lua, tx: &crossbeam_channel::Sender<PluginActio
             // Take the value and convert to Lua
             let info = lock.take().unwrap_or(serde_json::Value::Null);
             lua_ctx.to_value(&info)
-        })?
+        })?,
     )
 }
 
-fn set_setting_value(lua: &mlua::Lua, tx: &crossbeam_channel::Sender<PluginAction>, settings_table: &mlua::Table) -> Result<(), mlua::Error> {
+fn set_setting_value(
+    lua: &mlua::Lua,
+    tx: &crossbeam_channel::Sender<PluginAction>,
+    settings_table: &mlua::Table,
+) -> Result<(), mlua::Error> {
     let tx_set = tx.clone();
 
-    settings_table.set("set",
+    settings_table.set(
+        "set",
         lua.create_function(move |lua, (name, value): (String, mlua::Value)| {
             let json_value: serde_json::Value = lua.from_value(value)?;
-            let _ = tx_set.send(PluginAction::SetSetting { name, value: json_value });
+            let _ = tx_set.send(PluginAction::SetSetting {
+                name,
+                value: json_value,
+            });
             Ok(())
-        })?
+        })?,
     )
 }
 
-pub fn integrate_settings(lua: &mlua::Lua, tx: &crossbeam_channel::Sender<PluginAction>) -> Result<(), mlua::Error> {
+pub fn integrate_settings(
+    lua: &mlua::Lua,
+    tx: &crossbeam_channel::Sender<PluginAction>,
+) -> Result<(), mlua::Error> {
     let internal_table = lua.create_table()?;
     add_setting(lua, tx, &internal_table)?;
     get_setting_value(lua, tx, &internal_table)?;
@@ -71,9 +99,12 @@ pub fn integrate_settings(lua: &mlua::Lua, tx: &crossbeam_channel::Sender<Plugin
 
     // Handle Access: When user calls settings.add, look it up in internal_table
     let internal_clone = internal_table.clone();
-    metatable.set("__index", lua.create_function(move |_, (_proxy, key): (mlua::Value, String)| {
-        internal_clone.get::<mlua::Value>(key)
-    })?)?;
+    metatable.set(
+        "__index",
+        lua.create_function(move |_, (_proxy, key): (mlua::Value, String)| {
+            internal_clone.get::<mlua::Value>(key)
+        })?,
+    )?;
 
     // TODO: Implement this (shutdown). This is a safety feature.
     //       When a dev tries to modify the table, they become suspicous, and we shouldn't let them continue.

@@ -22,7 +22,7 @@ fn get_cursor_pos(lua: &mlua::Lua, tx: &crossbeam_channel::Sender<PluginAction>,
 
             let info = lock.clone();
             lua.to_value(&info)
-        })?
+        })?,
     )
 }
 
@@ -40,17 +40,25 @@ fn get_cursor_x(lua: &mlua::Lua, tx: &crossbeam_channel::Sender<PluginAction>, c
 
             let info = *lock;
             lua.to_value(&info)
-        })?
+        })?,
     )
 }
 
 // cursor.y.get()
-fn get_cursor_y(lua: &mlua::Lua, tx: &crossbeam_channel::Sender<PluginAction>, cursor_table_get: &mlua::Table, responder: &Arc<UsizeResponder>)  -> Result<(), mlua::Error> {
+fn get_cursor_y(
+    lua: &mlua::Lua,
+    tx: &crossbeam_channel::Sender<PluginAction>,
+    cursor_table_get: &mlua::Table,
+    responder: &Arc<UsizeResponder>,
+) -> Result<(), mlua::Error> {
     let tx = tx.clone();
     let responder_clone = responder.clone();
-    cursor_table_get.set("get",
+    cursor_table_get.set(
+        "get",
         lua.create_function(move |lua, ()| {
-            let _ = tx.send(PluginAction::GetCursorY { responder: responder_clone.clone() });
+            let _ = tx.send(PluginAction::GetCursorY {
+                responder: responder_clone.clone(),
+            });
             let mut lock = responder_clone.number.lock();
             if lock.is_none() {
                 responder_clone.signal.wait(&mut lock);
@@ -58,44 +66,62 @@ fn get_cursor_y(lua: &mlua::Lua, tx: &crossbeam_channel::Sender<PluginAction>, c
 
             let info = *lock;
             lua.to_value(&info)
-        })?
+        })?,
     )
 }
 
 //cursor.pos.set(pos: Vec<usize>)
-fn set_cursor_pos(lua: &mlua::Lua, tx: &crossbeam_channel::Sender<PluginAction>, cursor_table_set: &mlua::Table)  -> Result<(), mlua::Error> {
+fn set_cursor_pos(
+    lua: &mlua::Lua,
+    tx: &crossbeam_channel::Sender<PluginAction>,
+    cursor_table_set: &mlua::Table,
+) -> Result<(), mlua::Error> {
     let tx = tx.clone();
-    cursor_table_set.set("set",
+    cursor_table_set.set(
+        "set",
         lua.create_function(move |_lua, pos: Vec<usize>| {
             let _ = tx.send(PluginAction::SetCursorPos { pos });
             Ok(())
-        })?
+        })?,
     )
 }
 
 // cursor.x.set(x: usize)
-fn set_cursor_x(lua: &mlua::Lua, tx: &crossbeam_channel::Sender<PluginAction>, cursor_table_set: &mlua::Table)  -> Result<(), mlua::Error> {
+fn set_cursor_x(
+    lua: &mlua::Lua,
+    tx: &crossbeam_channel::Sender<PluginAction>,
+    cursor_table_set: &mlua::Table,
+) -> Result<(), mlua::Error> {
     let tx = tx.clone();
-    cursor_table_set.set("set",
+    cursor_table_set.set(
+        "set",
         lua.create_function(move |_lua, x: usize| {
             let _ = tx.send(PluginAction::SetCursorX { x });
             Ok(())
-        })?
+        })?,
     )
 }
 
 // cursor.y.set(y: usize)
-fn set_cursor_y(lua: &mlua::Lua, tx: &crossbeam_channel::Sender<PluginAction>, cursor_table_set: &mlua::Table)  -> Result<(), mlua::Error> {
+fn set_cursor_y(
+    lua: &mlua::Lua,
+    tx: &crossbeam_channel::Sender<PluginAction>,
+    cursor_table_set: &mlua::Table,
+) -> Result<(), mlua::Error> {
     let tx = tx.clone();
-    cursor_table_set.set("set",
+    cursor_table_set.set(
+        "set",
         lua.create_function(move |_lua, y: usize| {
             let _ = tx.send(PluginAction::SetCursorY { y });
             Ok(())
-        })?
+        })?,
     )
 }
 
-pub fn integrate_cursor_pos(lua: &mlua::Lua, tx: &crossbeam_channel::Sender<PluginAction>) -> Result<(), mlua::Error> {
+pub fn integrate_cursor_pos(
+    lua: &mlua::Lua,
+    tx: &crossbeam_channel::Sender<PluginAction>,
+) -> Result<(), mlua::Error> {
     let cursor_table = lua.create_table()?;
     let cursor_table_x = lua.create_table()?;
     let cursor_table_y = lua.create_table()?;
@@ -105,7 +131,6 @@ pub fn integrate_cursor_pos(lua: &mlua::Lua, tx: &crossbeam_channel::Sender<Plug
         number: Mutex::new(None),
         signal: Condvar::new(),
     });
-
 
     get_cursor_pos(lua, tx, &cursor_table_pos)?;
     get_cursor_x(lua, tx, &cursor_table_x, &responder)?;

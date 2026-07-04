@@ -53,7 +53,9 @@ pub fn draw_tabs(f: &mut Frame, app: &App, area: Rect) {
         let style = if i == app.active_tab {
             Style::default()
                 .bg({
-                    let hex = app.config.get("Active Tab BG Color")
+                    let hex = app
+                        .config
+                        .get("Active Tab BG Color")
                         .and_then(|v| v.as_str())
                         .map(|s| s.trim_start_matches('#'))
                         .filter(|s| s.len() == 6)
@@ -64,7 +66,9 @@ pub fn draw_tabs(f: &mut Frame, app: &App, area: Rect) {
                     Color::Rgb(r, g, b)
                 })
                 .fg({
-                    let hex = app.config.get("Active Tab FG Color")
+                    let hex = app
+                        .config
+                        .get("Active Tab FG Color")
                         .and_then(|v| v.as_str())
                         .map(|s| s.trim_start_matches('#'))
                         .filter(|s| s.len() == 6)
@@ -78,7 +82,9 @@ pub fn draw_tabs(f: &mut Frame, app: &App, area: Rect) {
         } else {
             Style::default()
                 .bg({
-                    let hex = app.config.get("Tab BG Color")
+                    let hex = app
+                        .config
+                        .get("Tab BG Color")
                         .and_then(|v| v.as_str())
                         .map(|s| s.trim_start_matches('#'))
                         .filter(|s| s.len() == 6)
@@ -89,7 +95,9 @@ pub fn draw_tabs(f: &mut Frame, app: &App, area: Rect) {
                     Color::Rgb(r, g, b)
                 })
                 .fg({
-                    let hex = app.config.get("Tab FG Color")
+                    let hex = app
+                        .config
+                        .get("Tab FG Color")
                         .and_then(|v| v.as_str())
                         .map(|s| s.trim_start_matches('#'))
                         .filter(|s| s.len() == 6)

@@ -4,9 +4,9 @@ use ratatui::{
     Frame,
     layout::{Alignment, Constraint, Direction, Layout, Rect},
     style::{Color, Modifier, Style},
+    symbols::merge::MergeStrategy,
     text::{Line, Span},
     widgets::{Block, Borders, Clear, Paragraph},
-    symbols::merge::MergeStrategy,
 };
 
 pub fn draw_modal(f: &mut Frame, app: &App, area: Rect) {
@@ -65,10 +65,7 @@ pub fn draw_modal(f: &mut Frame, app: &App, area: Rect) {
                 .alignment(modal.modal_type.alignment());
             f.render_widget(p, modal_area);
 
-            f.set_cursor_position((
-                modal_area.x + 1 + app.cursor_pos as u16,
-                modal_area.y + 1,
-            ));
+            f.set_cursor_position((modal_area.x + 1 + app.cursor_pos as u16, modal_area.y + 1));
         }
         ModalType::Replace => {
             let block = Block::default()
@@ -111,17 +108,17 @@ pub fn draw_modal(f: &mut Frame, app: &App, area: Rect) {
                 .merge_borders(MergeStrategy::Exact)
                 .style(Style::default().bg(Color::Rgb(50, 50, 50)));
 
-                let commands_text: Vec<Line> = app.commands
-                    .iter()
-                    .filter(|cmd| {
-                        let query = modal.input.trim();
-                        query.is_empty() || crate::app::fuzzy_match(cmd, query)
-                    })
-                    .map(|cmd| Line::from(format!(" {}", cmd)))
-                    .collect();
+            let commands_text: Vec<Line> = app
+                .commands
+                .iter()
+                .filter(|cmd| {
+                    let query = modal.input.trim();
+                    query.is_empty() || crate::app::fuzzy_match(cmd, query)
+                })
+                .map(|cmd| Line::from(format!(" {}", cmd)))
+                .collect();
 
-            let commands_list = Paragraph::new(commands_text)
-                .block(commands_block);
+            let commands_list = Paragraph::new(commands_text).block(commands_block);
 
             f.render_widget(commands_list, commands_area);
 
@@ -142,10 +139,7 @@ pub fn draw_modal(f: &mut Frame, app: &App, area: Rect) {
                 .alignment(modal.modal_type.alignment());
             f.render_widget(p, input_area);
 
-            f.set_cursor_position((
-                input_area.x + 1 + app.cursor_pos as u16,
-                input_area.y + 1,
-            ));
+            f.set_cursor_position((input_area.x + 1 + app.cursor_pos as u16, input_area.y + 1));
         }
         ModalType::Settings => todo!("Implement larger popout settings modal"),
         ModalType::DeleteFile => {
@@ -315,10 +309,7 @@ pub fn draw_modal(f: &mut Frame, app: &App, area: Rect) {
 
             let mut text: Vec<Line<'_>> = vec![];
 
-            #[cfg(not(any(
-                target_os = "redox",
-                target_os = "espidf",
-            )))]
+            #[cfg(not(any(target_os = "redox", target_os = "espidf",)))]
             text.extend([
                 Line::from(" [ NOTE ] "),
                 Line::from(" Ryp requires a nerd font to be viewed properly. "),
@@ -366,26 +357,23 @@ pub fn draw_modal(f: &mut Frame, app: &App, area: Rect) {
                     Span::styled(&modal.input, Style::default().fg(Color::White)),
                 ]),
                 Line::from(""),
-                Line::from(vec![
-                    Span::styled(" Press Enter to create ", Style::default().fg(Color::DarkGray)),
-                ]),
+                Line::from(vec![Span::styled(
+                    " Press Enter to create ",
+                    Style::default().fg(Color::DarkGray),
+                )]),
             ];
 
             if let Some(error) = &modal.error_message {
-                text.push(Line::from(vec![
-                    Span::styled(format!(" Error: {} ", error), Style::default().fg(Color::Red).bg(Color::Rgb(40, 20, 20))),
-                ]));
+                text.push(Line::from(vec![Span::styled(
+                    format!(" Error: {} ", error),
+                    Style::default().fg(Color::Red).bg(Color::Rgb(40, 20, 20)),
+                )]));
             }
 
-            let p = Paragraph::new(text)
-                .block(block)
-                .alignment(Alignment::Left);
+            let p = Paragraph::new(text).block(block).alignment(Alignment::Left);
             f.render_widget(p, modal_area);
 
-            f.set_cursor_position((
-                modal_area.x + 8 + app.cursor_pos as u16,
-                modal_area.y + 2,
-            ));
+            f.set_cursor_position((modal_area.x + 8 + app.cursor_pos as u16, modal_area.y + 2));
         }
     }
 }

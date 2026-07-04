@@ -18,7 +18,12 @@ pub fn draw_editor(f: &mut Frame, app: &App, area: Rect) {
             f.render_widget(block.clone(), area);
 
             let msg = vec![
-                Line::from(Span::styled("No files open", Style::default().fg(Color::Gray).add_modifier(Modifier::BOLD))),
+                Line::from(Span::styled(
+                    "No files open",
+                    Style::default()
+                        .fg(Color::Gray)
+                        .add_modifier(Modifier::BOLD),
+                )),
                 Line::from(""),
                 Line::from(vec![
                     Span::styled(" Open file: ", Style::default().fg(Color::DarkGray)),
@@ -34,7 +39,7 @@ pub fn draw_editor(f: &mut Frame, app: &App, area: Rect) {
                 ]),
                 Line::from(vec![
                     Span::styled(" Quit: ", Style::default().fg(Color::DarkGray)),
-                    Span::styled("Ctrl + Q", Style::default().fg(Color::Cyan))
+                    Span::styled("Ctrl + Q", Style::default().fg(Color::Cyan)),
                 ]),
                 Line::from(vec![
                     Span::styled(" Help: ", Style::default().fg(Color::DarkGray)),
@@ -51,8 +56,6 @@ pub fn draw_editor(f: &mut Frame, app: &App, area: Rect) {
             return;
         }
     };
-
-
 
     let height = area.height as usize;
     let margin = (height / 3).max(1);
@@ -73,7 +76,9 @@ pub fn draw_editor(f: &mut Frame, app: &App, area: Rect) {
         .find_syntax_by_extension(ext)
         .unwrap_or_else(|| app.syntax_set.find_syntax_plain_text());
 
-    let theme_name = app.config.get("theme")
+    let theme_name = app
+        .config
+        .get("theme")
         .and_then(|v| v.get("Highlighting Theme"))
         .and_then(|v| v.as_str())
         .unwrap_or("base16-ocean.dark");
@@ -84,7 +89,11 @@ pub fn draw_editor(f: &mut Frame, app: &App, area: Rect) {
     if editor.cursor_y < height {
         scroll_y = 0;
     } else {
-        let desired_min_scroll = editor.cursor_y.saturating_sub(height).saturating_add(margin).saturating_add(1);
+        let desired_min_scroll = editor
+            .cursor_y
+            .saturating_sub(height)
+            .saturating_add(margin)
+            .saturating_add(1);
         let desired_max_scroll = editor.cursor_y.saturating_sub(margin);
 
         if scroll_y < desired_min_scroll {
@@ -130,7 +139,12 @@ pub fn draw_editor(f: &mut Frame, app: &App, area: Rect) {
         buf.set_style(row_area, Style::default().bg(bg_color));
 
         let num_str = format!("{:4} | ", line_num);
-        buf.set_string(area.x, y, &num_str, Style::default().fg(Color::Gray).bg(bg_color));
+        buf.set_string(
+            area.x,
+            y,
+            &num_str,
+            Style::default().fg(Color::Gray).bg(bg_color),
+        );
 
         let text_start_x = area.x + 7;
 
@@ -180,10 +194,14 @@ pub fn draw_editor(f: &mut Frame, app: &App, area: Rect) {
                     if editor.is_selected(char_idx, scroll_y + i) {
                         b_bg = Color::LightBlue;
                         b_fg = Color::Black;
-                      } else if search_matches.contains(&char_idx) {
+                    } else if search_matches.contains(&char_idx) {
                         // find which match this char is part of
-                        let in_selected = match_starts.iter()
-                            .any(|&s| char_idx >= s && char_idx < s + match_len && s == editor.cursor_x && scroll_y + i == editor.cursor_y);
+                        let in_selected = match_starts.iter().any(|&s| {
+                            char_idx >= s
+                                && char_idx < s + match_len
+                                && s == editor.cursor_x
+                                && scroll_y + i == editor.cursor_y
+                        });
 
                         if in_selected {
                             b_bg = Color::Yellow;

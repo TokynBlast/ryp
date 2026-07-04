@@ -1,18 +1,14 @@
-use std::fs;
-use std::path::{PathBuf, Path};
+use arboard::Clipboard;
+use arc_swap::ArcSwap;
 use compact_str::CompactString;
 use std::cell::Cell;
-use std::sync::Arc;
-use arc_swap::ArcSwap;
 use std::collections::VecDeque;
-use arboard::Clipboard;
+use std::fs;
+use std::path::{Path, PathBuf};
+use std::sync::Arc;
 use syntect::{
-  parsing::ScopeStack,
-  highlighting::{
-      ThemeSet,
-      Highlighter,
-      HighlightState,
-  }
+    highlighting::{HighlightState, Highlighter, ThemeSet},
+    parsing::ScopeStack,
 };
 
 pub struct Editor {
@@ -45,27 +41,21 @@ impl Editor {
             dirty: false,
             is_diff: false,
             lang: CompactString::default(),
-            highlight_cache: Arc::new(
-                ArcSwap::from_pointee(
-                  VecDeque::from([
-                    HighlightState::new(
-                        &Highlighter::new(
-                            &ThemeSet::load_defaults().themes["base16-ocean.dark"]),
-                            ScopeStack::new()
-                        )
-                    ])
-                )
-            ),
-            clipboard:
-                if let Some(clip_board) = Some(Clipboard::new()) {
-                    if clip_board.is_ok() {
-                        Some(clip_board.unwrap())
-                    } else {
-                        None
-                    }
+            highlight_cache: Arc::new(ArcSwap::from_pointee(VecDeque::from([
+                HighlightState::new(
+                    &Highlighter::new(&ThemeSet::load_defaults().themes["base16-ocean.dark"]),
+                    ScopeStack::new(),
+                ),
+            ]))),
+            clipboard: if let Some(clip_board) = Some(Clipboard::new()) {
+                if clip_board.is_ok() {
+                    Some(clip_board.unwrap())
                 } else {
                     None
-                },
+                }
+            } else {
+                None
+            },
         }
     }
 
@@ -78,15 +68,16 @@ impl Editor {
             self.filepath = Some(path.to_path_buf());
             self.dirty = false;
             self.is_diff = false;
-            self.lang = CompactString::const_new(
-                if let Some(path) = &self.filepath {
-                // TODO: Implement Naive Bayes algorithm for file detection, rather than rely purely on file ending
+            self.lang = CompactString::const_new(if let Some(path) = &self.filepath {
+                // TODO: Implement Naive Bayes algorithm for file detection, rather than rely purely on file ending.
                 //       Once we implement that, we can then remove `#[allow(unreachable_patterns)]`
                 #[allow(unreachable_patterns)]
-                match path.extension()
+                match path
+                    .extension()
                     .and_then(|e| e.to_str())
-                    .or_else(|| path.file_name().and_then(|n| n.to_str())).unwrap()
-                    {
+                    .or_else(|| path.file_name().and_then(|n| n.to_str()))
+                    .unwrap()
+                {
                     "cpp" => "C++ 󰙲",
                     "hpp" => "C++ Header 󰙲",
                     "rs" => "Rust 󱘗",
@@ -113,16 +104,9 @@ impl Editor {
                     "php" => "PHP 󰌟",
                     "rb" => "Ruby ",
                     "ts" => "TypeScript 󰛦",
-                      "f"
-                    | "for"
-                    | "f08"
-                    | "f90"
-                    | "f03"
-                    | "f95"
-                    | "F90"
-                    | "F"
-                    | "f15"
-                    | "f20" => "Fortran 󱈚",
+                    "f" | "for" | "f08" | "f90" | "f03" | "f95" | "F90" | "F" | "f15" | "f20" => {
+                        "Fortran 󱈚"
+                    }
                     "m" => "Objective-C ",
                     "mm" => "Objective-C++",
                     "adb" => "Ada",
@@ -501,7 +485,9 @@ impl Editor {
     // selection logic
     pub fn is_selected(&self, check_x: usize, check_y: usize) -> bool {
         if let Some((start_x, start_y)) = self.selection_start {
-            let (first_x, first_y, last_x, last_y) = if start_y < self.cursor_y || (start_y == self.cursor_y && start_x < self.cursor_x) {
+            let (first_x, first_y, last_x, last_y) = if start_y < self.cursor_y
+                || (start_y == self.cursor_y && start_x < self.cursor_x)
+            {
                 (start_x, start_y, self.cursor_x, self.cursor_y)
             } else {
                 (self.cursor_x, self.cursor_y, start_x, start_y)
@@ -525,12 +511,17 @@ impl Editor {
     }
 
     fn char_to_byte_idx(s: &str, char_idx: usize) -> usize {
-        s.char_indices().nth(char_idx).map(|(i, _)| i).unwrap_or(s.len())
+        s.char_indices()
+            .nth(char_idx)
+            .map(|(i, _)| i)
+            .unwrap_or(s.len())
     }
 
     pub fn delete_selection(&mut self) -> bool {
         if let Some((start_x, start_y)) = self.selection_start {
-            let ((sy, sx), (ey, ex)) = if start_y < self.cursor_y || (start_y == self.cursor_y && start_x < self.cursor_x) {
+            let ((sy, sx), (ey, ex)) = if start_y < self.cursor_y
+                || (start_y == self.cursor_y && start_x < self.cursor_x)
+            {
                 ((start_y, start_x), (self.cursor_y, self.cursor_x))
             } else {
                 ((self.cursor_y, self.cursor_x), (start_y, start_x))
@@ -648,11 +639,12 @@ impl Editor {
         let (start_x, start_y) = self.selection_start?;
 
         // Normalize coordinates (ensure we know which is start vs end)
-        let ((sy, sx), (ey, ex)) = if start_y < self.cursor_y || (start_y == self.cursor_y && start_x < self.cursor_x) {
-            ((start_y, start_x), (self.cursor_y, self.cursor_x))
-        } else {
-            ((self.cursor_y, self.cursor_x), (start_y, start_x))
-        };
+        let ((sy, sx), (ey, ex)) =
+            if start_y < self.cursor_y || (start_y == self.cursor_y && start_x < self.cursor_x) {
+                ((start_y, start_x), (self.cursor_y, self.cursor_x))
+            } else {
+                ((self.cursor_y, self.cursor_x), (start_y, start_x))
+            };
 
         if sy == ey {
             // Single line selection
@@ -709,7 +701,9 @@ impl Editor {
 
                 let paste_lines: Vec<&str> = text.split('\n').collect();
 
-                if paste_lines.is_empty() { return; }
+                if paste_lines.is_empty() {
+                    return;
+                }
 
                 if paste_lines.len() == 1 {
                     // Simple single line paste
@@ -728,7 +722,8 @@ impl Editor {
 
                     // Insert middle lines
                     for i in 1..paste_lines.len() - 1 {
-                        self.lines.insert(self.cursor_y + i, CompactString::from(paste_lines[i]));
+                        self.lines
+                            .insert(self.cursor_y + i, CompactString::from(paste_lines[i]));
                     }
 
                     // Handle the last line of the paste

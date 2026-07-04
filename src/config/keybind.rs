@@ -81,11 +81,31 @@ fn decode_binding(bind: &'static str) -> Option<(KeyCombo, Option<String>)> {
         mut is_left_arrow,
         mut fn_key,
     ) = (
-        false, false, false, false, false, false,
-        false, false, false, false, false, false,
-        false, false, false, false, false, false,
-        false, false, false, false, false, false,
-        FnKey::None
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        FnKey::None,
     );
 
     let mut key_start = 0;
@@ -123,7 +143,7 @@ fn decode_binding(bind: &'static str) -> Option<(KeyCombo, Option<String>)> {
             "print" => is_print_key = true,
             _ => {
                 // Check if it's a function key
-                if part.len() <= 3 && part.len() >= 2 && part.starts_with('f'){
+                if part.len() <= 3 && part.len() >= 2 && part.starts_with('f') {
                     match part[1..].parse::<u8>().unwrap_or(0) {
                         1 => fn_key = FnKey::F1,
                         2 => fn_key = FnKey::F2,
@@ -143,7 +163,7 @@ fn decode_binding(bind: &'static str) -> Option<(KeyCombo, Option<String>)> {
                 } else {
                     break;
                 }
-            },
+            }
         }
         key_start += 1;
     }
@@ -152,54 +172,53 @@ fn decode_binding(bind: &'static str) -> Option<(KeyCombo, Option<String>)> {
     let key: String = key_parts.join("+");
 
     // Must have at least one modifier and a non-empty key
-    if key.is_empty() || (
-        !is_left_alt
-        && !is_right_alt
-        && !is_left_ctrl
-        && !is_right_ctrl
-        && !is_right_fn_key
-        && !is_left_fn_key
-        && !is_left_shift
-        && !is_right_shift
-        && !is_del
-        && !is_enter
-        && !is_esc
-        && !is_insert
-        && !is_meta
-        && !is_pgdown
-        && !is_pgup
-        && !is_tab
-    ){
+    if key.is_empty()
+        || (!is_left_alt
+            && !is_right_alt
+            && !is_left_ctrl
+            && !is_right_ctrl
+            && !is_right_fn_key
+            && !is_left_fn_key
+            && !is_left_shift
+            && !is_right_shift
+            && !is_del
+            && !is_enter
+            && !is_esc
+            && !is_insert
+            && !is_meta
+            && !is_pgdown
+            && !is_pgup
+            && !is_tab)
+    {
         return None;
     } else {
         Some((
             KeyCombo::new()
-            .with_backspace_key(is_backspace)
-            .with_fn_key(fn_key)
-            .with_del(is_del)
-            .with_down_arrow_key(is_down_arrow)
-            .with_up_arrow_key(is_up_arrow)
-            .with_left_arrow_key(is_left_arrow)
-            .with_right_arrow_key(is_right_arrow)
-            .with_home_key(is_home_key)
-            .with_pgup(is_pgup)
-            .with_pgdown(is_pgdown)
-            .with_end_key(is_end_key)
-            .with_lalt(is_left_alt)
-            .with_ralt(is_right_alt)
-            .with_lctrl(is_left_ctrl)
-            .with_rctrl(is_right_ctrl)
-            .with_insert(is_insert)
-            .with_lfn(is_left_fn_key)
-            .with_rfn(is_right_fn_key)
-            .with_print_key(is_print_key)
-            .with_tab(is_tab)
-            .with_esc(is_esc)
-            .with_meta(is_meta)
-            .with_enter(is_enter)
-            .with_padding(0)
-            ,
-            Some(key)
+                .with_backspace_key(is_backspace)
+                .with_fn_key(fn_key)
+                .with_del(is_del)
+                .with_down_arrow_key(is_down_arrow)
+                .with_up_arrow_key(is_up_arrow)
+                .with_left_arrow_key(is_left_arrow)
+                .with_right_arrow_key(is_right_arrow)
+                .with_home_key(is_home_key)
+                .with_pgup(is_pgup)
+                .with_pgdown(is_pgdown)
+                .with_end_key(is_end_key)
+                .with_lalt(is_left_alt)
+                .with_ralt(is_right_alt)
+                .with_lctrl(is_left_ctrl)
+                .with_rctrl(is_right_ctrl)
+                .with_insert(is_insert)
+                .with_lfn(is_left_fn_key)
+                .with_rfn(is_right_fn_key)
+                .with_print_key(is_print_key)
+                .with_tab(is_tab)
+                .with_esc(is_esc)
+                .with_meta(is_meta)
+                .with_enter(is_enter)
+                .with_padding(0),
+            Some(key),
         ))
     }
 }

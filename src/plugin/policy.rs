@@ -1,7 +1,14 @@
-use mlua::{Lua, Result, Value::{self, Nil}};
 use crate::plugin::action::PluginAction;
+use mlua::{
+    Lua, Result,
+    Value::{self, Nil},
+};
 
-pub fn apply_restrictions(lua: &Lua, tx: crossbeam_channel::Sender<crate::plugin::action::PluginAction>, policy: &serde_json::Value) -> Result<()> {
+pub fn apply_restrictions(
+    lua: &Lua,
+    tx: crossbeam_channel::Sender<crate::plugin::action::PluginAction>,
+    policy: &serde_json::Value,
+) -> Result<()> {
     // "networking": false,
     // "read stdout": false,
     // "io operations": true,
@@ -15,9 +22,7 @@ pub fn apply_restrictions(lua: &Lua, tx: crossbeam_channel::Sender<crate::plugin
     let globals = lua.globals();
 
     let not_allowed = |key: &str| -> bool {
-        policy.get(key)
-            .and_then(|v| v.as_bool())
-            .unwrap_or(false) // If it's missing, we assume it's not allowed
+        policy.get(key).and_then(|v| v.as_bool()).unwrap_or(false) // If it's missing, we assume it's not allowed
     };
 
     // Included in ALL_SAFE; This is something unsafe for us
@@ -63,7 +68,6 @@ pub fn apply_restrictions(lua: &Lua, tx: crossbeam_channel::Sender<crate::plugin
         globals.set("coroutine", Nil)?;
     }
 
-
     // Consider: rawlen, rawequals
     // arg     table
     // xpcall  function
@@ -71,7 +75,6 @@ pub fn apply_restrictions(lua: &Lua, tx: crossbeam_channel::Sender<crate::plugin
     // error   function
     // select  function
     // ipairs  function
-
 
     // Printing shifts up the screen, which we *DON'T* want
     // Instead, we offer printing, but contained :)

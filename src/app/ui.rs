@@ -110,9 +110,10 @@ fn draw_terminal(f: &mut ratatui::Frame, app: &App, area: ratatui::layout::Rect)
     let block = Block::default()
         .title(" Terminal (CTRL+T / F5 / ESC to Hide) ")
         .borders(Borders::ALL)
-        .border_style(Style::default()
-        .fg({
-            let hex = app.config.get("Terminal Outline Color")
+        .border_style(Style::default().fg({
+            let hex = app
+                .config
+                .get("Terminal Outline Color")
                 .and_then(|v| v.as_str())
                 .map(|s| s.trim_start_matches('#'))
                 .filter(|s| s.len() == 6)
@@ -132,11 +133,20 @@ fn draw_terminal(f: &mut ratatui::Frame, app: &App, area: ratatui::layout::Rect)
 
         if r == app.terminal.grid.cursor_row {
             // split at cursor position and insert cursor
-            let before = line.chars().take(app.terminal.grid.cursor_col).collect::<CompactString>();
-            let after = line.chars().skip(app.terminal.grid.cursor_col + 1).collect::<CompactString>();
+            let before = line
+                .chars()
+                .take(app.terminal.grid.cursor_col)
+                .collect::<CompactString>();
+            let after = line
+                .chars()
+                .skip(app.terminal.grid.cursor_col + 1)
+                .collect::<CompactString>();
             let spans = vec![
                 ratatui::text::Span::raw(before),
-                ratatui::text::Span::styled("_", Style::default().bg(Color::White).fg(Color::Black)),
+                ratatui::text::Span::styled(
+                    "_",
+                    Style::default().bg(Color::White).fg(Color::Black),
+                ),
                 ratatui::text::Span::raw(after),
             ];
             content.push(ratatui::text::Line::from(spans));
@@ -152,8 +162,8 @@ fn draw_terminal(f: &mut ratatui::Frame, app: &App, area: ratatui::layout::Rect)
 fn draw_debug(f: &mut ratatui::Frame, app: &App, area: ratatui::layout::Rect) {
     use ratatui::layout::{Constraint, Direction, Layout};
     use ratatui::style::{Color, Style};
-    use ratatui::widgets::{Block, Borders, Clear, Paragraph, Wrap};
     use ratatui::text::{Line, Span};
+    use ratatui::widgets::{Block, Borders, Clear, Paragraph, Wrap};
 
     // Keep it centered but maybe a bit bigger for logs
     let vertical_margin = area.height.saturating_sub(20) / 2;
@@ -189,18 +199,29 @@ fn draw_debug(f: &mut ratatui::Frame, app: &App, area: ratatui::layout::Rect) {
     for log in &app.debug_logs {
         content.push(Line::from(vec![
             // Both because it looks cool, and to see where each log starts :)
-            Span::styled(format!(" {} {}", app.config.get("Debug Console Character").and_then(|v| v.as_str()).unwrap_or("λ"), log), Style::default()
-            .fg({
-                let hex = app.config.get("Debug Console Font Color")
-                    .and_then(|v| v.as_str())
-                    .map(|s| s.trim_start_matches('#'))
-                    .filter(|s| s.len() == 6)
-                    .unwrap_or("BEBEBE");
-                let r = u8::from_str_radix(&hex[0..2], 16).unwrap_or(0);
-                let g = u8::from_str_radix(&hex[2..4], 16).unwrap_or(0);
-                let b = u8::from_str_radix(&hex[4..6], 16).unwrap_or(0);
-                Color::Rgb(r, g, b)
-            })),
+            Span::styled(
+                format!(
+                    " {} {}",
+                    app.config
+                        .get("Debug Console Character")
+                        .and_then(|v| v.as_str())
+                        .unwrap_or("λ"),
+                    log
+                ),
+                Style::default().fg({
+                    let hex = app
+                        .config
+                        .get("Debug Console Font Color")
+                        .and_then(|v| v.as_str())
+                        .map(|s| s.trim_start_matches('#'))
+                        .filter(|s| s.len() == 6)
+                        .unwrap_or("BEBEBE");
+                    let r = u8::from_str_radix(&hex[0..2], 16).unwrap_or(0);
+                    let g = u8::from_str_radix(&hex[2..4], 16).unwrap_or(0);
+                    let b = u8::from_str_radix(&hex[4..6], 16).unwrap_or(0);
+                    Color::Rgb(r, g, b)
+                }),
+            ),
         ]));
     }
 
@@ -214,6 +235,6 @@ fn draw_debug(f: &mut ratatui::Frame, app: &App, area: ratatui::layout::Rect) {
         Paragraph::new(display_content)
             .block(block)
             .wrap(Wrap { trim: true }),
-        center_area
+        center_area,
     );
 }

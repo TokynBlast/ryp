@@ -1,7 +1,7 @@
+use compact_str::CompactString;
 use crossterm::event::{KeyCode, KeyEvent, KeyModifiers};
 use portable_pty::{CommandBuilder, PtySize, native_pty_system};
 use std::io::{Read, Write};
-use compact_str::CompactString;
 
 #[derive(Clone)]
 pub struct TermCell {
@@ -10,7 +10,7 @@ pub struct TermCell {
 }
 
 pub struct TerminalGrid {
-    pub cells: Vec<Vec<TermCell>>,  // [row][col]
+    pub cells: Vec<Vec<TermCell>>, // [row][col]
     pub cursor_row: usize,
     pub cursor_col: usize,
     pub rows: usize,
@@ -20,8 +20,8 @@ pub struct TerminalGrid {
 
 enum ParseState {
     Normal,
-    Esc,        // got \x1b
-    Csi,        // got \x1b[, accumulating params
+    Esc, // got \x1b
+    Csi, // got \x1b[, accumulating params
     Osc,
 }
 
@@ -124,90 +124,111 @@ impl Terminal {
 
             for c in s.chars() {
                 match self.parse_state {
-                  ParseState::Normal => match c {
-                      '\x1b' => self.parse_state = ParseState::Esc,
-                      '\r' => self.grid.cursor_col = 0,
-                      '\n' => {
-                          self.grid.cursor_row += 1;
-                          if self.grid.cursor_row >= self.grid.rows {
-                              // push top row to scrollback, shift grid up
-                              let top = self.grid.cells.remove(0);
-                              self.grid.scrollback.push(top);
-                              self.grid.cells.push(vec![TermCell { c: ' ' }; self.grid.cols]);
-                              self.grid.cursor_row = self.grid.rows - 1;
-                          }
-                      }
-                      '\x08' => {
-                          self.grid.cursor_col =
-                              self.grid.cursor_col.saturating_sub(1);
-                      }
-                      c => {
-                          self.grid.cells[self.grid.cursor_row][self.grid.cursor_col].c = c;
-                          self.grid.cursor_col += 1;
-                          if self.grid.cursor_col >= self.grid.cols {
-                              self.grid.cursor_col = 0;
-                              self.grid.cursor_row += 1;
-                          }
-                      }
-                  },
-                  ParseState::Osc => {
-                      if c == '\x07' {
-                          self.parse_state = ParseState::Normal;
-                      }
-                      // ignore everything else
-                  }
-                  ParseState::Esc => match c {
-                      '[' => { self.parse_state = ParseState::Csi; self.csi_params.clear(); }
-                      ']' => { self.parse_state = ParseState::Osc; self.csi_params.clear(); }
-                      _ => self.parse_state = ParseState::Normal,
-                  },
-                  ParseState::Csi => {
-                    let n = self.csi_params.parse::<usize>().unwrap_or(1);
-
-                    // collect modifying digits
-                    if c.is_ascii_digit() || c == ';' {
-                        self.csi_params.push(c);
-                        continue;
+                    ParseState::Normal => match c {
+                        '\x1b' => self.parse_state = ParseState::Esc,
+                        '\r' => self.grid.cursor_col = 0,
+                        '\n' => {
+                            self.grid.cursor_row += 1;
+                            if self.grid.cursor_row >= self.grid.rows {
+                                // push top row to scrollback, shift grid up
+                                let top = self.grid.cells.remove(0);
+                                self.grid.scrollback.push(top);
+                                self.grid
+                                    .cells
+                                    .push(vec![TermCell { c: ' ' }; self.grid.cols]);
+                                self.grid.cursor_row = self.grid.rows - 1;
+                            }
+                        }
+                        '\x08' => {
+                            self.grid.cursor_col = self.grid.cursor_col.saturating_sub(1);
+                        }
+                        c => {
+                            self.grid.cells[self.grid.cursor_row][self.grid.cursor_col].c = c;
+                            self.grid.cursor_col += 1;
+                            if self.grid.cursor_col >= self.grid.cols {
+                                self.grid.cursor_col = 0;
+                                self.grid.cursor_row += 1;
+                            }
+                        }
+                    },
+                    ParseState::Osc => {
+                        if c == '\x07' {
+                            self.parse_state = ParseState::Normal;
+                        }
+                        // ignore everything else
                     }
+                    ParseState::Esc => match c {
+                        '[' => {
+                            self.parse_state = ParseState::Csi;
+                            self.csi_params.clear();
+                        }
+                        ']' => {
+                            self.parse_state = ParseState::Osc;
+                            self.csi_params.clear();
+                        }
+                        _ => self.parse_state = ParseState::Normal,
+                    },
+                    ParseState::Csi => {
+                        let n = self.csi_params.parse::<usize>().unwrap_or(1);
 
-                    match c {
-                        // up, clamp to greater than 0
-                        'A' => self.grid.cursor_row = self.grid.cursor_row.saturating_sub(n),
-                        // left, clamp to greater than 0
-                        'D' => self.grid.cursor_col = self.grid.cursor_col.saturating_sub(n),
-                        // down, clamp to greater than rows - 1
-                        'B' => self.grid.cursor_row = (self.grid.cursor_row + n).min(self.grid.rows - 1),
-                        // right, clamp to greater than cols - 1
-                        'C' => self.grid.cursor_col = (self.grid.cursor_col + n).min(self.grid.cols - 1),
-                        'J' => {
-                            for row in &mut self.grid.cells {
-                                for cell in row.iter_mut() {
+                        // collect modifying digits
+                        if c.is_ascii_digit() || c == ';' {
+                            self.csi_params.push(c);
+                            continue;
+                        }
+
+                        match c {
+                            // up, clamp to greater than 0
+                            'A' => self.grid.cursor_row = self.grid.cursor_row.saturating_sub(n),
+                            // left, clamp to greater than 0
+                            'D' => self.grid.cursor_col = self.grid.cursor_col.saturating_sub(n),
+                            // down, clamp to greater than rows - 1
+                            'B' => {
+                                self.grid.cursor_row =
+                                    (self.grid.cursor_row + n).min(self.grid.rows - 1)
+                            }
+                            // right, clamp to greater than cols - 1
+                            'C' => {
+                                self.grid.cursor_col =
+                                    (self.grid.cursor_col + n).min(self.grid.cols - 1)
+                            }
+                            'J' => {
+                                for row in &mut self.grid.cells {
+                                    for cell in row.iter_mut() {
+                                        cell.c = ' ';
+                                    }
+                                }
+                                self.grid.cursor_row = 0;
+                                self.grid.cursor_col = 0;
+                            }
+                            'K' => {
+                                let row = &mut self.grid.cells[self.grid.cursor_row];
+                                for cell in row[self.grid.cursor_col..].iter_mut() {
                                     cell.c = ' ';
                                 }
                             }
-                            self.grid.cursor_row = 0;
-                            self.grid.cursor_col = 0;
-                        },
-                        'K' => {
-                            let row = &mut self.grid.cells[self.grid.cursor_row];
-                            for cell in row[self.grid.cursor_col..].iter_mut() {
-                                cell.c = ' ';
+                            'H' => {
+                                let mut parts = self.csi_params.split(';');
+                                let row = parts
+                                    .next()
+                                    .and_then(|s| s.parse::<usize>().ok())
+                                    .unwrap_or(1)
+                                    .saturating_sub(1);
+                                let col = parts
+                                    .next()
+                                    .and_then(|s| s.parse::<usize>().ok())
+                                    .unwrap_or(1)
+                                    .saturating_sub(1);
+                                self.grid.cursor_row = row.min(self.grid.rows - 1);
+                                self.grid.cursor_col = col.min(self.grid.cols - 1);
                             }
-                        },
-                        'H' => {
-                            let mut parts = self.csi_params.split(';');
-                            let row = parts.next().and_then(|s| s.parse::<usize>().ok()).unwrap_or(1).saturating_sub(1);
-                            let col = parts.next().and_then(|s| s.parse::<usize>().ok()).unwrap_or(1).saturating_sub(1);
-                            self.grid.cursor_row = row.min(self.grid.rows - 1);
-                            self.grid.cursor_col = col.min(self.grid.cols - 1);
+                            'h' | 'l' => { /* ignore mode set/reset */ }
+                            _ => {}
                         }
-                        'h' | 'l' => { /* ignore mode set/reset */ }
-                        _ => {},
-                    }
 
-                    self.parse_state = ParseState::Normal;
-                  },
-              }
+                        self.parse_state = ParseState::Normal;
+                    }
+                }
             }
         }
 
