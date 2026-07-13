@@ -6,7 +6,7 @@
 
 <p align="center">
   <a>
-    <img src="https://img.shields.io/badge/rust-1.86+-orange?logo=rust?style=flat" alt="Requires Rust 1.86+">
+    <img src="https://img.shields.io/badge/rust-1.86+-orange?style=flat&logo=rust" alt="Requires Rust 1.86+">
   </a>
   <a href="https://github.com/sammwyy/ryp/issues">
     <img src="https://img.shields.io/github/issues/sammwyy/ryp?style=flat&label=open%20issues" alt="Number of open issues">
